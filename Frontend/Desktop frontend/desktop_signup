@@ -1,0 +1,53 @@
+import "react";
+import ReactDOM from "react-dom";
+// eslint-disable-next-line react/no-deprecated
+ReactDOM.render(<App />, document.getElementById("root"));
+import "./App.css"; // Imports CSS for styling
+
+
+function App() {
+    return (
+        <div className="login-container">
+            <div className="left-section">
+                <h1>Register your Company</h1>
+                <h2 className="logo">SKIPQ</h2>
+                <h1 className="welcome-text">Welcome!</h1>
+                <p className="quote">
+                   QUEUE MANAGEMENT
+                </p>
+                <div className="social-icons">
+                    <a href="https://linkedin.com">1</a>
+                    <a href="https://facebook.com">2</a>
+                    <a href="https://instagram.com">3</a>
+                    <a href="https://twitter.com">4</a>
+                </div>
+            </div>
+            <div className="right-section">
+                <form className="login-form">
+                    <h2 className="sign-in-text">Sign In</h2>
+                    <div className="form-group">
+                        <input type="email" placeholder="Email" required/>
+                    </div>
+                    <div className="form-group">
+                        <input type="password" placeholder="Password" required/>
+                    </div>
+                    <div className="form-options">
+                        <label>
+                            <input type="checkbox"/> Remember me
+                        </label>
+                        <a href="#forgot">Forgot password?</a>
+                    </div>
+                    <button type="submit" className="sign-in-button">
+                        Sign In
+                    </button>
+                    <p className="signup-link">
+                        Don’t have an account? <a href="#signup">Sign up</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+
+export default App;
