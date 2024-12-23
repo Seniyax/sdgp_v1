@@ -1,5 +1,16 @@
 const { request } = require("express");
 
+export const signInBusiness = async (req,res) => {
+    const {email , password} = req.body;
+
+    if(!email || !password){
+        throw new error ("Email and password are  mandatory");
+    }
+    
+    return {message:"sigin in is succesful"}
+    
+}
+
 
 export const updateBusiness = async(req,res) => {
     const{name,role} = req.body;
