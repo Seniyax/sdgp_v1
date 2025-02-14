@@ -1,1 +1,27 @@
+body{
+    font-family: 'Montserrat', sans-serif;
+    color: black;
+}
+.container {
+    display: flex;
+    margin-top: 30px;
+}
+.text-box img{
+    margin-left: 100px;
+    width: 600px;
+    margin-bottom: 0;
+    margin-top: 0;
+}
+.text-box p{
+    font-family: 'Montserrat', sans-serif;
+    color: black;
+    text-align: center;
+    margin-top: 0;
+    display: block;
+}
 
+.image-box img {
+    margin-top: 40px;
+    margin-left: 100px;
+    height: 700px;
+}
