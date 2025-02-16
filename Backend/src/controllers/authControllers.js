@@ -47,4 +47,36 @@ exports.signup = async(req,res,)=>
     
 }
 
+exports.signin = async(req,res,next)=>{
+
+    try{
+        const{email,password} = req.body;
+
+        if(!email||!password) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Please provide email and password'
+              });
+            }
+
+        const user = await User.findOne({ email });
+
+
+        if (!user || !(await user.isValidPassword(password))) {
+
+            return res.status(401).json({
+                status: 'error',
+                message: 'Invalid email or password'
+              });
+            }  
+
+        }
+        
+
+    
+    catch(error){
+
+    }
+}
+
 
