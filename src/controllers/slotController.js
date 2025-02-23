@@ -1,5 +1,4 @@
 const supabase = require("../config/supabaseClient");
-const bcrypt = require("bcrypt");
 
 exports.getOneSlot = async (req, res) => {
   try {

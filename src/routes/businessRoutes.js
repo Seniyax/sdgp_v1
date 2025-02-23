@@ -1,17 +1,17 @@
 const express = require("express");
 const router = express.Router();
 const {
+  getAllBusinesses,
   getOneBusiness,
   createBusiness,
   updateBusiness,
   deleteBusiness,
-  getAllEmailTypes,
 } = require("../controllers/businessController");
 
-router.post("/signIn", getOneBusiness);
-router.post("/signUp", createBusiness);
+router.get("/get-all", getAllBusinesses);
+router.post("/get-by-id", getOneBusiness);
+router.post("/register", createBusiness);
 router.put("/update", updateBusiness);
 router.delete("/delete", deleteBusiness);
-router.get("/getEmailTypes", getAllEmailTypes);
 
 module.exports = router;
