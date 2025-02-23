@@ -8,10 +8,10 @@ const {
   deleteSlot,
 } = require("../controllers/slotController");
 
-router.get("/getOneSlot", getOneSlot);
-router.get("/getAllSlots", getAllSlots);
-router.post("/createSlot", createSlot);
-router.put("/updateSlot", updateSlot);
-router.delete("/deleteSlot", deleteSlot);
+router.get("/get-one", getOneSlot);
+router.get("/get-all", getAllSlots);
+router.post("/create", createSlot);
+router.put("/update", updateSlot);
+router.delete("/delete", deleteSlot);
 
 module.exports = router;
