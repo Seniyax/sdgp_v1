@@ -1,17 +1,25 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from "react";
 import "../style/Navbar.css";
 
-function Navbar() {
+const Navbar = () => {
     return (
-        <nav>
-            <Link to="/">Home</Link>
-            <Link to="/features">Features</Link>
-            <Link to="/testimonials">Testimonials</Link>
-            <Link to="/about">About</Link>
-            <Link to="/contact">Contact</Link>
+        <nav className="bg-gray-800 p-4">
+            <ul className="flex space-x-4">
+                <li>
+                    <a href="#" className="text-white hover:text-gray-300">Home</a>
+                </li>
+                <li>
+                    <a href="#" className="text-white hover:text-gray-300">About</a>
+                </li>
+                <li>
+                    <a href="#" className="text-white hover:text-gray-300">Services</a>
+                </li>
+                <li>
+                    <a href="#" className="text-white hover:text-gray-300">Contact</a>
+                </li>
+            </ul>
         </nav>
     );
-}
+};
 
 export default Navbar;
