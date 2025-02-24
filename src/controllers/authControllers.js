@@ -2,6 +2,8 @@ const User = require('');
 const {validateEmail} = require("utils\validate.js");
 const jwt = require('jsonwebtokens')
 
+const supabase = require('.../config/supabaseClient');
+
 exports.signup = async(req,res,)=>
 {
     try{
