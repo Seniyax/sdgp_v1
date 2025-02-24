@@ -1,13 +1,11 @@
 const expreess = require("express");
 const router = expreess.Router();
 const {
-  getBusinessUserRelationsByBusinessId,
-  getBusinessUserRelationsByUserId,
-  createBusinessUserRelation,
+  createBusinessRelation,
+  getBusinessRelations,
 } = require("../controllers/bHUController");
 
-router.get("/get-relations-of-business", getBusinessUserRelationsByBusinessId);
-router.get("/get-relations-of-user", getBusinessUserRelationsByUserId);
-router.post("/create", createBusinessUserRelation);
+router.post("/create-business", createBusinessRelation);
+router.get("/get-businesses", getBusinessRelations);
 
 module.exports = router;

@@ -1,4 +1,10 @@
-const supabase = require("../config/supabaseClient");
+require("dotenv").config();
+const {
+  getUserByUsername,
+  createUser,
+  updateUser,
+  deleteUser,
+} = require("../models/user");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
@@ -24,27 +30,17 @@ const passwordValidation = (password) => {
     : "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character";
 };
 
-async function getUserByUsername(username) {
-  const { data, error } = await supabase
-    .from("user")
-    .select("*")
-    .eq("username", username)
-    .maybeSingle();
-  if (error) throw error;
-  return data;
-}
-
 async function sendVerificationEmail(email, token) {
-  const verificationLink = `http://localhost:3000/api/email/verify?token=${token}`;
+  const verificationLink = `http://localhost:3000/api/email/verify-user?token=${token}`;
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: "uvindu.dev.slotzi@gmail.com",
-      pass: "hamt munu none azjv",
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
     },
   });
   const mailOptions = {
-    from: "uvindu.dev.slotzi@gmail.com",
+    from: process.env.EMAIL_USER,
     to: email,
     subject: "Verify Your Email Address",
     html: `
@@ -64,10 +60,10 @@ async function sendVerificationEmail(email, token) {
       </html>
     `,
   };
-
   await transporter.sendMail(mailOptions);
 }
 
+/* GET /api/user/getOneUser */
 exports.getOneUser = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -116,7 +112,7 @@ exports.createUser = async (req, res) => {
       password,
       confirm_password: confirmPassword,
     } = req.body;
-
+    console.log("hello");
     if (
       !name ||
       !nic ||
@@ -132,7 +128,6 @@ exports.createUser = async (req, res) => {
         message: "All fields of user details are required",
       });
     }
-
     const emailValidationError = emailValidation(email);
     if (emailValidationError) {
       return res.status(400).json({
@@ -140,27 +135,25 @@ exports.createUser = async (req, res) => {
         message: emailValidationError,
       });
     }
-
-    const { data: exisitingUserData, error: existingUserError } = await supabase
-      .from("user")
-      .select("*")
-      .eq("email", email)
-      .maybeSingle();
+    const { data: existingUserData, error: existingUserError } =
+      await require("../config/supabaseClient")
+        .from("user")
+        .select("*")
+        .eq("email", email)
+        .maybeSingle();
     if (existingUserError) throw existingUserError;
-    if (exisitingUserData) {
+    if (existingUserData) {
       return res.status(409).json({
         success: false,
         message: "Email already exists",
       });
     }
-
     if (password !== confirmPassword) {
       return res.status(400).json({
         success: false,
         message: "Password and confirm password don't match",
       });
     }
-
     const passwordValidationError = passwordValidation(password);
     if (passwordValidationError) {
       return res.status(400).json({
@@ -168,45 +161,28 @@ exports.createUser = async (req, res) => {
         message: passwordValidationError,
       });
     }
-
     if (await getUserByUsername(username)) {
       return res.status(409).json({
         success: false,
         message: "Username is already taken",
       });
     }
-
     const verificationToken = crypto.randomBytes(32).toString("hex");
-
-    const { data, error } = await supabase
-      .from("user")
-      .insert([
-        {
-          name,
-          nic,
-          email,
-          address,
-          contact,
-          username,
-          password: await bcrypt.hash(password, 10),
-          verification_token: verificationToken,
-        },
-      ])
-      .select();
-
-    if (error) {
-      return res.status(500).json({
-        success: false,
-        message: "Failed to create user",
-        error: error.message,
-      });
-    }
-
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = await createUser({
+      name,
+      nic,
+      email,
+      address,
+      contact,
+      username,
+      password: hashedPassword,
+      verification_token: verificationToken,
+    });
     await sendVerificationEmail(email, verificationToken);
-
     res.status(201).json({
       success: true,
-      user: data[0],
+      user: newUser,
     });
   } catch (error) {
     console.error("Error creating user:", error.message);
@@ -219,7 +195,6 @@ exports.createUser = async (req, res) => {
 };
 
 exports.updateUser = async (req, res) => {
-  const updateData = {};
   try {
     const {
       username,
@@ -231,31 +206,28 @@ exports.updateUser = async (req, res) => {
       password,
       confirm_password: confirmPassword,
     } = req.body;
-
     if (!username) {
       return res.status(400).json({
         success: false,
         message: "Current username is required",
       });
     }
-
-    if (!name && !email && !address && !contact && !newUsername && !password) {
+    if (!(name || email || address || contact || newUsername || password)) {
       return res.status(400).json({
         success: false,
         message: "At least one field needs to be updated",
       });
     }
-
-    if (!(await getUserByUsername(username))) {
+    const currentUser = await getUserByUsername(username);
+    if (!currentUser) {
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
-
+    const updateData = {};
     if (name) updateData.name = name;
     if (address) updateData.address = address;
-
     if (email) {
       const emailValidationError = emailValidation(email);
       if (emailValidationError) {
@@ -264,7 +236,7 @@ exports.updateUser = async (req, res) => {
           message: emailValidationError,
         });
       }
-      const { data, error } = await supabase
+      const { data, error } = await require("../config/supabaseClient")
         .from("user")
         .select("*")
         .eq("email", email)
@@ -279,7 +251,6 @@ exports.updateUser = async (req, res) => {
       updateData.email = email;
       updateData.verification_token = crypto.randomBytes(32).toString("hex");
     }
-
     if (contact) {
       const contactValidationError = contactValidation(contact);
       if (contactValidationError) {
@@ -290,7 +261,6 @@ exports.updateUser = async (req, res) => {
       }
       updateData.contact = contact;
     }
-
     if (newUsername) {
       const existingUser = await getUserByUsername(newUsername);
       if (existingUser && existingUser.username !== currentUser.username) {
@@ -301,7 +271,6 @@ exports.updateUser = async (req, res) => {
       }
       updateData.username = newUsername;
     }
-
     if (password) {
       if (!confirmPassword) {
         return res.status(400).json({
@@ -324,23 +293,16 @@ exports.updateUser = async (req, res) => {
       }
       updateData.password = await bcrypt.hash(password, 10);
     }
-
-    const { data, error } = await supabase
-      .from("user")
-      .update(updateData)
-      .eq("username", username);
-    if (error) throw error;
-
+    const updatedUser = await updateUser(username, updateData);
     if (updateData.email && updateData.verification_token) {
       await sendVerificationEmail(
         updateData.email,
         updateData.verification_token
       );
     }
-
     res.status(200).json({
       success: true,
-      data,
+      data: updatedUser,
     });
   } catch (error) {
     console.error("Error updating user", error.message);
@@ -368,15 +330,11 @@ exports.deleteUser = async (req, res) => {
         message: "User not found",
       });
     }
-    const { data, error } = await supabase
-      .from("user")
-      .delete()
-      .eq("username", username);
-    if (error) throw error;
+    const deletedData = await deleteUser(username);
     res.status(200).json({
       success: true,
       message: "User deleted successfully",
-      data,
+      data: deletedData,
     });
   } catch (error) {
     console.error("Error deleting user", error.message);
