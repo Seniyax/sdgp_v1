@@ -1,43 +1,42 @@
+require("dotenv").config();
 const supabase = require("../config/supabaseClient");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
+const { getUserByUsername } = require("../models/user");
+const {
+  createBusinessRelation,
+  getBusinessRelationsByUser,
+  getUserRelationsByBusiness,
+  processBHUUpdate,
+  buildUsersForBusiness,
+} = require("../models/businessHasUser");
 
-async function getUserByUsername(username) {
-  const { data, error } = await supabase
-    .from("user")
-    .select("*")
-    .eq("username", username)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data;
-}
-
+// Helper: Send verification email using supervisor endpoint link
 async function sendVerificationEmail(email, token) {
-  const verificationLink = `http://localhost:3000/api/email/verify?token=${token}`;
+  // Updated link for supervisor verification endpoint
+  const verificationLink = `http://localhost:3000/api/email/verify-user-by-supervisor?token=${token}`;
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: "uvindu.dev.slotzi@gmail.com",
-      pass: "hamt munu none azjv",
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
     },
   });
   const mailOptions = {
-    from: "uvindu.dev.slotzi@gmail.com",
+    from: "process.env.EMAIL_USER",
     to: email,
-    subject: "Verify Your Email Address",
+    subject: "Verify Your Business Relation",
     html: `
       <html>
         <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
           <div style="max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 5px; text-align: center;">
             <h2 style="color: #333;">Welcome to SlotZi!</h2>
-            <p style="color: #555;">Thank you for registering. Please click the button below to verify your email address.</p>
+            <p style="color: #555;">A new business relation request requires your verification.</p>
             <a href="${verificationLink}" 
                style="display: inline-block; padding: 10px 20px; margin: 20px 0; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">
-              Verify Email
+              Verify Relation
             </a>
-            <p style="color: #888; font-size: 12px;">If you did not create an account, please ignore this email.</p>
-            <p style="color: #888; font-size: 12px;">Thanks,<br>The SlotZi Team</p>
+            <p style="color: #888; font-size: 12px;">If you did not request this, please ignore this email.</p>
           </div>
         </body>
       </html>
@@ -47,6 +46,7 @@ async function sendVerificationEmail(email, token) {
   await transporter.sendMail(mailOptions);
 }
 
+/* POST /api/bhu/createBusinessRelation */
 exports.createBusinessRelation = async (req, res) => {
   try {
     const { business_id, username, type, supervisor_id } = req.body;
@@ -80,32 +80,10 @@ exports.createBusinessRelation = async (req, res) => {
       });
     }
 
-    const verificationToken = crypto.randomBytes(32).toString("hex");
-
-    const { data: bhuData, error: bhuError } = await supabase
-      .from("business_has_user")
-      .insert([
-        {
-          user_id: user.id,
-          business_id,
-          type,
-          supervisor_id,
-          verification_token: verificationToken,
-          is_verified: false,
-        },
-      ])
-      .select();
-    if (bhuError) throw bhuError;
-    if (!bhuData || bhuData.length === 0) {
-      return res.status(500).json({
-        success: false,
-        message: "Failed to create business relation",
-      });
-    }
-
+    // Retrieve supervisor details and ensure supervisor is not Staff
     const { data: supervisorData, error: supervisorError } = await supabase
       .from("user")
-      .select("email, username")
+      .select("email, username, type")
       .eq("id", supervisor_id)
       .maybeSingle();
     if (supervisorError) throw supervisorError;
@@ -115,6 +93,23 @@ exports.createBusinessRelation = async (req, res) => {
         message: "Supervisor not found",
       });
     }
+    if (supervisorData.type === "Staff") {
+      return res.status(400).json({
+        success: false,
+        message: "Supervisor cannot be Staff",
+      });
+    }
+
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+
+    const bhuRecord = await createBusinessRelation({
+      user_id: user.id,
+      business_id,
+      type,
+      supervisor_id,
+      verification_token: verificationToken,
+      is_verified: false,
+    });
 
     await sendVerificationEmail(supervisorData.email, verificationToken);
 
@@ -122,7 +117,7 @@ exports.createBusinessRelation = async (req, res) => {
       success: true,
       message:
         "Business relation created successfully; verification email sent to supervisor",
-      data: bhuData[0],
+      data: bhuRecord,
     });
   } catch (error) {
     console.error("Error creating business relation:", error.message);
@@ -134,6 +129,7 @@ exports.createBusinessRelation = async (req, res) => {
   }
 };
 
+/* GET /api/bhu/getBusinessRelations (by user) */
 exports.getBusinessRelations = async (req, res) => {
   try {
     const { username } = req.body;
@@ -152,11 +148,7 @@ exports.getBusinessRelations = async (req, res) => {
       });
     }
 
-    const { data: bhuData, error: bhuError } = await supabase
-      .from("business_has_user")
-      .select("*")
-      .eq("user_id", user.id);
-    if (bhuError) throw bhuError;
+    const bhuData = await getBusinessRelationsByUser(user.id);
     if (!bhuData || bhuData.length === 0) {
       return res.status(404).json({
         success: false,
@@ -174,43 +166,6 @@ exports.getBusinessRelations = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to fetch business relations",
-      error: error.message,
-    });
-  }
-};
-
-exports.getUserRelations = async (req, res) => {
-  try {
-    const { business_id } = req.body;
-    if (!business_id) {
-      return res.status(400).json({
-        success: false,
-        message: "Business ID is required",
-      });
-    }
-
-    const { data: bhuData, error: bhuError } = await supabase
-      .from("business_has_user")
-      .select("*")
-      .eq("business_id", business_id);
-    if (bhuError) throw bhuError;
-    if (!bhuData || bhuData.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "No user relations found for this business",
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      message: "User relations fetched successfully",
-      data: bhuData,
-    });
-  } catch (error) {
-    console.error("Error fetching user relations:", error.message);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch user relations",
       error: error.message,
     });
   }
