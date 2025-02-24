@@ -11,9 +11,7 @@ const {
   buildUsersForBusiness,
 } = require("../models/businessHasUser");
 
-// Helper: Send verification email using supervisor endpoint link
 async function sendVerificationEmail(email, token) {
-  // Updated link for supervisor verification endpoint
   const verificationLink = `http://localhost:3000/api/email/verify-user-by-supervisor?token=${token}`;
   const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -46,7 +44,6 @@ async function sendVerificationEmail(email, token) {
   await transporter.sendMail(mailOptions);
 }
 
-/* POST /api/bhu/createBusinessRelation */
 exports.createBusinessRelation = async (req, res) => {
   try {
     const { business_id, username, type, supervisor_id } = req.body;
@@ -80,7 +77,6 @@ exports.createBusinessRelation = async (req, res) => {
       });
     }
 
-    // Retrieve supervisor details and ensure supervisor is not Staff
     const { data: supervisorData, error: supervisorError } = await supabase
       .from("user")
       .select("email, username, type")
@@ -129,7 +125,6 @@ exports.createBusinessRelation = async (req, res) => {
   }
 };
 
-/* GET /api/bhu/getBusinessRelations (by user) */
 exports.getBusinessRelations = async (req, res) => {
   try {
     const { username } = req.body;

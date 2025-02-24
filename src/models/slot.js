@@ -17,7 +17,6 @@ async function getAllSlots() {
 }
 
 async function createSlot(slotData) {
-  // slotData should include: business_id, start_time, end_time, status, capacity, priority_id
   const { data, error } = await supabase
     .from("slot")
     .insert([slotData])

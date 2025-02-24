@@ -33,14 +33,12 @@ async function updateBusinessRecord(businessId, updateData) {
 }
 
 async function getAllBusinesses() {
-  // Returns all fields (detailed view) if needed elsewhere
   const { data, error } = await supabase.from("business").select("*");
   if (error) throw error;
   return data;
 }
 
 async function getBusinessesMinimal() {
-  // Returns only id and name for select options
   const { data, error } = await supabase.from("business").select("id, name");
   if (error) throw error;
   return data;

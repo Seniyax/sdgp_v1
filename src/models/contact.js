@@ -57,7 +57,6 @@ async function insertContact(businessId, number) {
   return data[0].id;
 }
 
-// New helper to delete all contacts for a business
 async function deleteContacts(businessId) {
   const { data, error } = await supabase
     .from("contact")
