@@ -6,7 +6,6 @@ const {
   deleteSlot,
 } = require("../models/slot");
 
-/* GET /api/slot/:id */
 exports.getOneSlot = async (req, res) => {
   try {
     const { id } = req.params;
@@ -37,7 +36,6 @@ exports.getOneSlot = async (req, res) => {
   }
 };
 
-/* GET /api/slot */
 exports.getAllSlots = async (req, res) => {
   try {
     const slots = await getAllSlots();
@@ -55,7 +53,6 @@ exports.getAllSlots = async (req, res) => {
   }
 };
 
-/* POST /api/slot */
 exports.createSlot = async (req, res) => {
   try {
     const {
@@ -80,7 +77,6 @@ exports.createSlot = async (req, res) => {
           "All fields (business username, start time, end time, status, capacity, priority) are required",
       });
     }
-    // Look up business_id and priority_id (assuming model functions exist or use supabase directly)
     const { data: businessData, error: businessError } = await supabase
       .from("business")
       .select("id")
@@ -123,7 +119,6 @@ exports.createSlot = async (req, res) => {
   }
 };
 
-/* PUT /api/slot/:id */
 exports.updateSlot = async (req, res) => {
   try {
     const { id } = req.params;
@@ -168,7 +163,6 @@ exports.updateSlot = async (req, res) => {
   }
 };
 
-/* DELETE /api/slot/:id */
 exports.deleteSlot = async (req, res) => {
   try {
     const { id } = req.params;

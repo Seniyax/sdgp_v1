@@ -91,7 +91,6 @@ const generateTemplate = (status, message) => {
 </html>`;
 };
 
-/* GET /api/email/getAllEmailTypes */
 exports.getAllEmailTypes = async (req, res) => {
   try {
     const { data, error } = await supabase.from("email_type").select("name");
@@ -116,7 +115,6 @@ exports.getAllEmailTypes = async (req, res) => {
   }
 };
 
-/* GET /api/email/verifyUserEmail */
 exports.verifyUserEmail = async (req, res) => {
   const { token } = req.query;
   if (!token) {
@@ -149,7 +147,6 @@ exports.verifyUserEmail = async (req, res) => {
   );
 };
 
-/* GET /api/email/verifyBusinessEmail */
 exports.verifyBusinessEmail = async (req, res) => {
   const { token } = req.query;
   if (!token) {
@@ -185,13 +182,11 @@ exports.verifyBusinessEmail = async (req, res) => {
   );
 };
 
-/* GET /api/email/verifyUserEmailBySupervisor */
 exports.verifyUserEmailBySupervisor = async (req, res) => {
   const { token } = req.query;
   if (!token) {
     return res.send(generateTemplate("error", "Invalid or missing token."));
   }
-  // This endpoint is used for verifying a business relation by supervisor.
   const { data: bhu, error } = await supabase
     .from("business_has_user")
     .select("*")

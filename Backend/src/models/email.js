@@ -1,8 +1,5 @@
 const supabase = require("../config/supabaseClient");
 
-// (Keep your validateEmail, buildEmails, createPrimaryEmail, updatePrimaryEmail,
-// deleteNonPrimaryEmails, and insertNonPrimaryEmails functions as before.)
-
 function validateEmail(email) {
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return regex.test(email) ? null : "Invalid email address format";
@@ -14,7 +11,6 @@ async function buildEmails(businessId) {
     .select("*")
     .eq("business_id", businessId);
   if (emailsError) throw emailsError;
-  // (Mapping logic as before)
   const emails = await Promise.all(
     emailsData.map(async (email) => {
       const { data: emailTypeData, error: emailTypeError } = await supabase

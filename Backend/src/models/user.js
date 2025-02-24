@@ -1,7 +1,6 @@
 const supabase = require("../config/supabaseClient");
 const bcrypt = require("bcrypt");
 
-// Fetch a user by username
 async function getUserByUsername(username) {
   const { data, error } = await supabase
     .from("user")
@@ -22,7 +21,6 @@ async function getUserById(id) {
   return data;
 }
 
-// Create a new user record
 async function createUser({
   name,
   nic,
@@ -52,7 +50,6 @@ async function createUser({
   return data[0];
 }
 
-// Update a user record by username
 async function updateUser(username, updateData) {
   const { data, error } = await supabase
     .from("user")
@@ -62,7 +59,6 @@ async function updateUser(username, updateData) {
   return data;
 }
 
-// Delete a user record by username
 async function deleteUser(username) {
   const { data, error } = await supabase
     .from("user")
