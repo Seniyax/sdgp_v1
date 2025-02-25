@@ -11,28 +11,47 @@ import menu from "../assets/menu.png";
 import seating from "../assets/seating.png";
 import reserve from "../assets/reserve.png";
 import organization from "../assets/organization.png";
+import background from "../assets/Free Video Background Clock Loop No Text | Stocks Footage Time Lapse | Time Machine.mov";
 import { FaEnvelope, FaPhone, FaInstagram } from "react-icons/fa";
 
 import { motion } from 'framer-motion';
 import "../style/Home.css";
+import Navbar from "../components/Navbar.jsx";
 
 
 const Home = () => {
     return (
         <div className="home-container">
-            {/* Navigation Bar */}
-            <nav className="navbar">
-                <img src={logo3} alt="Logo" className="logo" />
-                <ul className="nav-links">
-                    <li><a href="#hero">Home</a></li>
-                    <li><a href="#what-we-do">What We Do</a></li>
-                    <li><a href="#features">Features</a></li>
-                    <li><a href="#team">Team</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
-            </nav>
+            <Navbar />
 
-            {/* Hero Section */}
+
+            <section className="Background">
+                <div className="container">
+                    <div className="background-wrapper">
+                        <img src={background} alt="Background" className="background-image" />
+                        <motion.div
+                            className="hero-content"
+                            initial={{ opacity: 0, y: -50 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 1 }}
+                        >
+                            <h1 className="header-text">SlotZi</h1>
+                            <p>Effortless Reservations, Zero Hassle</p>
+                            <p>The Future of Queue Management!</p>
+
+                            <motion.button
+                                className="cta-button"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                            >
+                                Download
+                            </motion.button>
+                        </motion.div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Hero Section
             <section className="hero-section" id="hero">
                 <div className="bg">
                     <div className="semicircle top"></div>
@@ -53,7 +72,7 @@ const Home = () => {
                         REGISTER
                     </motion.button>
                 </motion.div>
-            </section>
+            </section>*/}
 
             {/* What We Do Section */}
             <section className="what-we-do" id="what-we-do">
