@@ -56,11 +56,22 @@ async function createBusinessRelations(
   return data;
 }
 
-async function getBusinessRelationsByUser(user_id) {
+async function getBusinessRelationsByUser(userId) {
   const { data, error } = await supabase
     .from("business_has_user")
-    .select("*")
-    .eq("user_id", user_id);
+    .select(
+      `
+    id,
+    user_id,
+    business_id,
+    type,
+    is_verified,
+    verification_token,
+    supervisor_id,
+    business (name)
+  `
+    )
+    .eq("user_id", userId);
   if (error) throw error;
   return data;
 }

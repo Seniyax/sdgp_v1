@@ -6,6 +6,6 @@ const {
 } = require("../controllers/bHUController");
 
 router.post("/create-business", createBusinessRelation);
-router.get("/get-businesses", getBusinessRelations);
+router.post("/get-businesses", getBusinessRelations);
 
 module.exports = router;
