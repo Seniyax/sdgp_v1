@@ -1,5 +1,4 @@
 require("dotenv").config();
-const supabase = require("../config/supabaseClient");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const { getUserByUsername } = require("../models/user");
@@ -10,8 +9,9 @@ const {
   processBHUUpdate,
   buildUsersForBusiness,
 } = require("../models/businessHasUser");
+const { getOneBusiness } = require("../models/business");
 
-async function sendVerificationEmail(email, token) {
+async function sendVerificationEmail(email, token, name, businessName, type) {
   const verificationLink = `http://localhost:3000/api/email/verify-user-by-supervisor?token=${token}`;
   const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -21,20 +21,21 @@ async function sendVerificationEmail(email, token) {
     },
   });
   const mailOptions = {
-    from: "process.env.EMAIL_USER",
+    from: process.env.EMAIL_USER,
     to: email,
-    subject: "Verify Your Business Relation",
+    subject: "Verify Join Request",
     html: `
       <html>
         <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
           <div style="max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 5px; text-align: center;">
-            <h2 style="color: #333;">Welcome to SlotZi!</h2>
-            <p style="color: #555;">A new business relation request requires your verification.</p>
+            <h2 style="color: red;"><b>Attention!!!</b></h2>
+            <p style="color: #555;">A new business join request requires your verification.</p>
+            <p style="color: #555;">${name} wants to join ${businessName} as an ${type}</p>
             <a href="${verificationLink}" 
                style="display: inline-block; padding: 10px 20px; margin: 20px 0; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">
-              Verify Relation
+              Verify Join Request
             </a>
-            <p style="color: #888; font-size: 12px;">If you did not request this, please ignore this email.</p>
+            <p style="color: #888; font-size: 12px;">If you are unaware of this request, please ignore this email.</p>
           </div>
         </body>
       </html>
@@ -46,29 +47,26 @@ async function sendVerificationEmail(email, token) {
 
 exports.createBusinessRelation = async (req, res) => {
   try {
-    const { business_id, username, type, supervisor_id } = req.body;
-
-    if (!business_id || !username || !type || !supervisor_id) {
+    const { business_id, username, type, supervisor_username } = req.body;
+    if (!business_id || !username || !type || !supervisor_username) {
       return res.status(400).json({
         success: false,
-        message: "business_id, username, type, and supervisor_id are required",
+        message:
+          "business_id, username, type, and supervisor_username are required",
       });
     }
-
     if (type === "Owner") {
       return res.status(400).json({
         success: false,
         message: "Cannot create a business relation as Owner",
       });
     }
-
     if (!["Admin", "Staff"].includes(type)) {
       return res.status(400).json({
         success: false,
         message: "Invalid user type; allowed types: Admin, Staff",
       });
     }
-
     const user = await getUserByUsername(username);
     if (!user) {
       return res.status(404).json({
@@ -76,39 +74,31 @@ exports.createBusinessRelation = async (req, res) => {
         message: "User not found",
       });
     }
-
-    const { data: supervisorData, error: supervisorError } = await supabase
-      .from("user")
-      .select("email, username, type")
-      .eq("id", supervisor_id)
-      .maybeSingle();
-    if (supervisorError) throw supervisorError;
-    if (!supervisorData) {
+    const business = await getOneBusiness(business_id);
+    if (!business) {
+      return res.status(404).json({
+        success: false,
+        message: "Business not found",
+      });
+    }
+    const supervisor = await getUserByUsername(supervisor_username);
+    if (!supervisor) {
       return res.status(404).json({
         success: false,
         message: "Supervisor not found",
       });
     }
-    if (supervisorData.type === "Staff") {
-      return res.status(400).json({
-        success: false,
-        message: "Supervisor cannot be Staff",
-      });
-    }
-
     const verificationToken = crypto.randomBytes(32).toString("hex");
-
     const bhuRecord = await createBusinessRelation({
       user_id: user.id,
       business_id,
       type,
-      supervisor_id,
+      supervisor_id: supervisor.id,
       verification_token: verificationToken,
       is_verified: false,
     });
 
-    await sendVerificationEmail(supervisorData.email, verificationToken);
-
+    await sendVerificationEmail(supervisor.email, verificationToken, user.name, business.name, type);
     return res.status(201).json({
       success: true,
       message:
