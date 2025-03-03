@@ -258,6 +258,7 @@ exports.updateBusiness = async (req, res) => {
         message: "Invalid username",
       });
     }
+
     currentBusiness = await getOneBusiness(business_id);
     if (!currentBusiness) {
       return res.status(404).json({
@@ -265,6 +266,7 @@ exports.updateBusiness = async (req, res) => {
         message: "Business not found",
       });
     }
+
     rollbackData.businessBackup = {
       name: currentBusiness.name,
       category_id: currentBusiness.category_id,
@@ -321,7 +323,7 @@ exports.updateBusiness = async (req, res) => {
             updateEmail.email_address !== primaryEmail.email_address
           ) {
             await updatePrimaryEmail(
-              primaryEmail.id,
+              primaryEmail.email_id,
               updateEmail.email_address
             );
             changeLogs.push(
@@ -371,12 +373,6 @@ exports.updateBusiness = async (req, res) => {
       changeLogs.push("Contacts updated");
     }
 
-    if (updates.contacts) {
-      await deleteContacts(business_id);
-      await createContacts(business_id, updates.contacts);
-      changeLogs.push("Contacts updated");
-    }
-
     if (updates.user_relations) {
       await deleteBusinessRelations(business_id);
       await createBusinessRelations(
@@ -391,8 +387,11 @@ exports.updateBusiness = async (req, res) => {
       changeLogs.push("No changes were made.");
     }
     const logDescription = "Business updated:\n" + changeLogs.join("\n");
+    console.log("hello");
+
     await insertBusinessUpdateLog(
       currentBusiness.owner_id || currentBusiness.id,
+      supervisor.id,
       logDescription
     );
 

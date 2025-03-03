@@ -20,7 +20,7 @@ async function buildEmails(businessId) {
         .maybeSingle();
       if (emailTypeError) throw emailTypeError;
       return {
-        email_Id: email.id,
+        email_id: email.id,
         email_address: email.email_address,
         email_type: emailTypeData ? emailTypeData.name : "",
       };
