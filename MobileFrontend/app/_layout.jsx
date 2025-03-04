@@ -1,13 +1,13 @@
-import { StyleSheet, Text, View } from 'react-native'
-import {Slot, Stack } from 'expo-router'
+import { Stack } from 'expo-router';
 
-const RootLayout = () => {
+export default function Layout() {
   return (
-    <Stack>
-        <Stack.Screen name='index' options={{headerShowdown:  false}}/>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" options={{ headerShown: false, gestureEnabled: false }} />
+      <Stack.Screen name="home" options={{ headerShown: false, gestureEnabled: false }} />
+      <Stack.Screen name="restaurants" options={{ title: "Restaurants", headerShown: true }} />
+      <Stack.Screen name="tableSelect" options={{ title: "Table Selection", headerShown: true }} />
+      <Stack.Screen name="payments" options={{ title: "Payments", headerShown: true }} />
     </Stack>
-  )
+  );
 }
-
-export default RootLayout
-
