@@ -1,0 +1,35 @@
+/* Button.css */
+.button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    text-align: center;
+}
+
+.button:hover {
+    opacity: 0.9;
+}
+
+/* Purple button style */
+.button.purple {
+    background-color: #6a0dad;
+    color: white;
+}
+
+.button.purple:hover {
+    background-color: #5c0a9b;
+}
+
+/* Black button style */
+.button.black {
+    background-color: #333;
+    color: white;
+}
+
+.button.black:hover {
+    background-color: #1a1a1a;
+}

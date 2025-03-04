@@ -1,0 +1,83 @@
+/* Navigation Bar */
+.navbar {
+    position: fixed;
+    width: 100%;
+    height: 50px;
+    display: flex;
+    color: ivory;
+    align-items: center;
+    box-shadow: none;
+    transition: background 0.3s ease-in-out;
+    z-index: 1000;
+}
+
+/* Logo Styling */
+.navbar .logo {
+    margin: 20px 10px;
+    left: 5%;
+    height: 50px;
+}
+
+/* Navigation Links */
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 5px;
+    margin-left: 23%;
+}
+
+.nav-links li {
+    position: relative;
+    align-items: center;
+    color: ivory;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #420842;
+    font-size: 1.1em;
+    font-weight: 500;
+    transition: color 0.3s ease-in-out;
+}
+
+/* Hover Effect */
+.nav-links a:hover {
+    color: #420842; /* Change text color on hover */
+}
+
+/* Underline Effect */
+.nav-links a::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -3px;
+    width: 0;
+    height: 3px;
+    background-color: #420842;
+    transition: width 0.3s ease-in-out, left 0.3s ease-in-out;
+}
+
+.nav-links a:hover::after {
+    width: 50%;
+    left: 43%;
+}
+
+/* Responsive Navbar */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        padding: 10px 20px;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+        padding-top: 10px;
+    }
+
+    .nav-links a {
+        padding: 10px;
+        display: block;
+    }
+}
