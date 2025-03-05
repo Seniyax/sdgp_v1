@@ -30,7 +30,7 @@ router.get(
 // Get reservations for a business
 router.get(
     '/business/:business_id',
-    asyncHandler(reservationController.getRestaurantReservations)
+    asyncHandler(reservationController.getBusinessReservations)
 );
 
 // Update a reservation
