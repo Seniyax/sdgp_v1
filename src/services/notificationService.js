@@ -312,14 +312,13 @@ class NotificationService {
       sendPush: true
     });
   }
-
-  /**
+ /**
    * Create business notification about new reservation
    * @param {Object} reservation New reservation object
    * @param {number} businessOwnerId Business owner user ID
    * @returns {Promise<Object>} Created notification
    */
-  async createBusinessReservationNotification(reservation, businessOwnerId) {
+ async createBusinessReservationNotification(reservation, businessOwnerId) {
     return this.createNotification({
       user_id: businessOwnerId,
       business_id: reservation.business_id,
@@ -330,6 +329,8 @@ class NotificationService {
       sendPush: true
     });
   }
+
+ 
 }
 
 module.exports = new NotificationService();
