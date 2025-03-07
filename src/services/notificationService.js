@@ -1,14 +1,5 @@
 const supabase = require('../config/supabaseClient');
 const logger = require('../utils/logger');
-const fcm = require('firebase-admin');
-
-// Initialize Firebase Admin SDK if not already initialized
-// This should be done in your main app.js file
-// if (!fcm.apps.length) {
-//   fcm.initializeApp({
-//     credential: fcm.credential.cert(require('../config/firebase-service-account.json'))
-//   });
-// }
 
 class NotificationService {
   /**
@@ -34,9 +25,12 @@ class NotificationService {
 
       if (error) throw error;
       
-      // Send push notification if enabled
+      // For in-app notifications, Supabase Realtime will automatically send updates
+      // to subscribed clients via WebSockets
+      
+      // If push notification is enabled, trigger it
       if (data.sendPush) {
-        await this.sendPushNotification(data.user_id, data.title, data.message);
+        await this.triggerPushNotification(data.user_id, data.title, data.message);
       }
       
       return notification;
@@ -179,13 +173,15 @@ class NotificationService {
   }
 
   /**
-   * Send push notification to a user's devices
+   * Trigger push notification to a user's devices
+   * This will be handled by the mobile app subscribing to Supabase Realtime
+   * and/or a Supabase Edge Function that forwards to a push notification service
    * @param {number} userId User ID
    * @param {string} title Notification title
    * @param {string} message Notification message
    * @returns {Promise<boolean>} Success status
    */
-  async sendPushNotification(userId, title, message) {
+  async triggerPushNotification(userId, title, message) {
     try {
       // Get user's device tokens
       const { data: tokens, error } = await supabase
@@ -200,47 +196,18 @@ class NotificationService {
         return false;
       }
       
-      // Prepare the FCM message
-      const androidTokens = tokens
-        .filter(token => token.device_type === 'ANDROID')
-        .map(token => token.device_token);
-        
-      const iosTokens = tokens
-        .filter(token => token.device_type === 'IOS')
-        .map(token => token.device_token);
+      // For actual push notifications, you would either:
+      // 1. Call a Supabase Edge Function that forwards to a push service
+      // 2. Have the mobile app subscribe to Supabase Realtime and handle notifications
+      // 3. Implement your own push notification service
       
-      // Send to Android devices
-      if (androidTokens.length > 0) {
-        const androidMessage = {
-          notification: {
-            title: title,
-            body: message
-          },
-          tokens: androidTokens
-        };
-        
-        await fcm.messaging().sendMulticast(androidMessage);
-      }
-      
-      // Send to iOS devices
-      if (iosTokens.length > 0) {
-        const iosMessage = {
-          notification: {
-            title: title,
-            body: message,
-            sound: 'default'
-          },
-          tokens: iosTokens
-        };
-        
-        await fcm.messaging().sendMulticast(iosMessage);
-      }
+      // This is a placeholder for the actual implementation
+      logger.info(`Push notification triggered for user ${userId} with ${tokens.length} devices`);
       
       return true;
     } catch (error) {
-      logger.error(`Error sending push notification: ${error.message}`, { error });
+      logger.error(`Error triggering push notification: ${error.message}`, { error });
       // Don't throw the error, just log it and return false
-      // This prevents notification errors from breaking reservation flows
       return false;
     }
   }
@@ -257,7 +224,7 @@ class NotificationService {
       reservation_id: reservation.id,
       type: 'RESERVATION_CONFIRMATION',
       title: 'Reservation Confirmed',
-      message: `Your reservation at ${reservation.business.name} on ${new Date(reservation.start_time).toLocaleDateString()} has been confirmed.`,
+      message: `Your reservation on ${new Date(reservation.start_time).toLocaleDateString()} has been confirmed.`,
       sendPush: true
     });
   }
@@ -274,7 +241,7 @@ class NotificationService {
       reservation_id: reservation.id,
       type: 'RESERVATION_UPDATE',
       title: 'Reservation Updated',
-      message: `Your reservation at ${reservation.business.name} has been updated.`,
+      message: `Your reservation has been updated to ${new Date(reservation.start_time).toLocaleDateString()} at ${new Date(reservation.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`,
       sendPush: true
     });
   }
@@ -291,7 +258,7 @@ class NotificationService {
       reservation_id: reservation.id,
       type: 'RESERVATION_CANCELLATION',
       title: 'Reservation Cancelled',
-      message: `Your reservation at ${reservation.business.name} on ${new Date(reservation.start_time).toLocaleDateString()} has been cancelled.`,
+      message: `Your reservation on ${new Date(reservation.start_time).toLocaleDateString()} has been cancelled.`,
       sendPush: true
     });
   }
@@ -308,17 +275,18 @@ class NotificationService {
       reservation_id: reservation.id,
       type: 'RESERVATION_REMINDER',
       title: 'Upcoming Reservation',
-      message: `Reminder: You have a reservation at ${reservation.business.name} tomorrow at ${new Date(reservation.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`,
+      message: `Reminder: You have a reservation tomorrow at ${new Date(reservation.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`,
       sendPush: true
     });
   }
- /**
+
+  /**
    * Create business notification about new reservation
    * @param {Object} reservation New reservation object
    * @param {number} businessOwnerId Business owner user ID
    * @returns {Promise<Object>} Created notification
    */
- async createBusinessReservationNotification(reservation, businessOwnerId) {
+  async createBusinessReservationNotification(reservation, businessOwnerId) {
     return this.createNotification({
       user_id: businessOwnerId,
       business_id: reservation.business_id,
@@ -329,8 +297,6 @@ class NotificationService {
       sendPush: true
     });
   }
-
- 
 }
 
 module.exports = new NotificationService();
