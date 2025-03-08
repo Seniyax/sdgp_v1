@@ -1,0 +1,10 @@
+{"code":"42P01","details":null,"hint":null,"level":"error","message":"relation \"public.categories\" does not exist","timestamp":"2025-02-16 09:58:09"}
+{"code":"42P01","details":null,"hint":null,"level":"error","message":"relation \"public.categories\" does not exist","timestamp":"2025-02-16 16:23:47"}
+{"code":"PGRST116","details":"The result contains 0 rows","hint":null,"level":"error","message":"JSON object requested, multiple (or no) rows returned","timestamp":"2025-03-02 17:45:18"}
+{"code":"PGRST116","details":"The result contains 0 rows","hint":null,"level":"error","message":"JSON object requested, multiple (or no) rows returned","timestamp":"2025-03-02 17:46:05"}
+{"code":"PGRST116","details":"The result contains 0 rows","hint":null,"level":"error","message":"JSON object requested, multiple (or no) rows returned","timestamp":"2025-03-02 17:46:12"}
+{"code":"PGRST116","details":"The result contains 0 rows","hint":null,"level":"error","message":"JSON object requested, multiple (or no) rows returned","timestamp":"2025-03-02 17:46:18"}
+{"level":"error","message":"Error fetching available slots: column slot.day_of_week does not exist","timestamp":"2025-03-02 17:46:45"}
+{"level":"error","message":"Error fetching available slots: column slot.day_of_week does not exist","timestamp":"2025-03-02 17:47:02"}
+{"level":"error","message":"Error fetching available slots: column slot.day_of_week does not exist","timestamp":"2025-03-02 17:47:19"}
+{"code":"PGRST116","details":"The result contains 0 rows","hint":null,"level":"error","message":"JSON object requested, multiple (or no) rows returned","timestamp":"2025-03-02 17:48:20"}
