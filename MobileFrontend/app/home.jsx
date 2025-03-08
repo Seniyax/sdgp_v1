@@ -1,46 +1,86 @@
-import React, { useRef } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { 
+  StyleSheet, 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  ScrollView, 
+  TextInput, 
+  FlatList 
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import LottieView from 'lottie-react-native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function HomeScreen() {
   const animationRef = useRef(null);
   const router = useRouter();
-  
-  // Navigation handler for different categories
-  const handleCategoryPress = (category) => {
-    switch(category) {
-      case 'Restaurant':
-        router.push('/Restaurants');
-        break;
-      case 'Meeting Rooms':
-        router.push('/MeetingRooms');
-        break;
-      case 'Customer Care Center':
-        router.push('/CustomerCareCenter');
-        break;
-      case 'Education Center':
-        router.push('/EducationCenter');
-        break;
-      case 'Others':
-        router.push('/Others');
-        break;
-      default:
-        console.log('No navigation defined for this category');
-    }
-  };
-  
-  // Array of categories for dynamic rendering
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Expanded categories with more details
   const categories = [
-    'Restaurant', 
-    'Meeting Rooms', 
-    'Customer Care Center', 
-    'Education Center', 
-    'Others'
+    { 
+      id: 1, 
+      name: 'Restaurants', 
+      icon: 'restaurant-outline',
+      route: '/Restaurants'
+    },
+    { 
+      id: 2, 
+      name: 'Meeting Rooms', 
+      icon: 'business-outline',
+      route: '/MeetingRooms'
+    },
+    { 
+      id: 3, 
+      name: 'Customer Care', 
+      icon: 'people-outline',
+      route: '/CustomerCareCenter'
+    },
+    { 
+      id: 4, 
+      name: 'Education', 
+      icon: 'school-outline',
+      route: '/EducationCenter'
+    },
+    { 
+      id: 5, 
+      name: 'Others', 
+      icon: 'ellipsis-horizontal-outline',
+      route: '/Others'
+    },
   ];
-  
+
+  // Navigation handler for different categories
+  const handleCategoryPress = (route) => {
+    router.push(route);
+  };
+
+  // Filter categories based on search query
+  const filteredCategories = categories.filter(category => 
+    category.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Render individual category item
+  const renderCategoryItem = ({ item }) => (
+    <TouchableOpacity 
+      style={styles.categoryButton}
+      onPress={() => handleCategoryPress(item.route)}
+    >
+      <Ionicons 
+        name={item.icon} 
+        size={wp('10%')} 
+        color="#420F54" 
+        style={styles.categoryIcon}
+      />
+      <Text style={styles.categoryButtonText} numberOfLines={2}>
+        {item.name}
+      </Text>
+    </TouchableOpacity>
+  );
+
   return (
     <ScrollView 
       contentContainerStyle={styles.container}
@@ -65,20 +105,32 @@ export default function HomeScreen() {
         </Text>
       </View>
       
-      {/* Category Selection Section */}
-      <View style={styles.categoryContainer}>
-        {categories.map((category, index) => (
-          <TouchableOpacity 
-            key={index}
-            style={styles.categoryButton}
-            onPress={() => handleCategoryPress(category)}
-          >
-            <Text style={styles.categoryButtonText} numberOfLines={2} adjustsFontSizeToFit>
-              {category}
-            </Text>
-          </TouchableOpacity>
-        ))}
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <Ionicons 
+          name="search-outline" 
+          size={wp('6%')} 
+          color="#420F54" 
+          style={styles.searchIcon}
+        />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search categories..."
+          placeholderTextColor="#888"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
       </View>
+      
+      {/* Category Grid */}
+      <FlatList
+        data={filteredCategories}
+        renderItem={renderCategoryItem}
+        keyExtractor={(item) => item.id.toString()}
+        numColumns={2}
+        columnWrapperStyle={styles.categoryGridRow}
+        contentContainerStyle={styles.categoryGridContainer}
+      />
       
       <StatusBar style="auto" />
     </ScrollView>
@@ -91,12 +143,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    paddingBottom: hp('10%'), // Add some bottom padding
+    paddingBottom: hp('5%'),
   },
   animationContainer: {
     alignItems: 'center',
     width: '100%',
-    marginTop: hp('0%'), // Adjusted to give some top margin
+    marginTop: hp('0%'),
   },
   animation: {
     width: wp('140%'),
@@ -105,7 +157,7 @@ const styles = StyleSheet.create({
   textContainer: {
     alignItems: 'center',
     width: wp('90%'),
-    marginVertical: hp('2%'),
+    marginVertical: hp('1%'),
     marginTop: hp('-15%')
   },
   chooseText: {
@@ -123,17 +175,37 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: wp('5%'),
   },
-  categoryContainer: {
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: wp('90%'),
+    backgroundColor: '#F3E4FF',
+    borderRadius: wp('5%'),
+    paddingHorizontal: wp('4%'),
+    marginVertical: hp('2%'),
+  },
+  searchIcon: {
+    marginRight: wp('2%'),
+  },
+  searchInput: {
+    flex: 1,
+    height: hp('6%'),
+    fontFamily: 'Poppins-Regular',
+    fontSize: wp('4%'),
+  },
+  categoryGridContainer: {
     width: wp('90%'),
     alignItems: 'center',
-    marginTop: hp('2%'),
+  },
+  categoryGridRow: {
+    justifyContent: 'space-between',
+    marginBottom: hp('2%'),
   },
   categoryButton: {
     backgroundColor: '#F3E4FF',
     borderRadius: wp('6%'),
-    width: wp('90%'),
-    height: hp('30%'),
-    marginVertical: hp('1%'),
+    width: wp('42%'),
+    height: hp('22%'),
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -141,12 +213,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 5,
     elevation: 6,
-    paddingHorizontal: wp('5%'),
+    paddingHorizontal: wp('2%'),
+  },
+  categoryIcon: {
+    marginBottom: hp('1%'),
   },
   categoryButtonText: {
     color: '#420F54',
     fontFamily: 'Poppins-Bold',
-    fontSize: wp('6%'),
+    fontSize: wp('4.5%'),
     textAlign: 'center',
     width: '90%',
   },

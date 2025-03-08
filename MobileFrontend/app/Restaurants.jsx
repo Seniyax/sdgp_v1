@@ -5,7 +5,6 @@ const Restaurants = () => {
   return (
     <View>
       <Text>Restaurants</Text>
-      <Link href="/tableSelect">Table Select</Link>
     </View>
   );
 };
