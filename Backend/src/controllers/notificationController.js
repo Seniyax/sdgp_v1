@@ -11,11 +11,11 @@ class NotificationController {
    */
   async getUserNotifications(req, res) {
     const { unread_only } = req.query;
-    const userId = req.user.id; // Assuming auth middleware sets req.user
+    const customerId = req.user.id; // Assuming auth middleware sets req.user
     
     try {
       const notifications = await notificationService.getUserNotifications(
-        userId,
+        customerId,
         unread_only === 'true'
       );
       
@@ -37,13 +37,13 @@ class NotificationController {
    * @param {Object} res Express response
    */
   async getUnreadCount(req, res) {
-    const userId = req.user.id; // Assuming auth middleware sets req.user
+    const customerId = req.user.id; // Assuming auth middleware sets req.user
     
     try {
       const { count, error } = await supabase
-        .from('notifications')
+        .from('notification')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId)
+        .eq('customer_id', customerId)
         .eq('is_read', false);
         
       if (error) throw error;
@@ -67,15 +67,15 @@ class NotificationController {
    */
   async markAsRead(req, res) {
     const { id } = req.params;
-    const userId = req.user.id; // Assuming auth middleware sets req.user
+    const customerId = req.user.id; // Assuming auth middleware sets req.user
     
     try {
       // First check if the notification belongs to the user
       const { data: notification, error: fetchError } = await supabase
-        .from('notifications')
+        .from('notification')
         .select('*')
         .eq('id', id)
-        .eq('user_id', userId)
+        .eq('customer_id', customerId)
         .single();
         
       if (fetchError) {
@@ -105,10 +105,10 @@ class NotificationController {
    * @param {Object} res Express response
    */
   async markAllAsRead(req, res) {
-    const userId = req.user.id; // Assuming auth middleware sets req.user
+    const customerId = req.user.id; // Assuming auth middleware sets req.user
     
     try {
-      await notificationService.markAllAsRead(userId);
+      await notificationService.markAllAsRead(customerId);
       
       return ApiResponse.success(res, {
         message: 'All notifications marked as read'
@@ -129,7 +129,7 @@ class NotificationController {
    */
   async registerDeviceToken(req, res) {
     const { device_token, device_type } = req.body;
-    const userId = req.user.id; // Assuming auth middleware sets req.user
+    const customerId = req.user.id; // Assuming auth middleware sets req.user
     
     if (!device_token || !device_type) {
       return ApiResponse.badRequest(res, {
@@ -137,17 +137,20 @@ class NotificationController {
       });
     }
     
-    if (!['ANDROID', 'IOS'].includes(device_type)) {
+    // Make sure device_type matches the expected values in the DB schema
+    const normalizedDeviceType = device_type.charAt(0).toUpperCase() + device_type.slice(1).toLowerCase();
+    
+    if (!['Android', 'iOS'].includes(normalizedDeviceType)) {
       return ApiResponse.badRequest(res, {
-        message: 'Device type must be ANDROID or IOS'
+        message: "Device type must be 'Android' or 'iOS'"
       });
     }
     
     try {
       const token = await notificationService.registerDeviceToken(
-        userId,
+        customerId,
         device_token,
-        device_type
+        normalizedDeviceType
       );
       
       return ApiResponse.success(res, {
@@ -170,7 +173,7 @@ class NotificationController {
    */
   async deleteDeviceToken(req, res) {
     const { device_token } = req.body;
-    const userId = req.user.id; // Assuming auth middleware sets req.user
+    const customerId = req.user.id; // Assuming auth middleware sets req.user
     
     if (!device_token) {
       return ApiResponse.badRequest(res, {
@@ -180,10 +183,10 @@ class NotificationController {
     
     try {
       const { error } = await supabase
-        .from('device_tokens')
+        .from('device_token')
         .delete()
         .eq('device_token', device_token)
-        .eq('user_id', userId);
+        .eq('customer_id', customerId);
         
       if (error) throw error;
       
@@ -207,16 +210,16 @@ class NotificationController {
    * @param {Object} res Express response 
    */
   async subscribeToNotifications(req, res) {
-    const userId = req.user.id; // Assuming auth middleware sets req.user
+    const customerId = req.user.id; // Assuming auth middleware sets req.user
     
     // The client will need to use Supabase's subscribe functionality
     // We're just providing instructions here
     return ApiResponse.success(res, {
-      message: 'To receive real-time notifications, subscribe to the notifications table with your user ID',
+      message: 'To receive real-time notifications, subscribe to the notification table with your customer ID',
       data: {
-        channel: 'notifications',
-        filter: `user_id=eq.${userId}`,
-        instructions: 'Use supabase.channel(channel).on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter }, callback).subscribe()'
+        channel: 'notification',
+        filter: `customer_id=eq.${customerId}`,
+        instructions: 'Use supabase.channel(channel).on("postgres_changes", { event: "*", schema: "public", table: "notification", filter }, callback).subscribe()'
       }
     });
   }
