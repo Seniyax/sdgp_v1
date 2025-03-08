@@ -1,0 +1,282 @@
+
+
+/* Custom colors (matching the Tailwind ones used in the component) */
+:root {
+    --color-primary: #3b82f6; /* blue-500 */
+    --color-primary-dark: #2563eb; /* blue-600 */
+    --color-success: #10b981; /* green-500 */
+    --color-success-dark: #059669; /* green-600 */
+    --color-warning: #f59e0b; /* amber-500 */
+    --color-danger: #ef4444; /* red-500 */
+    --color-purple: #8b5cf6; /* purple-500 */
+    --color-purple-dark: #7c3aed; /* purple-600 */
+    --color-gray-50: #f9fafb;
+    --color-gray-100: #f3f4f6;
+    --color-gray-200: #e5e7eb;
+    --color-gray-300: #d1d5db;
+    --color-gray-400: #9ca3af;
+    --color-gray-500: #6b7280;
+    --color-gray-600: #4b5563;
+    --color-gray-700: #374151;
+    --color-gray-800: #1f2937;
+    --color-gray-900: #111827;
+}
+
+/* General page styles */
+body {
+    background-color: var(--color-gray-50);
+    color: var(--color-gray-800);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* Dashboard container */
+.dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+/* Card styles */
+.dashboard-card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s ease-in-out;
+}
+
+.dashboard-card:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Dashboard header */
+.dashboard-title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: var(--color-gray-800);
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-subtitle {
+    color: var(--color-gray-600);
+    margin-bottom: 2rem;
+}
+
+/* Summary cards */
+.summary-card {
+    padding: 1.5rem;
+}
+
+.summary-card h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-gray-700);
+    margin-bottom: 0.5rem;
+}
+
+.summary-card .number {
+    font-size: 1.875rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.summary-card .description {
+    font-size: 0.875rem;
+    color: var(--color-gray-500);
+}
+
+.summary-card.reservations .number {
+    color: var(--color-primary-dark);
+}
+
+.summary-card.guests .number {
+    color: var(--color-success-dark);
+}
+
+.summary-card.requests .number {
+    color: var(--color-purple-dark);
+}
+
+/* Filter controls */
+.filter-controls {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-control select,
+.filter-control input {
+    padding: 0.5rem;
+    border: 1px solid var(--color-gray-300);
+    border-radius: 0.25rem;
+}
+
+.filter-control select:focus,
+.filter-control input:focus {
+    outline: 2px solid var(--color-primary);
+    border-color: transparent;
+}
+
+.search-input {
+    position: relative;
+}
+
+.search-input input {
+    padding-left: 2.5rem;
+    width: 100%;
+}
+
+.search-input svg {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-gray-400);
+}
+
+/* Distribution bars */
+.distribution-section h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-gray-700);
+    margin-bottom: 1rem;
+}
+
+.distribution-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.distribution-label {
+    display: flex;
+    align-items: center;
+    min-width: 100px;
+}
+
+.distribution-label svg {
+    margin-right: 0.5rem;
+    color: var(--color-gray-500);
+}
+
+.distribution-bar-container {
+    flex: 1;
+    height: 0.75rem;
+    background-color: var(--color-gray-200);
+    border-radius: 9999px;
+    margin: 0 0.5rem;
+}
+
+.distribution-bar {
+    height: 100%;
+    border-radius: 9999px;
+}
+
+.distribution-bar.time {
+    background-color: var(--color-primary);
+}
+
+.distribution-bar.area {
+    background-color: var(--color-success);
+}
+
+.distribution-count {
+    font-weight: 500;
+    min-width: 2rem;
+    text-align: right;
+}
+
+/* Table styles */
+.reservations-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.reservations-table th {
+    background-color: var(--color-gray-50);
+    font-weight: 500;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-gray-500);
+    padding: 0.75rem 1.5rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-gray-200);
+}
+
+.reservations-table td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--color-gray-200);
+}
+
+.reservations-table tbody tr:hover {
+    background-color: var(--color-gray-50);
+}
+
+.customer-cell {
+    display: flex;
+    align-items: center;
+}
+
+.customer-avatar {
+    width: 2rem;
+    height: 2rem;
+    background-color: var(--color-gray-200);
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+}
+
+.customer-name {
+    font-weight: 500;
+    color: var(--color-gray-900);
+}
+
+.customer-email, .customer-phone {
+    font-size: 0.75rem;
+    color: var(--color-gray-500);
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-badge.confirmed {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--color-success-dark);
+}
+
+.status-badge.pending {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--color-warning);
+}
+
+/* Responsive adaptations */
+@media (max-width: 768px) {
+    .filter-controls {
+        flex-direction: column;
+    }
+
+    .filter-control, .search-input {
+        width: 100%;
+    }
+
+    .reservations-table {
+        display: block;
+        overflow-x: auto;
+    }
+}
