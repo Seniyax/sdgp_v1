@@ -57,6 +57,7 @@ const LoginPage = () => {
                                 required
                             />
                         </div>
+                        
 
                         <div className="form-footer">
                             <div className="remember-me">
