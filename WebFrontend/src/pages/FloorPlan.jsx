@@ -10,16 +10,19 @@ function FloorPlanDesigner() {
   const [height, setHeight] = useState(0);
   const [floorCount, setFloorCount] = useState(0);
   const [currentFloor, setCurrentFloor] = useState(0);
+  const [floorNames, setFloorNames] = useState([]);
 
-  // Use arrays to store both grey shapes and tables for each floor
   const [floorShapes, setFloorShapes] = useState([]);
   const [floorTables, setFloorTables] = useState([]);
 
-  // Handle Step 1 submission
-  const handleStep1Submit = (widthValue, heightValue, floorCountValue) => {
-    // If we're going back to step 1, preserve existing shapes and tables
+  // Receive width, height, floor count, and floor names from Step 1
+  const handleStep1Submit = (
+    widthValue,
+    heightValue,
+    floorCountValue,
+    names
+  ) => {
     if (currentStep > 1) {
-      // If floor count increased, add new empty floors
       if (floorCountValue > floorCount) {
         const newFloorShapes = [...floorShapes];
         const newFloorTables = [...floorTables];
@@ -29,66 +32,57 @@ function FloorPlanDesigner() {
         }
         setFloorShapes(newFloorShapes);
         setFloorTables(newFloorTables);
-      }
-      // If floor count decreased, remove extra floors
-      else if (floorCountValue < floorCount) {
-        const newFloorShapes = floorShapes.slice(0, floorCountValue);
-        const newFloorTables = floorTables.slice(0, floorCountValue);
-        setFloorShapes(newFloorShapes);
-        setFloorTables(newFloorTables);
+      } else if (floorCountValue < floorCount) {
+        setFloorShapes(floorShapes.slice(0, floorCountValue));
+        setFloorTables(floorTables.slice(0, floorCountValue));
       }
     }
-
     setWidth(widthValue);
     setHeight(heightValue);
     setFloorCount(floorCountValue);
+    setFloorNames(names);
     setCurrentStep(2);
     setCurrentFloor(0);
   };
 
   const handleNextStep = (shapes) => {
     if (currentStep === 2) {
-      // Update grey shapes when moving from step 2 to 3
-      const updatedFloorShapes = [...floorShapes];
-      // Ensure we preserve all properties including rotation
-      updatedFloorShapes[currentFloor] = shapes.map((shape) => ({
+      const updated = [...floorShapes];
+      updated[currentFloor] = shapes.map((shape) => ({
         ...shape,
         rotation: shape.rotation || 0,
       }));
-      setFloorShapes(updatedFloorShapes);
+      setFloorShapes(updated);
     }
     setCurrentStep(currentStep + 1);
   };
 
   const handlePreviousStep = () => {
     if (currentStep === 3) {
-      // Store the current tables before going back
-      const updatedFloorTables = [...floorTables];
-      updatedFloorTables[currentFloor] = floorTables[currentFloor];
-      setFloorTables(updatedFloorTables);
+      const updated = [...floorTables];
+      updated[currentFloor] = floorTables[currentFloor];
+      setFloorTables(updated);
     }
     setCurrentStep(currentStep - 1);
   };
 
   const handleStep2Complete = (shapes) => {
-    // Update only the grey shapes, keep existing tables
-    const updatedFloorShapes = [...floorShapes];
-    updatedFloorShapes[currentFloor] = shapes.map((shape) => ({
+    const updated = [...floorShapes];
+    updated[currentFloor] = shapes.map((shape) => ({
       ...shape,
       rotation: shape.rotation || 0,
     }));
-    setFloorShapes(updatedFloorShapes);
+    setFloorShapes(updated);
     setCurrentStep(3);
   };
 
-  // Handle table updates in Step 3
   const handleTableUpdate = (tables) => {
-    const updatedFloorTables = [...floorTables];
-    updatedFloorTables[currentFloor] = tables;
-    setFloorTables(updatedFloorTables);
+    const updated = [...floorTables];
+    updated[currentFloor] = tables;
+    setFloorTables(updated);
   };
 
-  // Render floor selection buttons
+  // Render floor selection buttons with the user-defined names
   const renderFloorButtons = () => {
     return (
       <div
@@ -97,8 +91,8 @@ function FloorPlanDesigner() {
           right: "20px",
           bottom: "20px",
           display: "flex",
-          flexDirection: "column-reverse", // Reverse the order so floor 1 is at bottom
-          gap: "8px", // Add spacing between buttons
+          flexDirection: "column-reverse",
+          gap: "8px",
         }}
       >
         {Array.from({ length: floorCount }, (_, index) => (
@@ -112,19 +106,18 @@ function FloorPlanDesigner() {
               borderRadius: "4px",
               padding: "8px 16px",
               cursor: "pointer",
-              width: "100px", // Fixed width for consistency
+              width: "100px",
               textAlign: "center",
               transition: "all 0.2s ease",
             }}
           >
-            Floor {index + 1}
+            {floorNames[index] ? floorNames[index] : `Floor ${index + 1}`}
           </button>
         ))}
       </div>
     );
   };
 
-  // Render current step
   const renderCurrentStep = () => {
     switch (currentStep) {
       case 1:
@@ -136,7 +129,6 @@ function FloorPlanDesigner() {
             initialFloorCount={floorCount}
           />
         );
-
       case 2:
         return (
           <div
@@ -150,12 +142,12 @@ function FloorPlanDesigner() {
               onNext={handleStep2Complete}
               initialShapes={floorShapes[currentFloor]}
               onShapesUpdate={(shapes) => {
-                const updatedFloorShapes = [...floorShapes];
-                updatedFloorShapes[currentFloor] = shapes.map((shape) => ({
+                const updated = [...floorShapes];
+                updated[currentFloor] = shapes.map((shape) => ({
                   ...shape,
                   rotation: shape.rotation || 0,
                 }));
-                setFloorShapes(updatedFloorShapes);
+                setFloorShapes(updated);
               }}
               width={width}
               height={height}
@@ -191,7 +183,6 @@ function FloorPlanDesigner() {
             {renderFloorButtons()}
           </div>
         );
-
       case 3:
         return (
           <div
@@ -241,13 +232,11 @@ function FloorPlanDesigner() {
             {renderFloorButtons()}
           </div>
         );
-
       default:
         return null;
     }
   };
 
-  // Ensure first floor is selected by default when step 2 is reached
   useEffect(() => {
     if (currentStep === 2 && floorCount > 0 && currentFloor === undefined) {
       setCurrentFloor(0);
