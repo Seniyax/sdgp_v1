@@ -1,6 +1,6 @@
 const User = require('');
 const {validateEmail} = require("utils\validate.js");
-const jwt = require('jsonwebtokens')
+//const jwt = require('jsonwebtokens')
 
 const supabase = require('.../config/supabaseClient');
 
@@ -29,6 +29,7 @@ exports.signup = async(req,res,)=>
             password,
             options:{
                 data:{
+                    name
 
                 }
             }
@@ -40,15 +41,16 @@ exports.signup = async(req,res,)=>
             });
         }
 
-        // crate a profile in users table
+        // create a profile in users table
         const{error:profileError} = await supabase
           .from('users')
           .insert({
             id:authData.user,id,
             email,
-            full_name,
+            name,
+            created_at:new Date()
 
-          })
+          });
 
         if(profileError){
             return res.status(500).json({
@@ -63,7 +65,7 @@ exports.signup = async(req,res,)=>
                 email:authData.user.email
             }
         });
-    }catch(error){
+    } catch(error){
         res.status(500).json({
             error:'signup failed',
             details:error.message
@@ -124,7 +126,7 @@ exports.signin = async(req,res)=>{
             user:{
                 id:data.user.id,
                 email:data.user.email,
-                full_name:profileData?.full_name
+                full_name_name:profileData?.full_name
             },
             session:data.session
 
@@ -183,6 +185,29 @@ exports.socialLogin=async(req,res)=>{
                 details:error.message
             });
            }
+           const {error:profileError} = await supabase
+             .from('users')
+             .upsert({
+                id:data.user.id,
+                email:data.user.email,
+                full_name:data.user.user_metadata?.full_name||data.user.email,
+                created_at:new Date()
+             },{conflict:'id'});
+            
+            if (profileError){
+                return res.status(500).json({
+                    error:'Failed to update user profile'
+                });
+            } 
+            res.status(200).json({
+                message:'social login succesful',
+                user:{
+                    id:data.user.id,
+                    email:data.user.email,
+                    full_name:data.user.user_metadata?.full_name
+                },
+                session:data.session
+            });         
         }    
       catch(error){
         res.status(500).json({
