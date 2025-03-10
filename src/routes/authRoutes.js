@@ -1,8 +1,8 @@
-import { Router } from 'express';
+const express = require('express');
 
-import authcontroller from '../controllers/authControllers';
+const authcontroller = require('../controllers/authControllers');
 
-const router = Router();
+const router = express.Router();
 
 router.post('/signup',authcontroller.signup)
 router.post('/signin',authcontroller.signin)

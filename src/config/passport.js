@@ -1,14 +1,14 @@
-const passport = require('passport');
-const GoogleStrategy = require('passport-google-auth20').Strategy;
-const FacebookStrategy = require('passport-facebook').Strategy;
-const AppleStrategy = require('passport-apple').Strategy;
 
-passport.use(new GoogleStrategy)({
-    clientID:process.env.GOOGLE_CLIENT_ID,
-    clientSecret:process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL:"/api/auth/google/callback"
+//const GoogleStrategy = require('passport-google-auth20').Strategy;
+//const FacebookStrategy = require('passport-facebook').Strategy;
+//const AppleStrategy = require('passport-apple').Strategy;
 
-  },
+//passport.use(new GoogleStrategy)({
+   // clientID:process.env.GOOGLE_CLIENT_ID,
+    //clientSecret:process.env.GOOGLE_CLIENT_SECRET,
+    //callbackURL:"/api/auth/google/callback"
+
+  /** },
   async (accessToken, refreshToken, profile, done) => {
     try {
       // Check if user already exists
@@ -95,6 +95,6 @@ passport.use(new AppleStrategy({
       return done(error, null);
     }
   }
-));
+));**/
 
 
