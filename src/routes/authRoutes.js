@@ -1,14 +1,14 @@
-const express = require('express');
+import { Router } from 'express';
 
-const authController = require('../controllers/authControllers');
+import authcontroller from '../controllers/authControllers';
 
-const router = express.Router();
+const router = Router();
 
-router.post('/signup',authController.signup)
-router.post('/signin',authController.signin)
+router.post('/signup',authcontroller.signup)
+router.post('/signin',authcontroller.signin)
 
-router.post('/social/:provider',authController.socialLogin)
+router.post('/social/:provider',authcontroller.socialLogin)
 
-router.post('/logout',authController.logout)
+router.post('/logout',authcontroller.logout)
 
-module.exports = router;
+export default router;

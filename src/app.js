@@ -1,7 +1,6 @@
-const express = require("express");
-const cors = require("cors");
-const authRoutes = require('./routes/authRoutes')
-
+import express from "express";
+import cors from "cors";
+import authRoutes from "./routes/authRoutes"
 const app = express();
 
 // Middleware
@@ -10,4 +9,4 @@ app.use(express.json()); // Parse JSON requests
 
 app.use('/auth',authRoutes)
 
-module.exports = app; // Export the configured app
+export default app; // Export the configured app
