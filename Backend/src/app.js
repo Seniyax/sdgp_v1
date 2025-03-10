@@ -1,6 +1,6 @@
-import express from "express";
-import cors from "cors";
-import authRoutes from "./routes/authRoutes"
+const express= require("express");
+const cors = require("cors");
+const authRoutes = require("./routes/authRoutes")
 const app = express();
 
 // Middleware
