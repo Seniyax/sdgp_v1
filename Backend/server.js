@@ -1,4 +1,5 @@
-import app from './src/app'; // Import the configured app
+require('dotenv').config();
+const app = require('./src/app'); // Import the configured app
 const PORT = process.env.PORT || 3000;
 
 // Start the server
