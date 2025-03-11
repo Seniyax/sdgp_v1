@@ -13,6 +13,9 @@ import Passwordconfirmation from "./pages/Passwordconfirmation.jsx";
 import Businessform from "./pages/Businessform.jsx";
 import "./App.css";
 import FloorPlan from "./pages/FloorPlan.jsx";
+import Dashboard from "../src/pages/Dashboard.jsx";
+import Verification from "../src/pages/Verification.jsx";
+
 
 const AppContent = () => {
   const location = useLocation();
@@ -37,6 +40,8 @@ const AppContent = () => {
           element={<Passwordconfirmation />}
         />
         <Route path="/businessform" element={<Businessform />} />
+         <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/verification" element={<Verification />} />
         <Route path="/test" element={<FloorPlan />} />
       </Routes>
     </>
