@@ -9,4 +9,4 @@ app.use(express.json()); // Parse JSON requests
 
 app.use('/auth',authRoutes)
 
-export default app; // Export the configured app
+module.exports = app; // Export the configured app
