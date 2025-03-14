@@ -6,33 +6,27 @@ import {
   useLocation,
 } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import Home from "./pages/Home";
-import SignIn from "./pages/Signin.jsx";
-import SignUp from "./pages/Signup.jsx";
-import Passwordconfirmation from "./pages/Passwordconfirmation.jsx";
-import Businessform from "./pages/Businessform.jsx";
+// import Home from "./pages/Home";
+// import SignIn from "./pages/Signin.jsx";
+// import SignUp from "./pages/Signup.jsx";
+// import Passwordconfirmation from "./pages/Passwordconfirmation.jsx";
+// import Businessform from "./pages/Businessform.jsx";
+// import Dashboard from "../src/pages/Dashboard.jsx";
+// import Verification from "../src/pages/Verification.jsx";
+import FloorPlanDesigner from "./pages/FloorPlanDesigner.jsx";
 import "./App.css";
-import FloorPlan from "./pages/FloorPlan.jsx";
-import Dashboard from "../src/pages/Dashboard.jsx";
-import Verification from "../src/pages/Verification.jsx";
-
 
 const AppContent = () => {
   const location = useLocation();
 
-  // Routes where the Navbar should NOT be displayed
-  const noNavbarRoutes = [
-    "/signin",
-    "/signup",
-    "/passwordconfirmation",
-    "/businessform",
-  ];
+  // Hide the Navbar on any route that starts with "/floorplan"
+  const hideNavbar = location.pathname.startsWith("/floorplan");
 
   return (
     <>
-      {!noNavbarRoutes.includes(location.pathname) && <Navbar />}
+      {!hideNavbar && <Navbar />}
       <Routes>
-        <Route path="/" element={<Home />} />
+        {/* <Route path="/" element={<Home />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route
@@ -41,8 +35,8 @@ const AppContent = () => {
         />
         <Route path="/businessform" element={<Businessform />} />
          <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/verification" element={<Verification />} />
-        <Route path="/test" element={<FloorPlan />} />
+                <Route path="/verification" element={<Verification />} /> */}
+        <Route path="/floorplan" element={<FloorPlanDesigner />} />
       </Routes>
     </>
   );

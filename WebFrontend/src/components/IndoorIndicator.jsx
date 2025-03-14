@@ -11,18 +11,19 @@ const IndoorIndicator = ({
   onResize,
   onDelete,
   onRotate,
+  isPreview, // new prop added
 }) => {
   const shapeRef = useRef();
   const resizeHandleSize = 8;
   const [rotation, setRotation] = useState(shape.rotation || 0);
 
   const handleDragEnd = (e) => {
+    if (isPreview) return;
     const newX = e.target.x() - shape.width / 2;
     const newY = e.target.y() - shape.height / 2;
     onDragEnd(shape.id, newX, newY);
   };
 
-  // Transform point from stage coordinates to local coordinates
   const transformPoint = (point, centerX, centerY, rotation) => {
     const rad = (rotation * Math.PI) / 180;
     const cos = Math.cos(-rad);
@@ -35,8 +36,8 @@ const IndoorIndicator = ({
     };
   };
 
-  // Handle rotation
   const handleRotateStart = (e) => {
+    if (isPreview) return;
     e.cancelBubble = true;
     const stage = shapeRef.current.getStage();
     const centerX = shape.width / 2;
@@ -61,7 +62,6 @@ const IndoorIndicator = ({
       const newRotation = (initialRotation + delta) % 360;
       setRotation(newRotation);
 
-      // Notify parent about rotation change
       if (onRotate) {
         onRotate(shape.id, newRotation);
       }
@@ -76,14 +76,13 @@ const IndoorIndicator = ({
     stage.on("mouseup", onMouseUp);
   };
 
-  // Handle resizing
   const handleResizeStart = (e, handle) => {
+    if (isPreview) return;
     e.cancelBubble = true;
     const stage = shapeRef.current.getStage();
     const centerX = shape.x + shape.width / 2;
     const centerY = shape.y + shape.height / 2;
 
-    // Get initial position in local coordinates
     const initialPos = transformPoint(
       stage.getPointerPosition(),
       centerX,
@@ -97,15 +96,12 @@ const IndoorIndicator = ({
     const initialY = shape.y;
 
     const onMouseMove = () => {
-      // Transform current position to local coordinates
       const pos = transformPoint(
         stage.getPointerPosition(),
         centerX,
         centerY,
         rotation
       );
-
-      // Calculate differences in local coordinates
       const dx = pos.x - initialPos.x;
       const dy = pos.y - initialPos.y;
 
@@ -116,8 +112,8 @@ const IndoorIndicator = ({
 
       switch (handle) {
         case "topLeft":
-          newWidth = Math.max(initialWidth - dx, 80); // Ensure minimum width for text
-          newHeight = Math.max(initialHeight - dy, 30); // Ensure minimum height for text
+          newWidth = Math.max(initialWidth - dx, 80);
+          newHeight = Math.max(initialHeight - dy, 30);
           newX = initialX + (initialWidth - newWidth);
           newY = initialY + (initialHeight - newHeight);
           break;
@@ -135,8 +131,9 @@ const IndoorIndicator = ({
           newWidth = Math.max(initialWidth + dx, 80);
           newHeight = Math.max(initialHeight + dy, 30);
           break;
+        default:
+          break;
       }
-
       onResize(shape.id, newX, newY, newWidth, newHeight);
     };
 
@@ -151,8 +148,8 @@ const IndoorIndicator = ({
     stage.on("mouseup", onMouseUp);
   };
 
-  // Handle delete
   const handleDelete = (e) => {
+    if (isPreview) return;
     e.cancelBubble = true;
     onDelete(shape.id);
   };
@@ -161,10 +158,11 @@ const IndoorIndicator = ({
     <Group
       x={shape.x + shape.width / 2}
       y={shape.y + shape.height / 2}
-      draggable
-      onDragEnd={handleDragEnd}
+      draggable={!isPreview}
+      onDragEnd={isPreview ? undefined : handleDragEnd}
+      onClick={!isPreview ? () => onSelect(shape.id) : undefined}
+      onTap={!isPreview ? () => onSelect(shape.id) : undefined}
     >
-      {/* Rotating group containing the rectangle and resize handles */}
       <Group rotation={rotation}>
         <Rect
           ref={shapeRef}
@@ -173,14 +171,13 @@ const IndoorIndicator = ({
           width={shape.width}
           height={shape.height}
           fill="transparent"
-          stroke="#805AD5" // Purple color for indoor
+          stroke="#805AD5"
           strokeWidth={2}
-          dash={[5, 5]} // Creates the dotted border effect
-          onClick={() => onSelect(shape.id)}
-          onTap={() => onSelect(shape.id)}
+          dash={[5, 5]}
+          onClick={!isPreview ? () => onSelect(shape.id) : undefined}
+          onTap={!isPreview ? () => onSelect(shape.id) : undefined}
         />
 
-        {/* The "Indoor" text */}
         <Text
           x={-shape.width / 2}
           y={-shape.height / 2}
@@ -190,80 +187,88 @@ const IndoorIndicator = ({
           align="center"
           verticalAlign="middle"
           fontSize={16}
-          fill="#805AD5" // Match text color to border
-          onClick={() => onSelect(shape.id)}
-          onTap={() => onSelect(shape.id)}
+          fill="#805AD5"
+          onClick={!isPreview ? () => onSelect(shape.id) : undefined}
+          onTap={!isPreview ? () => onSelect(shape.id) : undefined}
         />
 
         {isSelected && (
           <>
-            {/* Resize handles */}
             <Rect
               x={-shape.width / 2 - resizeHandleSize / 2}
               y={-shape.height / 2 - resizeHandleSize / 2}
               width={resizeHandleSize}
               height={resizeHandleSize}
               fill="#805AD5"
-              onMouseDown={(e) => handleResizeStart(e, "topLeft")}
+              onMouseDown={
+                isPreview ? undefined : (e) => handleResizeStart(e, "topLeft")
+              }
             />
-
             <Rect
               x={shape.width / 2 - resizeHandleSize / 2}
               y={-shape.height / 2 - resizeHandleSize / 2}
               width={resizeHandleSize}
               height={resizeHandleSize}
               fill="#805AD5"
-              onMouseDown={(e) => handleResizeStart(e, "topRight")}
+              onMouseDown={
+                isPreview ? undefined : (e) => handleResizeStart(e, "topRight")
+              }
             />
-
             <Rect
               x={-shape.width / 2 - resizeHandleSize / 2}
               y={shape.height / 2 - resizeHandleSize / 2}
               width={resizeHandleSize}
               height={resizeHandleSize}
               fill="#805AD5"
-              onMouseDown={(e) => handleResizeStart(e, "bottomLeft")}
+              onMouseDown={
+                isPreview
+                  ? undefined
+                  : (e) => handleResizeStart(e, "bottomLeft")
+              }
             />
-
             <Rect
               x={shape.width / 2 - resizeHandleSize / 2}
               y={shape.height / 2 - resizeHandleSize / 2}
               width={resizeHandleSize}
               height={resizeHandleSize}
               fill="#805AD5"
-              onMouseDown={(e) => handleResizeStart(e, "bottomRight")}
+              onMouseDown={
+                isPreview
+                  ? undefined
+                  : (e) => handleResizeStart(e, "bottomRight")
+              }
             />
           </>
         )}
       </Group>
 
-      {/* Non-rotating controls */}
       {isSelected && (
         <>
-          {/* Rotate button */}
           <Group
             x={-shape.width / 2 - 10}
             y={shape.height / 2 + 10}
-            onMouseDown={handleRotateStart}
+            onMouseDown={isPreview ? undefined : handleRotateStart}
           >
             <Circle radius={10} fill="#4CAF50" />
             <Line points={[-5, -5, 5, 5]} stroke="white" strokeWidth={2} />
           </Group>
-
-          {/* Delete button */}
           <Group x={shape.width / 2 + 10} y={-shape.height / 2 - 10}>
-            <Circle radius={10} fill="red" onClick={handleDelete} />
+            <Circle
+              radius={10}
+              fill="red"
+              onClick={isPreview ? undefined : handleDelete}
+            />
             <Line
               points={[-5, -5, 5, 5]}
               stroke="white"
               strokeWidth={2}
-              onClick={handleDelete}
+              onClick={isPreview ? undefined : handleDelete}
             />
             <Line
               points={[-5, 5, 5, -5]}
               stroke="white"
               strokeWidth={2}
-              onClick={handleDelete}
+              onClick={isPreview ? undefined : handleDelete}
             />
           </Group>
         </>

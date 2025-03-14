@@ -8,25 +8,39 @@ function FloorPlanStep1({
   initialWidth,
   initialHeight,
   initialFloorCount,
+  initialFloorNames,
 }) {
   const [width, setWidth] = useState(initialWidth || "");
   const [height, setHeight] = useState(initialHeight || "");
   const [floorCount, setFloorCount] = useState(initialFloorCount || "1");
   const [error, setError] = useState("");
-  const [floorNames, setFloorNames] = useState([]);
+  const [floorNames, setFloorNames] = useState(initialFloorNames || []);
   const [namingPage, setNamingPage] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
     const count = parseInt(floorCount);
-    if (!isNaN(count) && floorNames.length !== count) {
-      const newFloorNames = Array.from({ length: count }, (_, i) =>
-        i === 0 ? "Ground" : `Floor ${i}`
-      );
-      setFloorNames(newFloorNames);
-      setNamingPage(0);
+    if (!isNaN(count)) {
+      if (floorNames.length === 0) {
+        // Initialize only if there are no names already
+        const newFloorNames = Array.from({ length: count }, (_, i) =>
+          i === 0 ? "Ground" : `Floor ${i}`
+        );
+        setFloorNames(newFloorNames);
+        setNamingPage(0);
+      } else if (floorNames.length < count) {
+        // Append default names for any new floors
+        const extraNames = Array.from(
+          { length: count - floorNames.length },
+          (_, i) => `Floor ${floorNames.length + i}`
+        );
+        setFloorNames([...floorNames, ...extraNames]);
+      } else if (floorNames.length > count) {
+        // Trim extra names if floors have been reduced
+        setFloorNames(floorNames.slice(0, count));
+      }
     }
-  }, [floorCount, floorNames.length]);
+  }, [floorCount]); // Depend only on floorCount so that once floorNames are set, they won't be overwritten
 
   const handleFloorNameChange = (index, value) => {
     const newNames = [...floorNames];
@@ -76,7 +90,7 @@ function FloorPlanStep1({
   };
 
   return (
-    <div className="d-flex flex-column align-items-center justify-content-center min-vh-100 bg-light p-4">
+    <div className="d-flex flex-column align-items-center justify-content-center min-vh-100 bg-transparent p-4">
       <div className="bg-white rounded shadow p-4 w-100 w-md-50">
         <h1 className="h4 text-dark mb-4 d-flex align-items-center">
           <i className="bi bi-rulers mr-2" style={{ fontSize: "24px" }}></i>
@@ -195,7 +209,7 @@ function FloorPlanStep1({
           <div className="d-flex justify-content-end">
             <button
               type="submit"
-              className="btn btn-primary d-flex align-items-center"
+              className="btn btn-violet d-flex align-items-center"
             >
               Next
               <i className="bi bi-arrow-right ml-2"></i>

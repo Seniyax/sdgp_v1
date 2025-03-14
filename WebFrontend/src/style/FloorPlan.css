@@ -1,1 +1,24 @@
 @import url("bootstrap/dist/css/bootstrap.min.css");
+
+.btn-violet {
+  background-color: rgb(191, 97, 214);
+  border-color: rgb(146, 64, 167);
+  color: white;
+}
+
+.btn-violet:hover {
+  background-color: #9400d3; /* A slightly darker violet on hover */
+  border-color: #9400d3;
+}
+
+.btn-violet-light {
+  background-color: rgb(196, 138, 211);
+  border-color: rgb(110, 46, 126);
+  color: black;
+}
+
+.btn-violet-light:hover {
+  background-color: rgb(105, 72, 117);
+  border-color: rgb(94, 46, 126);
+  color: white;
+}

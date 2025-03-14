@@ -11,6 +11,7 @@ const HostDesk = ({
   onResize,
   onDelete,
   onRotate,
+  isPreview, // new prop added
 }) => {
   const shapeRef = useRef();
   const resizeHandleSize = 8;
@@ -18,6 +19,7 @@ const HostDesk = ({
 
   // Handle dragging the host desk
   const handleDragEnd = (e) => {
+    if (isPreview) return;
     const newX = e.target.x() - shape.width / 2;
     const newY = e.target.y() - shape.height / 2;
     onDragEnd(shape.id, newX, newY);
@@ -38,6 +40,7 @@ const HostDesk = ({
 
   // Handle rotation logic
   const handleRotateStart = (e) => {
+    if (isPreview) return;
     e.cancelBubble = true;
     const stage = shapeRef.current.getStage();
     const centerX = shape.width / 2;
@@ -62,7 +65,6 @@ const HostDesk = ({
       const newRotation = (initialRotation + delta) % 360;
       setRotation(newRotation);
 
-      // Notify parent about rotation change
       if (onRotate) {
         onRotate(shape.id, newRotation);
       }
@@ -79,12 +81,12 @@ const HostDesk = ({
 
   // Handle resizing of the host desk
   const handleResizeStart = (e, handle) => {
+    if (isPreview) return;
     e.cancelBubble = true;
     const stage = shapeRef.current.getStage();
     const centerX = shape.x + shape.width / 2;
     const centerY = shape.y + shape.height / 2;
 
-    // Get initial position in local coordinates
     const initialPos = transformPoint(
       stage.getPointerPosition(),
       centerX,
@@ -98,7 +100,6 @@ const HostDesk = ({
     const initialY = shape.y;
 
     const onMouseMove = () => {
-      // Transform current position to local coordinates
       const pos = transformPoint(
         stage.getPointerPosition(),
         centerX,
@@ -106,7 +107,6 @@ const HostDesk = ({
         rotation
       );
 
-      // Calculate differences in local coordinates for resizing
       const dx = pos.x - initialPos.x;
       const dy = pos.y - initialPos.y;
 
@@ -115,7 +115,6 @@ const HostDesk = ({
       let newX = initialX;
       let newY = initialY;
 
-      // Resize logic based on the selected corner handle
       switch (handle) {
         case "topLeft":
           newWidth = Math.max(initialWidth - dx, 20);
@@ -137,9 +136,9 @@ const HostDesk = ({
           newWidth = Math.max(initialWidth + dx, 20);
           newHeight = Math.max(initialHeight + dy, 20);
           break;
+        default:
+          break;
       }
-
-      // Notify parent of new resize values
       onResize(shape.id, newX, newY, newWidth, newHeight);
     };
 
@@ -149,7 +148,6 @@ const HostDesk = ({
       document.body.style.cursor = "default";
     };
 
-    // Set cursor to resizing
     document.body.style.cursor = "nwse-resize";
     stage.on("mousemove", onMouseMove);
     stage.on("mouseup", onMouseUp);
@@ -157,6 +155,7 @@ const HostDesk = ({
 
   // Handle deletion of the shape
   const handleDelete = (e) => {
+    if (isPreview) return;
     e.cancelBubble = true;
     onDelete(shape.id);
   };
@@ -168,13 +167,14 @@ const HostDesk = ({
     <Group
       x={shape.x + shape.width / 2}
       y={shape.y + shape.height / 2}
-      draggable
-      onDragEnd={handleDragEnd}
+      draggable={!isPreview}
+      onDragEnd={isPreview ? undefined : handleDragEnd}
+      onClick={!isPreview ? () => onSelect(shape.id) : undefined}
+      onTap={!isPreview ? () => onSelect(shape.id) : undefined}
     >
       {/* Rotating group containing the shape and resize handles */}
       <Group rotation={rotation}>
         {isHalfCircle ? (
-          // If half-circle, render arc
           <Arc
             ref={shapeRef}
             x={-shape.width / 2}
@@ -185,11 +185,10 @@ const HostDesk = ({
             fill="white"
             stroke={isSelected ? "#4299E1" : "transparent"}
             strokeWidth={2}
-            onClick={() => onSelect(shape.id)}
-            onTap={() => onSelect(shape.id)}
+            onClick={!isPreview ? () => onSelect(shape.id) : undefined}
+            onTap={!isPreview ? () => onSelect(shape.id) : undefined}
           />
         ) : (
-          // Otherwise render rectangle
           <Rect
             ref={shapeRef}
             x={-shape.width / 2}
@@ -199,12 +198,11 @@ const HostDesk = ({
             fill="white"
             stroke={isSelected ? "#4299E1" : "transparent"}
             strokeWidth={2}
-            onClick={() => onSelect(shape.id)}
-            onTap={() => onSelect(shape.id)}
+            onClick={!isPreview ? () => onSelect(shape.id) : undefined}
+            onTap={!isPreview ? () => onSelect(shape.id) : undefined}
           />
         )}
 
-        {/* Text label for host desk */}
         <Text
           x={-shape.width / 2 + 10}
           y={-shape.height / 2 + 5}
@@ -217,73 +215,81 @@ const HostDesk = ({
 
         {isSelected && (
           <>
-            {/* Resize handles */}
             <Rect
               x={-shape.width / 2 - resizeHandleSize / 2}
               y={-shape.height / 2 - resizeHandleSize / 2}
               width={resizeHandleSize}
               height={resizeHandleSize}
               fill="#4299E1"
-              onMouseDown={(e) => handleResizeStart(e, "topLeft")}
+              onMouseDown={
+                isPreview ? undefined : (e) => handleResizeStart(e, "topLeft")
+              }
             />
-
             <Rect
               x={shape.width / 2 - resizeHandleSize / 2}
               y={-shape.height / 2 - resizeHandleSize / 2}
               width={resizeHandleSize}
               height={resizeHandleSize}
               fill="#4299E1"
-              onMouseDown={(e) => handleResizeStart(e, "topRight")}
+              onMouseDown={
+                isPreview ? undefined : (e) => handleResizeStart(e, "topRight")
+              }
             />
-
             <Rect
               x={-shape.width / 2 - resizeHandleSize / 2}
               y={shape.height / 2 - resizeHandleSize / 2}
               width={resizeHandleSize}
               height={resizeHandleSize}
               fill="#4299E1"
-              onMouseDown={(e) => handleResizeStart(e, "bottomLeft")}
+              onMouseDown={
+                isPreview
+                  ? undefined
+                  : (e) => handleResizeStart(e, "bottomLeft")
+              }
             />
-
             <Rect
               x={shape.width / 2 - resizeHandleSize / 2}
               y={shape.height / 2 - resizeHandleSize / 2}
               width={resizeHandleSize}
               height={resizeHandleSize}
               fill="#4299E1"
-              onMouseDown={(e) => handleResizeStart(e, "bottomRight")}
+              onMouseDown={
+                isPreview
+                  ? undefined
+                  : (e) => handleResizeStart(e, "bottomRight")
+              }
             />
           </>
         )}
       </Group>
 
-      {/* Non-rotating controls */}
       {isSelected && (
         <>
-          {/* Rotate button */}
           <Group
             x={-shape.width / 2 - 10}
             y={shape.height / 2 + 10}
-            onMouseDown={handleRotateStart}
+            onMouseDown={isPreview ? undefined : handleRotateStart}
           >
             <Circle radius={10} fill="#4CAF50" />
             <Line points={[-5, -5, 5, 5]} stroke="white" strokeWidth={2} />
           </Group>
-
-          {/* Delete button */}
           <Group x={shape.width / 2 + 10} y={-shape.height / 2 - 10}>
-            <Circle radius={10} fill="red" onClick={handleDelete} />
+            <Circle
+              radius={10}
+              fill="red"
+              onClick={isPreview ? undefined : handleDelete}
+            />
             <Line
               points={[-5, -5, 5, 5]}
               stroke="white"
               strokeWidth={2}
-              onClick={handleDelete}
+              onClick={isPreview ? undefined : handleDelete}
             />
             <Line
               points={[-5, 5, 5, -5]}
               stroke="white"
               strokeWidth={2}
-              onClick={handleDelete}
+              onClick={isPreview ? undefined : handleDelete}
             />
           </Group>
         </>

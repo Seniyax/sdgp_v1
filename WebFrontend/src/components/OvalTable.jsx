@@ -256,6 +256,19 @@ function OvalTable({
           shadowOpacity={0.3}
         />
 
+        <Text
+          text={shape.tableNumber ? shape.tableNumber.toString() : ""}
+          fontSize={24} // adjust as needed
+          fill="white" // choose a contrasting color
+          x={-radiusX} // center horizontally based on radiusX
+          y={-radiusY} // center vertically based on radiusY
+          width={radiusX * 2} // ellipse width
+          height={radiusY * 2} // ellipse height
+          align="center"
+          verticalAlign="middle"
+          fontStyle="bold"
+        />
+
         {/* Chairs */}
         {chairPositions.map((pos, index) => {
           const isActive = isChairActive(index);

@@ -214,6 +214,19 @@ function CircularTable({
           shadowOpacity={0.3}
         />
 
+        <Text
+          text={shape.tableNumber ? shape.tableNumber.toString() : ""}
+          fontSize={24} // adjust as needed
+          fill="white" // choose a contrasting color
+          x={-shape.size / 2} // ensures centering horizontally
+          y={-shape.size / 2} // ensures centering vertically
+          width={shape.size}
+          height={shape.size}
+          align="center"
+          verticalAlign="middle"
+          fontStyle="bold"
+        />
+
         {/* Chairs */}
         {chairPositions.map((pos, index) => (
           <Group

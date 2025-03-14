@@ -278,6 +278,19 @@ function SquareTable({
           shadowOpacity={0.3}
         />
 
+        <Text
+          text={shape.tableNumber ? shape.tableNumber.toString() : ""}
+          fontSize={24} // adjust as needed
+          fill="white" // choose a contrasting color
+          x={-tableSize / 2} // ensures centering horizontally
+          y={-tableSize / 2} // ensures centering vertically
+          width={tableSize}
+          height={tableSize}
+          align="center"
+          verticalAlign="middle"
+          fontStyle="bold"
+        />
+
         {/* Chair rendering for top, right, bottom, and left */}
         {["top", "right", "bottom", "left"].map((side, sideIndex) => {
           const slots = [topSlots, rightSlots, bottomSlots, leftSlots];

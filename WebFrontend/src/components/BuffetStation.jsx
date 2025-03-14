@@ -6,6 +6,7 @@ import { Circle, Group, Line, Rect, Text } from "react-konva";
 const BuffetStation = ({
   shape,
   isSelected,
+  isPreview,
   onSelect,
   onDragEnd,
   onResize,
@@ -17,7 +18,6 @@ const BuffetStation = ({
   const [rotation, setRotation] = useState(shape.rotation || 0);
 
   const handleDragEnd = (e) => {
-    // Adjust position after dragging
     const newX = e.target.x() - shape.width / 2;
     const newY = e.target.y() - shape.height / 2;
     onDragEnd(shape.id, newX, newY);
@@ -37,6 +37,7 @@ const BuffetStation = ({
   };
 
   const handleRotateStart = (e) => {
+    if (isPreview) return;
     e.cancelBubble = true;
     const stage = shapeRef.current.getStage();
     const centerX = shape.width / 2;
@@ -51,7 +52,6 @@ const BuffetStation = ({
     const initialRotation = rotation;
 
     const onMouseMove = () => {
-      // Calculate rotation angle
       const pos = stage.getPointerPosition();
       const newAngle = Math.atan2(
         pos.y - (shape.y + centerY),
@@ -77,6 +77,7 @@ const BuffetStation = ({
   };
 
   const handleResizeStart = (e, handle) => {
+    if (isPreview) return;
     e.cancelBubble = true;
     const stage = shapeRef.current.getStage();
     const centerX = shape.x + shape.width / 2;
@@ -95,7 +96,6 @@ const BuffetStation = ({
     const initialY = shape.y;
 
     const onMouseMove = () => {
-      // Adjust width and height based on handle position
       const pos = transformPoint(
         stage.getPointerPosition(),
         centerX,
@@ -149,6 +149,7 @@ const BuffetStation = ({
   };
 
   const handleDelete = (e) => {
+    if (isPreview) return;
     e.cancelBubble = true;
     onDelete(shape.id);
   };
@@ -157,8 +158,10 @@ const BuffetStation = ({
     <Group
       x={shape.x + shape.width / 2}
       y={shape.y + shape.height / 2}
-      draggable
-      onDragEnd={handleDragEnd}
+      draggable={!isPreview}
+      onDragEnd={isPreview ? undefined : handleDragEnd}
+      onClick={!isPreview ? () => onSelect(shape.id) : undefined}
+      onTap={!isPreview ? () => onSelect(shape.id) : undefined}
     >
       {/* Rotating group containing the rectangle and resize handles */}
       <Group rotation={rotation}>
@@ -171,8 +174,8 @@ const BuffetStation = ({
           fill="black"
           stroke={isSelected ? "#4299E1" : "transparent"}
           strokeWidth={2}
-          onClick={() => onSelect(shape.id)}
-          onTap={() => onSelect(shape.id)}
+          onClick={!isPreview ? () => onSelect(shape.id) : undefined}
+          onTap={!isPreview ? () => onSelect(shape.id) : undefined}
         />
 
         {/* Label for the station */}
@@ -185,65 +188,50 @@ const BuffetStation = ({
           fill="white"
           align="center"
         />
-
-        {isSelected && (
-          <>
-            {/* Resize handles */}
-            <Rect
-              x={-shape.width / 2 - resizeHandleSize / 2}
-              y={-shape.height / 2 - resizeHandleSize / 2}
-              width={resizeHandleSize}
-              height={resizeHandleSize}
-              fill="#4299E1"
-              onMouseDown={(e) => handleResizeStart(e, "topLeft")}
-            />
-
-            <Rect
-              x={shape.width / 2 - resizeHandleSize / 2}
-              y={-shape.height / 2 - resizeHandleSize / 2}
-              width={resizeHandleSize}
-              height={resizeHandleSize}
-              fill="#4299E1"
-              onMouseDown={(e) => handleResizeStart(e, "topRight")}
-            />
-
-            <Rect
-              x={-shape.width / 2 - resizeHandleSize / 2}
-              y={shape.height / 2 - resizeHandleSize / 2}
-              width={resizeHandleSize}
-              height={resizeHandleSize}
-              fill="#4299E1"
-              onMouseDown={(e) => handleResizeStart(e, "bottomLeft")}
-            />
-
-            <Rect
-              x={shape.width / 2 - resizeHandleSize / 2}
-              y={shape.height / 2 - resizeHandleSize / 2}
-              width={resizeHandleSize}
-              height={resizeHandleSize}
-              fill="#4299E1"
-              onMouseDown={(e) => handleResizeStart(e, "bottomRight")}
-            />
-          </>
-        )}
       </Group>
-
       {isSelected && (
         <>
-          {/* Rotate button */}
-          <Group
-            x={-shape.width / 2 - 10}
-            y={shape.height / 2 + 10}
-            onMouseDown={handleRotateStart}
-          >
-            <Circle radius={10} fill="#4CAF50" />
-            <Line points={[-5, -5, 5, 5]} stroke="white" strokeWidth={2} />
-          </Group>
-
-          {/* Delete button */}
-          <Group x={shape.width / 2 + 10} y={-shape.height / 2 - 10}>
-            <Circle radius={10} fill="red" onClick={handleDelete} />
-          </Group>
+          {/* Resize handles */}
+          <Rect
+            x={-shape.width / 2 - resizeHandleSize / 2}
+            y={-shape.height / 2 - resizeHandleSize / 2}
+            width={resizeHandleSize}
+            height={resizeHandleSize}
+            fill="#4299E1"
+            onMouseDown={
+              isPreview ? undefined : (e) => handleResizeStart(e, "topLeft")
+            }
+          />
+          <Rect
+            x={shape.width / 2 - resizeHandleSize / 2}
+            y={-shape.height / 2 - resizeHandleSize / 2}
+            width={resizeHandleSize}
+            height={resizeHandleSize}
+            fill="#4299E1"
+            onMouseDown={
+              isPreview ? undefined : (e) => handleResizeStart(e, "topRight")
+            }
+          />
+          <Rect
+            x={-shape.width / 2 - resizeHandleSize / 2}
+            y={shape.height / 2 - resizeHandleSize / 2}
+            width={resizeHandleSize}
+            height={resizeHandleSize}
+            fill="#4299E1"
+            onMouseDown={
+              isPreview ? undefined : (e) => handleResizeStart(e, "bottomLeft")
+            }
+          />
+          <Rect
+            x={shape.width / 2 - resizeHandleSize / 2}
+            y={shape.height / 2 - resizeHandleSize / 2}
+            width={resizeHandleSize}
+            height={resizeHandleSize}
+            fill="#4299E1"
+            onMouseDown={
+              isPreview ? undefined : (e) => handleResizeStart(e, "bottomRight")
+            }
+          />
         </>
       )}
     </Group>

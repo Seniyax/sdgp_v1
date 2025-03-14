@@ -6,6 +6,7 @@ import { Circle, Group, Line } from "react-konva";
 const GreyCircle = ({
   shape,
   isSelected,
+  isPreview,
   onSelect,
   onDragEnd,
   onResize,
@@ -16,6 +17,7 @@ const GreyCircle = ({
 
   // Handle drag end event
   const handleDragEnd = (e) => {
+    if (isPreview) return;
     onDragEnd(shape.id, e.target.x(), e.target.y());
   };
 
@@ -27,7 +29,10 @@ const GreyCircle = ({
   };
 
   return (
-    <Group>
+    <Group
+      draggable={!isPreview}
+      onDragEnd={isPreview ? undefined : handleDragEnd}
+    >
       {/* Main circle */}
       <Circle
         ref={shapeRef}
@@ -37,20 +42,28 @@ const GreyCircle = ({
         fill="#CBD5E0" // Light grey fill
         stroke={isSelected ? "#4299E1" : "transparent"} // Border color when selected
         strokeWidth={2}
-        draggable
-        onClick={(e) => {
-          e.cancelBubble = true; // Prevent event bubbling
-          onSelect(shape.id);
-        }}
-        onTap={(e) => {
-          e.cancelBubble = true; // Prevent event bubbling
-          onSelect(shape.id);
-        }}
-        onDragEnd={handleDragEnd}
+        draggable={!isPreview}
+        onClick={
+          !isPreview
+            ? (e) => {
+                e.cancelBubble = true;
+                onSelect(shape.id);
+              }
+            : undefined
+        }
+        onTap={
+          !isPreview
+            ? (e) => {
+                e.cancelBubble = true;
+                onSelect(shape.id);
+              }
+            : undefined
+        }
+        onDragEnd={isPreview ? undefined : handleDragEnd}
       />
 
       {/* Resize handles when the shape is selected */}
-      {isSelected && (
+      {isSelected && !isPreview && (
         <>
           {/* Top Resize Handle */}
           <Circle
@@ -58,7 +71,7 @@ const GreyCircle = ({
             y={shape.y - shape.radius}
             radius={resizeHandleSize / 2}
             fill="#4299E1" // Resize handle color
-            draggable
+            draggable={!isPreview}
             onDragMove={(e) => {
               const newRadius = calculateNewRadius(
                 shape.x,
@@ -76,7 +89,7 @@ const GreyCircle = ({
             y={shape.y}
             radius={resizeHandleSize / 2}
             fill="#4299E1" // Resize handle color
-            draggable
+            draggable={!isPreview}
             onDragMove={(e) => {
               const newRadius = calculateNewRadius(
                 shape.x,
@@ -94,7 +107,7 @@ const GreyCircle = ({
             y={shape.y + shape.radius}
             radius={resizeHandleSize / 2}
             fill="#4299E1" // Resize handle color
-            draggable
+            draggable={!isPreview}
             onDragMove={(e) => {
               const newRadius = calculateNewRadius(
                 shape.x,
@@ -112,7 +125,7 @@ const GreyCircle = ({
             y={shape.y}
             radius={resizeHandleSize / 2}
             fill="#4299E1" // Resize handle color
-            draggable
+            draggable={!isPreview}
             onDragMove={(e) => {
               const newRadius = calculateNewRadius(
                 shape.x,
@@ -132,29 +145,41 @@ const GreyCircle = ({
             <Circle
               radius={10}
               fill="red" // Close button color
-              onClick={(e) => {
-                e.cancelBubble = true; // Prevent event bubbling
-                onDelete(shape.id);
-              }}
+              onClick={
+                !isPreview
+                  ? (e) => {
+                      e.cancelBubble = true;
+                      onDelete(shape.id);
+                    }
+                  : undefined
+              }
             />
             {/* X icon on the close button */}
             <Line
               points={[-5, -5, 5, 5]}
               stroke="white"
               strokeWidth={2}
-              onClick={(e) => {
-                e.cancelBubble = true; // Prevent event bubbling
-                onDelete(shape.id);
-              }}
+              onClick={
+                !isPreview
+                  ? (e) => {
+                      e.cancelBubble = true;
+                      onDelete(shape.id);
+                    }
+                  : undefined
+              }
             />
             <Line
               points={[-5, 5, 5, -5]}
               stroke="white"
               strokeWidth={2}
-              onClick={(e) => {
-                e.cancelBubble = true; // Prevent event bubbling
-                onDelete(shape.id);
-              }}
+              onClick={
+                !isPreview
+                  ? (e) => {
+                      e.cancelBubble = true;
+                      onDelete(shape.id);
+                    }
+                  : undefined
+              }
             />
           </Group>
         </>
