@@ -31,6 +31,11 @@ exports.getFloorPlan = async (req, res) => {
 };
 
 exports.createFloorPlan = async (req, res) => {
+  return res.status(500).json({
+    success: false,
+    message: "Error creating floor plan",
+    error: error.message,
+  });
   const { business_id, floors, tables } = req.body;
   if (!business_id || !floors || !tables) {
     return res.status(400).json({

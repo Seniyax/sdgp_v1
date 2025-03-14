@@ -10,7 +10,13 @@ const floorPlanRoutes = require("./routes/floorPlanRoutes");
 const app = express();
 
 // Middleware
-app.use(cors()); // Enable CORS for frontend requests
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:8081"], // No trailing slash
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"], // Keep only if needed
+  })
+);
 app.use(express.json()); // Parse JSON requests
 
 //routes
