@@ -12,12 +12,14 @@ import FloorPlanSuccess from "./FloorPlanSuccess";
 import FloorPlanFaliure from "./FloorPlanFaliure";
 // import { useSession } from "next-auth/react";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
 function FloorPlanDesigner() {
   const [currentStep, setCurrentStep] = useState(1);
+  // Dimensions in meters (or the original units from step 1)
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
+  // Canvas dimensions (calculated once using width and height)
+  const [canvasWidth, setCanvasWidth] = useState(0);
+  const [canvasHeight, setCanvasHeight] = useState(0);
   const [floorCount, setFloorCount] = useState(0);
   const [currentFloor, setCurrentFloor] = useState(0);
   const [floorNames, setFloorNames] = useState([]);
@@ -33,7 +35,6 @@ function FloorPlanDesigner() {
   // Animation variants based on direction and transitionType
   const variants = {
     enter: ({ direction, transitionType }) => {
-      // For step transitions and waiting page, no x movement is applied.
       if (
         transitionType === "step2to3" ||
         transitionType === "step3to2" ||
@@ -98,7 +99,6 @@ function FloorPlanDesigner() {
     } else {
       setTransitionType("default");
     }
-    // Introduce a 10ms delay to allow the exit animation to start
     setTimeout(() => {
       setCurrentStep(newStep);
     }, 10);
@@ -110,6 +110,7 @@ function FloorPlanDesigner() {
     floorCountValue,
     names
   ) => {
+    // Initialize or adjust floor shapes and tables
     if (floorShapes.length === 0) {
       const newFloorShapes = Array.from({ length: floorCountValue }, () => []);
       const newFloorTables = Array.from({ length: floorCountValue }, () => []);
@@ -130,8 +131,19 @@ function FloorPlanDesigner() {
         setFloorTables(floorTables.slice(0, floorCountValue));
       }
     }
+
+    // Save the original dimensions (in meters) if needed
     setWidth(widthValue);
     setHeight(heightValue);
+
+    // Calculate canvas dimensions here in FloorPlanDesigner
+    const SIZE = 1000;
+    const aspectRatio = widthValue / heightValue;
+    const computedCanvasWidth = aspectRatio >= 1 ? SIZE : SIZE * aspectRatio;
+    const computedCanvasHeight = aspectRatio >= 1 ? SIZE / aspectRatio : SIZE;
+    setCanvasWidth(computedCanvasWidth);
+    setCanvasHeight(computedCanvasHeight);
+
     setFloorCount(floorCountValue);
     setFloorNames(names);
     setCurrentFloor(0);
@@ -166,8 +178,11 @@ function FloorPlanDesigner() {
         floor: table.floor,
       }));
 
+      // Use the computed canvasWidth and canvasHeight from state
       const payload = {
         business_id: businessId,
+        canvas_width: canvasWidth,
+        canvas_height: canvasHeight,
         floors: floorsPayload,
         tables: tablesPayload,
       };
@@ -182,12 +197,12 @@ function FloorPlanDesigner() {
 
       try {
         const response = await axios.post(
-          `${API_BASE_URL}/floor-plan/create`,
+          `api/floor-plan/create`,
           payload
         );
         console.log("Floor plan saved successfully", response.data);
 
-        // Calculate elapsed time and wait if less than 3 seconds
+        // Ensure a minimum of 3 seconds delay
         const elapsed = Date.now() - startTime;
         if (elapsed < 3000) {
           await new Promise((resolve) => setTimeout(resolve, 3000 - elapsed));
@@ -195,17 +210,13 @@ function FloorPlanDesigner() {
 
         setBackendSuccess(true);
         setIsLoading(false);
-        // Transition to step 4 with the waiting transition type
         changeStep(4, "waiting");
       } catch (error) {
         console.error("Error saving floor plan", error);
-
-        // Also ensure a minimum of 3 seconds delay on error
         const elapsed = Date.now() - startTime;
         if (elapsed < 3000) {
           await new Promise((resolve) => setTimeout(resolve, 3000 - elapsed));
         }
-
         setBackendSuccess(false);
         setIsLoading(false);
         setSaveError("Error saving floor plan. Please try again.");
@@ -325,8 +336,9 @@ function FloorPlanDesigner() {
                 }));
                 setFloorShapes(updated);
               }}
-              width={width}
-              height={height}
+              // Pass the calculated canvas dimensions instead of the raw width/height
+              canvasWidth={canvasWidth}
+              canvasHeight={canvasHeight}
             />
           </div>
         );
@@ -339,8 +351,8 @@ function FloorPlanDesigner() {
               initialTables={floorTables[currentFloor]}
               onTablesUpdate={handleTableUpdate}
               onPreviousStep={handlePreviousStep}
-              width={width}
-              height={height}
+              canvasWidth={canvasWidth}
+              canvasHeight={canvasHeight}
               currentFloorName={floorNames[currentFloor]}
             />
           </div>
@@ -351,7 +363,6 @@ function FloorPlanDesigner() {
   };
 
   // Helper function to generate a unique key for motion.
-  // Returns "waiting" when isLoading, or "success" / "failure" when currentStep>=4.
   const getStepKey = () => {
     if (isLoading) return 4;
     if (currentStep >= 4) {
@@ -368,7 +379,6 @@ function FloorPlanDesigner() {
 
   return (
     <FloorPlanLayout>
-      {/* Animate main content with custom direction and transitionType */}
       <AnimatePresence mode="wait">
         <motion.div
           key={getStepKey()}
@@ -382,7 +392,6 @@ function FloorPlanDesigner() {
         </motion.div>
       </AnimatePresence>
 
-      {/* Fixed Buttons AnimatePresence: Always rendered so exit animations run */}
       <AnimatePresence>
         {showFixedButtons && (
           <motion.div
@@ -393,11 +402,7 @@ function FloorPlanDesigner() {
               y: 0,
               transition: { duration: 0.3, delay: 0.4 },
             }}
-            exit={{
-              opacity: 0,
-              y: 20,
-              transition: { duration: 0.3 },
-            }}
+            exit={{ opacity: 0, y: 20, transition: { duration: 0.3 } }}
             style={{ position: "absolute", right: "20px", bottom: "20px" }}
           >
             {renderFloorButtons()}
@@ -415,11 +420,7 @@ function FloorPlanDesigner() {
               y: 0,
               transition: { duration: 0.3, delay: 0.4 },
             }}
-            exit={{
-              opacity: 0,
-              y: 20,
-              transition: { duration: 0.3 },
-            }}
+            exit={{ opacity: 0, y: 20, transition: { duration: 0.3 } }}
             style={{ position: "absolute", left: "20px", bottom: "20px" }}
           >
             <button

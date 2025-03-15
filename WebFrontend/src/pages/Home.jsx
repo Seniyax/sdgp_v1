@@ -5,10 +5,10 @@ import NishanjaliImage from "../assets/Nishanjali.jpeg";
 import UvinduImage from "../assets/uvindu.jpeg";
 import AbinathImage from "../assets/abinath.jpeg";
 import RansikaImage from "../assets/ransika.jpeg";
-import KavinduImage from "../assets/kavindu.jpeg";
-import SeniyaImage from "../assets/seniya.jpeg";
+import KavinduImage from "../assets/Kavindu.webp";
+import SeniyaImage from "../assets/seniya.jpg";
 import { useNavigate } from 'react-router-dom';
-import video from "../assets/finalvideo.mp4";
+import video from "../assets/SlotZi_home_vid.mp4";
 
 
 function Home() {
@@ -438,7 +438,7 @@ function Home() {
             <section id="contact" className="contact-section">
                 <div className="section-header">
                     <h2>Get in Touch</h2>
-                    <p>We'd love to hear from you</p>
+                    <p>We&apos;d love to hear from you</p>
                 </div>
                 <div className="contact-container">
                     <div className="contact-info">

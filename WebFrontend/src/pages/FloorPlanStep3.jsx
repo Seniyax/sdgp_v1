@@ -96,16 +96,10 @@ function FloorPlanStep3({
   floorShapes = [],
   initialTables = [],
   onTablesUpdate,
-  width,
-  height,
+  canvasWidth,
+  canvasHeight,
   currentFloorName,
 }) {
-  // Calculate canvas size based on aspect ratio
-  const aspectRatio = width / height;
-  const SIZE = 1000;
-  const canvasWidth = aspectRatio >= 1 ? SIZE : SIZE * aspectRatio;
-  const canvasHeight = aspectRatio >= 1 ? SIZE / aspectRatio : SIZE;
-
   const [shapes, setShapes] = useState(initialTables);
   const [selectedId, setSelectedId] = useState(null);
   const [selectedShapeType, setSelectedShapeType] = useState("squareTable");

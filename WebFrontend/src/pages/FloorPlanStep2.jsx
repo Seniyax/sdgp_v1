@@ -48,15 +48,9 @@ function FloorplanStep2({
   onNext,
   initialShapes = [],
   onShapesUpdate,
-  width = 100,
-  height = 100,
+  canvasWidth,
+  canvasHeight,
 }) {
-  // Calculate canvas size based on aspect ratio
-  const SIZE = 1000;
-  const aspectRatio = width / height;
-  const canvasWidth = aspectRatio >= 1 ? SIZE : SIZE * aspectRatio;
-  const canvasHeight = aspectRatio >= 1 ? SIZE / aspectRatio : SIZE;
-
   const [selectedId, setSelectedId] = useState(null);
   const [selectedShapeType, setSelectedShapeType] = useState(null);
   const stageRef = useRef();

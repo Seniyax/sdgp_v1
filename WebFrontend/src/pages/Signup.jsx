@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import "../style/Signup.css";
-import shape from "../assets/shape2.png";
+import shape from "../assets/post2.png";
 
 const SignupPage = () => {
     const [formData, setFormData] = useState({
