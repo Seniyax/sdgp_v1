@@ -4,14 +4,24 @@ async function getFloorsByBusiness(business_id) {
   const { data, error } = await supabase
     .from("floor_plan")
     .select("*")
-    .eq("business_id", business_id);
+    .eq("business_id", business_id)
+    .order("id", { ascending: true });
+
   if (error) throw error;
   return data;
 }
 
-async function createFloorPlanWithTables(business_id, floors, tables) {
+async function createFloorPlanWithTables(
+  business_id,
+  canvas_width,
+  canvas_height,
+  floors,
+  tables
+) {
   const floorRows = floors.map((floor) => ({
     business_id,
+    canvas_width,
+    canvas_height,
     floor_name: floor.floor_name,
     floor_plan: floor.floor_plan,
   }));
