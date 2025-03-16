@@ -1,0 +1,662 @@
+/* Base styles */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    overflow-x: hidden;
+    background-color: #420842;
+}
+
+.container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100%;
+    color: white;
+    overflow: hidden;
+}
+
+/* Cosmic background */
+.cosmic-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+.stars {
+    background: #000 url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/1231630/stars.png') repeat;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.twinkling {
+    background: transparent url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/1231630/twinkling.png') repeat;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    animation: move-twink-back 200s linear infinite;
+}
+
+.clouds {
+    background: transparent url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/1231630/clouds.png') repeat;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    opacity: 0.4;
+    animation: move-clouds-back 200s linear infinite;
+}
+
+@keyframes move-twink-back {
+    from {background-position: 0 0;}
+    to {background-position: -10000px 5000px;}
+}
+
+@keyframes move-clouds-back {
+    from {background-position: 0 0;}
+    to {background-position: 10000px 0;}
+}
+
+/* Content */
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    z-index: 10;
+    padding: 2rem;
+    max-width: 1200px;
+    width: 100%;
+}
+
+.title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(to right, #f6f7ec, #753c75);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 10px rgba(51, 204, 255, 0.3);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    font-weight: 300;
+    margin-bottom: 3rem;
+    color: #ccc;
+}
+
+/* Buttons container */
+.buttons-container {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+/* Base button styles */
+.btn {
+    position: relative;
+    padding: 1.2rem 2.5rem;
+    border: none;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    background: transparent;
+    color: white;
+    outline: none;
+    perspective: 1000px;
+}
+
+.btn-content {
+    position: relative;
+    z-index: 3;
+    transition: all 0.3s ease;
+}
+
+.btn-label {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.8rem;
+    font-family: 'Poppins', sans-serif;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    white-space: nowrap;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.btn:hover .btn-label {
+    opacity: 1;
+}
+
+/* Register button - Enhanced */
+.register-btn {
+    border: 2px solid #c820c8;
+    box-shadow: 0 0 20px rgba(200, 32, 200, 0.3);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: linear-gradient(135deg, rgba(200, 32, 200, 0.1), rgba(0, 255, 204, 0.1));
+}
+
+.register-btn:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, rgba(200, 32, 200, 0.1), rgba(0, 255, 204, 0.1));
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.register-btn:after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #c820c8, #00ffcc, #c820c8);
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.register-btn:hover {
+    transform: translateY(-5px) rotateX(10deg);
+    box-shadow: 0 15px 25px rgba(0, 255, 204, 0.4);
+    border-color: transparent;
+    color: #fff;
+    text-shadow: 0 0 5px rgba(0, 255, 204, 0.8);
+}
+
+.register-btn:hover:before {
+    opacity: 1;
+}
+
+.register-btn:hover:after {
+    opacity: 1;
+    animation: borderRotate 2s linear infinite;
+}
+
+@keyframes borderRotate {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.register-btn .btn-glitch {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 255, 204, 0.5);
+    z-index: 0;
+    opacity: 0;
+    transition: all 0.3s;
+}
+
+.register-btn:hover .btn-glitch {
+    animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+}
+
+.register-btn:active {
+    transform: translateY(0) scale(0.95);
+    box-shadow: 0 5px 15px rgba(0, 255, 204, 0.4);
+}
+
+@keyframes glitch {
+    0% {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        transform: translate(0);
+        opacity: 0.1;
+    }
+    20% {
+        clip-path: polygon(0 5%, 100% 0, 100% 95%, 0 100%);
+        transform: translate(-5px, 5px);
+        opacity: 0.3;
+    }
+    40% {
+        clip-path: polygon(0 0, 100% 5%, 100% 100%, 0 95%);
+        transform: translate(5px, -5px);
+        opacity: 0.1;
+    }
+    60% {
+        clip-path: polygon(0 10%, 100% 0, 100% 90%, 0 100%);
+        transform: translate(-3px);
+        opacity: 0.2;
+    }
+    80% {
+        clip-path: polygon(0 0, 100% 10%, 100% 100%, 0 90%);
+        transform: translate(3px);
+        opacity: 0.1;
+    }
+    100% {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        transform: translate(0);
+        opacity: 0;
+    }
+}
+
+/* Particles for Register button */
+.particle-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.particle {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background: #00ffcc;
+    border-radius: 50%;
+    opacity: 0;
+    animation: particle-animation 0.8s ease-out forwards;
+}
+
+.particle:nth-child(odd) {
+    background: #c820c8;
+}
+
+.particle:nth-child(3n) {
+    background: #33ccff;
+    width: 3px;
+    height: 3px;
+}
+
+.particle:nth-child(4n) {
+    background: #ff00cc;
+    width: 2px;
+    height: 2px;
+}
+
+@keyframes particle-animation {
+    0% {
+        transform: translate(0, 0);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--tx, -40px), var(--ty, -40px));
+        opacity: 0;
+    }
+}
+
+/* Register button hover sheen effect */
+.register-btn:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.2),
+            transparent
+    );
+    z-index: 10;
+    transition: left 0.7s;
+}
+
+.register-btn:hover:before {
+    left: 100%;
+}
+
+/* Join button - Enhanced */
+.join-btn {
+    border: 2px solid #33ccff;
+    box-shadow: 0 0 20px rgba(51, 204, 255, 0.3);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: linear-gradient(135deg, rgba(51, 204, 255, 0.1), rgba(255, 0, 204, 0.1));
+}
+
+.join-btn:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, rgba(51, 204, 255, 0.1), rgba(0, 102, 255, 0.2));
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.join-btn:after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #33ccff, #0066ff, #33ccff);
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.join-btn:hover {
+    transform: translateY(-5px) rotateX(10deg);
+    box-shadow: 0 15px 25px rgba(51, 204, 255, 0.4);
+    border-color: transparent;
+    color: #fff;
+    text-shadow: 0 0 5px rgba(51, 204, 255, 0.8);
+}
+
+.join-btn:hover:before {
+    opacity: 1;
+}
+
+.join-btn:hover:after {
+    opacity: 1;
+    animation: borderRotateBlue 2s linear infinite;
+}
+
+@keyframes borderRotateBlue {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(-360deg);
+    }
+}
+
+.join-btn:active {
+    transform: translateY(0) scale(0.95);
+    box-shadow: 0 5px 15px rgba(51, 204, 255, 0.4);
+}
+
+.btn-pulse {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+    background: radial-gradient(circle, rgba(51, 204, 255, 0.7) 0%, transparent 70%);
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.5s;
+}
+
+.join-btn:hover .btn-pulse {
+    animation: pulse-ring 1.5s linear infinite;
+}
+
+@keyframes pulse-ring {
+    0% {
+        opacity: 0.7;
+        transform: scale(0.5);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.5);
+    }
+}
+
+/* Enhanced Ripple effect for Join button */
+.ripple-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.ripple {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: transparent;
+    border: 2px solid #33ccff;
+    animation: ripple 1.5s linear infinite;
+}
+
+.ripple:nth-child(2) {
+    animation-delay: 0.3s;
+}
+
+.ripple:nth-child(3) {
+    animation-delay: 0.6s;
+}
+
+.ripple:nth-child(4) {
+    animation-delay: 0.9s;
+    border: 1px solid #00ffcc;
+}
+
+@keyframes ripple {
+    0% {
+        width: 0;
+        height: 0;
+        opacity: 0.8;
+    }
+    100% {
+        width: 200px;
+        height: 200px;
+        opacity: 0;
+    }
+}
+
+/* Join button orbit effect */
+.orbit-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.orbit {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 150px;
+    height: 50px;
+    border-radius: 50%;
+    border: 1px solid rgba(51, 204, 255, 0.3);
+    opacity: 0;
+    transition: all 0.5s;
+}
+
+.orbit-dot {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #33ccff;
+    border-radius: 50%;
+    top: 50%;
+    margin-top: -2px;
+    left: 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.join-btn:hover .orbit {
+    opacity: 1;
+    animation: orbit-rotate 3s linear infinite;
+}
+
+.join-btn:hover .orbit-dot {
+    opacity: 1;
+    animation: orbit-dot-move 3s linear infinite;
+}
+
+@keyframes orbit-rotate {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+@keyframes orbit-dot-move {
+    0% {
+        left: 0;
+    }
+    50% {
+        left: 100%;
+    }
+    100% {
+        left: 0;
+    }
+}
+
+/* Hover glow effect for both buttons */
+.btn:hover .btn-content {
+    animation: text-glow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes text-glow {
+    from {
+        text-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+    to {
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(51, 204, 255, 0.3);
+    }
+}
+
+/* Hover letter spacing animation */
+.btn:hover .btn-content {
+    letter-spacing: 3px;
+}
+
+/* 3D push effect on active */
+.btn:active {
+    transform: translateY(2px);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .title {
+        font-size: 2.5rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .buttons-container {
+        flex-direction: column;
+        gap: 2rem;
+        width: 80%;
+        max-width: 300px;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 1rem 1.5rem;
+    }
+
+    .btn:hover {
+        letter-spacing: 2px;
+    }
+}
+
+@media (max-width: 480px) {
+    .title {
+        font-size: 2rem;
+    }
+
+    .content {
+        padding: 1rem;
+    }
+
+    .buttons-container {
+        width: 90%;
+    }
+
+    .btn:hover .btn-content {
+        letter-spacing: 2px;
+    }
+}
+
+/* Prevent animation conflicts on small screens */
+@media (hover: none) {
+    .btn:hover {
+        transform: none;
+    }
+
+    .btn-label {
+        opacity: 1;
+        font-size: 0.7rem;
+    }
+}
