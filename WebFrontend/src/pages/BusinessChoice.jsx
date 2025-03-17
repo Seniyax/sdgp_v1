@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import "../style/BusinessChoice.css";  // Ensure the correct path to the CSS file
-
+import "../style/BusinessChoice.css"; 
 const RegistrationButtons = () => {
     const navigate = useNavigate();
     const [hoverRegister, setHoverRegister] = useState(false);

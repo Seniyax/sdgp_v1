@@ -18,16 +18,12 @@ const Home = () => {
     { icon: Calendar, value: "1.2M+", label: "Bookings Monthly" }
   ];
   
-  // Add these handlers directly in the Home component
   const handleUserClick = () => {
-    // Implement actual navigation logic
-    window.location.href = '/users';
-    // or using react-router: history.push('/users');
+    navigate('/users');
   };
 
   const handleBusinessClick = () => {
-    window.location.href = '/business-choice';  
-    navigate('/business-choice');    
+    navigate('/business-choice'); // Navigate to BusinessChoice page
   };
 
 
@@ -107,15 +103,7 @@ const Home = () => {
 
   return (
     <div className="container">
-      {/* Navbar */}
-      <nav className="navbar">
-        <div className="wrapper">
-          <div className="flex">
-              <Link to="/login" className="link">Login</Link>
-              <Link to="/signup" className="button">Sign Up</Link>
-          </div>
-        </div>
-      </nav>
+      
 
       {/* Main Content */}
       <motion.div

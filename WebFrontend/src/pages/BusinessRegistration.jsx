@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, Info, ArrowRight, Building, MapPin, Phone, Mail, Globe, Calendar, Clock, Camera, Upload } from 'lucide-react';
-import "../styles/BusinessRegistration.css";
+import "../style/BusinessRegistration.css"; 
 
 const BusinessRegistration = () => {
     const navigate = useNavigate();
