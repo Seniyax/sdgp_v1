@@ -8,8 +8,9 @@ a {
 }
 
 body {
+  background-color: white;
   place-items: center;
-  min-width: 320px;
+  min-width: 100vh;
   min-height: 100vh;
 }
 

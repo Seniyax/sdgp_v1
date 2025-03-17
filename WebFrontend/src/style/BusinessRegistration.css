@@ -1,6 +1,6 @@
-/* Business Registration Styles - Modern & Creative */
+
 :root {
-    --primary-color: #420842;
+    --primary-color: #420e54;
     --primary-light: #818cf8;
     --primary-dark: #3730a3;
     --secondary-color: #10b981;
@@ -24,6 +24,9 @@
     --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --box-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     --transition: all 0.3s ease;
+}
+body {
+    background-color: white;  
 }
 
 

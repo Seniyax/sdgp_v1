@@ -20,7 +20,10 @@
     --yellow-400: #FBBF24;
     --transition-base: all 0.3s ease;
   }
-  
+
+  body{
+    background-color: white;
+  }
 
   a {
     color: var(--deep-purple);
