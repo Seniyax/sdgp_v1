@@ -3,6 +3,7 @@ const cors = require("cors");
 const categoryRoutes = require('./routes/categoryRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const reservationHistoryRoutes = require('./routes/reservationHistoryRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 
 const app = express();
@@ -11,6 +12,7 @@ const app = express();
 app.use(cors()); // Enable CORS for frontend requests
 app.use(express.json()); // Parse JSON requests
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+app.use('/api/notifications', notificationRoutes);
 
 
 // Health check endpoint
