@@ -1,0 +1,12 @@
+{"level":"error","message":"Error creating payment record:","timestamp":"2025-03-17 18:47:12"}
+{"level":"error","message":"Error initializing payment:","timestamp":"2025-03-17 18:47:12"}
+{"level":"error","message":"Error creating payment record:","timestamp":"2025-03-17 18:51:28"}
+{"level":"error","message":"Error initializing payment:","timestamp":"2025-03-17 18:51:28"}
+{"level":"error","message":"Error creating payment record:","timestamp":"2025-03-17 18:52:11"}
+{"level":"error","message":"Error initializing payment:","timestamp":"2025-03-17 18:52:11"}
+{"level":"error","message":"Error creating payment record:","timestamp":"2025-03-17 18:52:16"}
+{"level":"error","message":"Error initializing payment:","timestamp":"2025-03-17 18:52:16"}
+{"error":{},"level":"error","message":"Error creating notification: Notification type must be one of: New Reservation, Cancelled, Reminder, Promotional, Other","timestamp":"2025-03-17 18:56:24"}
+{"level":"error","message":"Error sending notification to user 86b0fb25-e1f7-41a1-8338-fee52ca2669d: Notification type must be one of: New Reservation, Cancelled, Reminder, Promotional, Other","timestamp":"2025-03-17 18:56:24"}
+{"error":{},"level":"error","message":"Error creating notification: Notification type must be one of: New Reservation, Cancelled, Reminder, Promotional, Other","timestamp":"2025-03-17 19:02:34"}
+{"level":"error","message":"Error sending notification to user 86b0fb25-e1f7-41a1-8338-fee52ca2669d: Notification type must be one of: New Reservation, Cancelled, Reminder, Promotional, Other","timestamp":"2025-03-17 19:02:34"}

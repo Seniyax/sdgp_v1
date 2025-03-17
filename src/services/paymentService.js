@@ -161,32 +161,11 @@ class PaymentService {
       
       // Send notification based on payment status
       if (updatedPayment && updatedPayment.customer_id) {
-        let notificationMessage;
-        
-        if (paymentStatus === 'COMPLETED') {
-          notificationMessage = `Your payment of ${updatedPayment.amount} ${updatedPayment.currency} was successful.`;
-        } else if (paymentStatus === 'FAILED') {
-          notificationMessage = 'Your payment was unsuccessful. Please try again.';
-        } else if (paymentStatus === 'CANCELED') {
-          notificationMessage = 'Your payment was canceled.';
-        }
-        
-        if (notificationMessage) {
-          try {
-            await pushNotification.sendToUser(
-              updatedPayment.customer_id, 
-              'Payment Update', 
-              notificationMessage,
-              {
-                type: 'PAYMENT',
-                paymentId: updatedPayment.id,
-                status: paymentStatus
-              }
-            );
-          } catch (notificationError) {
-            logger.error('Error sending payment notification:', notificationError);
-            // Continue anyway - notification failure shouldn't stop the process
-          }
+        try {
+          await pushNotification.sendPaymentStatusNotification(updatedPayment);
+        } catch (notificationError) {
+          logger.error('Error sending payment notification:', notificationError);
+          // Continue anyway - notification failure shouldn't stop the process
         }
       }
       
