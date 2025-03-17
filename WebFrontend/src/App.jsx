@@ -7,6 +7,7 @@ import FloorPlanDesigner from "./pages/FloorPlanDesigner";
 import ReservationDashboard from "./pages/ReservationDashboard";
 import BusinessChoice from "./pages/BusinessChoice"; // Import BusinessChoice page
 import BusinessRegistration from "./pages/BusinessRegistration";
+import BusinessDashboard from "./pages/BusinessDashboard";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/reservationDashboard" element={<ReservationDashboard />} />
         <Route path="/business-choice" element={<BusinessChoice />} /> 
         <Route path="/business-registration" element={<BusinessRegistration />} /> 
+        <Route path="/business-dashboard" element={<BusinessDashboard />} /> 
       </Routes>
     </Router>
   );

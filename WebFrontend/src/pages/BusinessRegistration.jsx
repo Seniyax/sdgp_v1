@@ -226,6 +226,7 @@ const BusinessRegistration = () => {
             console.log('Submitting form data:', formData);
             // Show success message or redirect
             alert('Registration successful! Welcome to Slotzi!');
+            navigate('/business-dashboard');
         }
     };
 
