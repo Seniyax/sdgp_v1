@@ -2,11 +2,13 @@ const supabase = require('../config/supabaseClient');
 
 exports.signup = async (req, res) => {
     try {
+
+        console.log("Received signup requests;", req.body);
         const { email, password, name } = req.body;
         
         // Check if the user already exists
         const { data: existUser } = await supabase
-            .from('users')
+            .from('customer')
             .select('*')
             .eq('email', email)
             .single();
@@ -23,7 +25,7 @@ exports.signup = async (req, res) => {
             password,
             options: {
                 data: {
-                    name
+                    full_name:name
                 }
             }
         });
@@ -36,15 +38,16 @@ exports.signup = async (req, res) => {
 
         // Create a profile in the users table
         const { error: profileError } = await supabase
-            .from('users')
+            .from('customer')
             .insert({
                 id: authData.user.id,
                 email,
-                name,
-                created_at: new Date()
+                full_name:name,
+                created_at: new Date().toISOString()
             });
 
         if (profileError) {
+            console.error("Profile createion error:",profileError)
             return res.status(500).json({
                 error: 'Failed to create the profile'
             });
@@ -70,19 +73,22 @@ exports.signin = async (req, res) => {
     try {
         const { email, password } = req.body;
 
+        console.log("Signing in user:",email);
+
         const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password
         });
 
         if (error) {
+            console.error("Supabase Auth Error",error.message)
             return res.status(401).json({
                 error: "Invalid login credentials"
             });
         }
 
         const { data: profileData } = await supabase
-            .from('users')
+            .from('customer')
             .select('*')
             .eq('id', data.user.id)
             .single();
@@ -137,7 +143,7 @@ exports.socialLogin = async (req, res) => {
         }
 
         const { error: profileError } = await supabase
-            .from('users')
+            .from('customer')
             .upsert({
                 id: data.user.id,
                 email: data.user.email,
