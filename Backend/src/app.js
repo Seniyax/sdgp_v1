@@ -1,7 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 const categoryRoutes = require('./routes/categoryRoutes');
-const reservationRoutes = require('./routes/reservationRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
+const reservationHistoryRoutes = require('./routes/reservationHistoryRoutes');
+
 
 const app = express();
 
@@ -9,6 +11,7 @@ const app = express();
 app.use(cors()); // Enable CORS for frontend requests
 app.use(express.json()); // Parse JSON requests
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -20,7 +23,9 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/api/categories', categoryRoutes);
-app.use('/api/reservations', reservationRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/reservations/history', reservationHistoryRoutes); 
+
 
 // Error handler middleware
 app.use((err, req, res, next) => {
