@@ -1,332 +1,545 @@
-import React, { useState, useEffect } from 'react';
-import "../style/Home.css";
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Calendar, Clock, Building, User, Mail, Phone, Check } from 'lucide-react';
-import Nishanjali from "../assets/Nishanjali.jpeg";
-import Uvindu from "../assets/uvindu.jpeg";
-import Seniya from "../assets/seniya.jpeg";
-import Ransika from "../assets/ransika.jpeg";
-import Abinath from "../assets/abinath.jpeg";
-import Kavindu from "../assets/kavindu.jpeg";
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { 
+  ArrowRight, Users, Building2, Calendar, Star, Clock, Shield, 
+  BarChart as ChartBar, Settings, Zap, Facebook, Twitter, 
+  Instagram, Mail, Phone, Award, CheckCircle, MapPin
+} from 'lucide-react';
+import "../style/Home.css";
 
 const Home = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeFeature, setActiveFeature] = useState(0);
+    const navigate = useNavigate();
+  // Data for stats section
+  const stats = [
+    { icon: Users, value: "10,000+", label: "Active Users" },
+    { icon: Building2, value: "2,500+", label: "Businesses" },
+    { icon: Calendar, value: "1.2M+", label: "Bookings Monthly" }
+  ];
+  
+  // Add these handlers directly in the Home component
+  const handleUserClick = () => {
+    // Implement actual navigation logic
+    window.location.href = '/users';
+    // or using react-router: history.push('/users');
+  };
+
+  const handleBusinessClick = () => {
+    window.location.href = '/business-choice';  
+    navigate('/business-choice');    
+  };
+
+
   
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveFeature((prev) => (prev + 1) % 3);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
+  // Data for features section
   const features = [
     {
+      icon: Calendar,
       title: "Smart Scheduling",
-      description: "AI-powered scheduling that optimizes your time and reduces no-shows by 35%.",
-      icon: <Calendar size={28} />
+      description: "Intelligent booking system that adapts to your business needs and optimizes your calendar."
     },
     {
-      title: "Real-time Notifications",
-      description: "Keep everyone in the loop with automated reminders and updates.",
-      icon: <Clock size={28} />
+      icon: Clock,
+      title: "Time Management",
+      description: "Reduce no-shows with automated reminders and seamless rescheduling options."
     },
     {
-      title: "Easy Management",
-      description: "Simple dashboard for businesses to manage all appointments in one place.",
-      icon: <Building size={28} />
+      icon: Shield,
+      title: "Secure Platform",
+      description: "Enterprise-grade security ensures your data and your customers' information stays protected."
+    },
+    {
+      icon: ChartBar,
+      title: "Detailed Analytics",
+      description: "Gain insights into your business performance with comprehensive reporting tools."
+    },
+    {
+      icon: Settings,
+      title: "Customizable",
+      description: "Tailor the platform to match your brand and specific business requirements."
+    },
+    {
+      icon: Zap,
+      title: "Integration Ready",
+      description: "Connects with your existing tools including Google Calendar, Outlook, and CRM systems."
     }
   ];
 
-  const testimonials = [
+  // Data for values section
+  const values = [
     {
-      name: "Sarah Johnson",
-      role: "Salon Owner",
-      text: "Slotzi has cut our no-show rate by 50% and saved us countless hours of scheduling work."
+      icon: CheckCircle,
+      title: "Customer Success",
+      description: "We're dedicated to helping your business thrive with our tools and support."
     },
     {
-      name: "Michael Chen",
-      role: "Dental Clinic Manager",
-      text: "The dual interfaces for businesses and clients make Slotzi the perfect solution for our practice."
+      icon: Shield,
+      title: "Reliability",
+      description: "Built with enterprise-grade security and 99.9% uptime for businesses of all sizes."
     },
     {
-      name: "Leila Rodriguez",
-      role: "Yoga Studio Instructor",
-      text: "My students love how easy it is to book classes. I love how it's automated my entire scheduling process."
+      icon: Award,
+      title: "Innovation",
+      description: "Constantly evolving our platform with the latest technologies and best practices."
+    }
+  ];
+
+  // Data for steps section
+  const steps = [
+    {
+      icon: Settings,
+      title: "Setup Your Account",
+      description: "Create your profile, customize your booking preferences, and set your availability in minutes."
+    },
+    {
+      icon: Calendar,
+      title: "Share Your Booking Link",
+      description: "Add your personalized booking page to your website or share directly with customers."
+    },
+    {
+      icon: CheckCircle,
+      title: "Start Accepting Bookings",
+      description: "Watch as appointments automatically flow into your calendar with zero double-bookings."
     }
   ];
 
   return (
-    <div className="home-container">
-      {/* Navigation */}
+    <div className="container">
+      {/* Navbar */}
       <nav className="navbar">
-        <div className="logo">Slotzi</div>
-        <div className="nav-links">
-          <a href="#features">Features</a>
-          <a href="#how-it-works">How It Works</a>
-          <a href="#testimonials">Testimonials</a>
-          <a href="#team">Our Team</a>
-          <a href="#contact">Contact</a>
-        </div>
-        <div className="mobile-menu-icon" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-          <div className={`hamburger ${isMenuOpen ? 'open' : ''}`}></div>
-        </div>
-        <div className={`mobile-menu ${isMenuOpen ? 'open' : ''}`}>
-          <a href="#features" onClick={() => setIsMenuOpen(false)}>Features</a>
-          <a href="#how-it-works" onClick={() => setIsMenuOpen(false)}>How It Works</a>
-          <a href="#testimonials" onClick={() => setIsMenuOpen(false)}>Testimonials</a>
-          <a href="#team" onClick={() => setIsMenuOpen(false)}>Our Team</a>
-          <a href="#contact" onClick={() => setIsMenuOpen(false)}>Contact</a>
+        <div className="wrapper">
+          <div className="flex">
+              <Link to="/login" className="link">Login</Link>
+              <Link to="/signup" className="button">Sign Up</Link>
+          </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="hero">
-        <div className="hero-content">
-          <h1>Simplify Reservations. Amplify Business.</h1>
-          <p>The smart reservation platform that connects businesses and customers seamlessly.</p>
-          <div className="cta-buttons">
-            <Link to="/WebFrontend/src/pages/BusinessChoice.jsx" className="btn btn-primary">
-                For Users</Link>
-            <Link to="/business-choice?type=business" className="btn btn-secondary">
-                For Business</Link>
-          </div>
-        </div>
-        <div className="hero-image">
-          <img src="/api/placeholder/480/320" alt="Slotzi App Interface" />
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" className="features">
-        <h2>Why Choose Slotzi</h2>
-        <div className="features-grid">
-          {features.map((feature, index) => (
-            <div 
-              key={index} 
-              className={`feature-card ${activeFeature === index ? 'active' : ''}`}
-              onClick={() => setActiveFeature(index)}
+      {/* Main Content */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="main"
+      >
+        {/* Hero Section */}
+        <div className="hero">
+          <div className="grid"></div>
+          <div className="wrapper padded">
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="center"
             >
-              <div className="feature-icon">{feature.icon}</div>
-              <h3>{feature.title}</h3>
-              <p>{feature.description}</p>
-            </div>
-          ))}
+              <span className="badge">
+                Revolutionizing Business Management
+              </span>
+              <h1 className="title">
+                Smart Scheduling for<br />Modern Businesses
+              </h1>
+              <p className="subtitle">
+                Transform your business operations with SlotZi's intelligent reservation platform. 
+                Streamline bookings, reduce no-shows, and delight your customers.
+              </p>
+              <div className="buttons">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="primary"
+                  onClick={handleUserClick}
+                >
+                  <Users className="icon" />
+                  For Users
+                  <ArrowRight className="icon" />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="secondary"
+                  onClick={handleBusinessClick}
+                >
+                  <Building2 className="icon" />
+                  For Business
+                  <ArrowRight className="icon" />
+                </motion.button>
+              </div>
+              <div className="stats">
+                {stats.map((stat, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.4 + index * 0.1 }}
+                    className="card"
+                  >
+                    <stat.icon className="staticon" />
+                    <h3 className="statvalue">{stat.value}</h3>
+                    <p className="statlabel">{stat.label}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
         </div>
-      </section>
 
-      {/* How It Works Section */}
-      <section id="how-it-works" className="how-it-works">
-        <h2>How Slotzi Works</h2>
-        <div className="tabs">
-          <div className="tab-container">
-            <div className="tab-header">
-              <button className="tab-button active" data-tab="users">For Users</button>
-              <button className="tab-button" data-tab="business">For Business</button>
+        {/* Features Section */}
+        <div className="features">
+          <div className="wrapper">
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              viewport={{ once: true }}
+              className="center"
+            >
+              <span className="badge">
+                Why Choose SlotZi
+              </span>
+              <h2 className="heading">
+                Everything You Need to Succeed
+              </h2>
+              <p className="text">
+                Experience the future of business reservations with our comprehensive platform 
+                designed to help your business thrive in the digital age.
+              </p>
+            </motion.div>
+
+            <div className="grid3">
+              {features.map((feature, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ y: 20, opacity: 0 }}
+                  whileInView={{ y: 0, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="featurecard"
+                >
+                  <div className="iconbox">
+                    <feature.icon className="featureicon" />
+                  </div>
+                  <h3 className="featuretitle">{feature.title}</h3>
+                  <p className="featuredesc">{feature.description}</p>
+                </motion.div>
+              ))}
             </div>
-            <div className="tab-content active" id="users">
-              <div className="step">
-                <div className="step-number">1</div>
-                <div className="step-info">
-                  <h3>Find & Select</h3>
-                  <p>Browse businesses and available time slots at your convenience.</p>
+
+            {/* Testimonial Section */}
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              viewport={{ once: true }}
+              className="testimonial"
+            >
+              <div className="stars">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="star" />
+                ))}
+              </div>
+              <p className="quote">
+                "SlotZi has transformed how we handle appointments. Our no-show rate dropped by 60%, 
+                and customer satisfaction is at an all-time high!"
+              </p>
+              <div className="author">
+                <h4 className="name">Sarah Johnson</h4>
+                <p className="role">CEO, Wellness Center</p>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* CTA Section */}
+        <div className="cta">
+          <div className="wrapper">
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              viewport={{ once: true }}
+              className="center"
+            >
+              <h2 className="ctaheading">
+                Ready to Transform Your Business?
+              </h2>
+              <p className="ctasubtext">
+                Join thousands of businesses already using SlotZi to streamline their operations.
+              </p>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="ctabutton"
+              >
+                Start Free Trial
+                <ArrowRight className="icon" />
+              </motion.button>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* About Section */}
+        <div className="about">
+          <div className="wrapper">
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="center"
+            >
+              <h1 className="heading">About SlotZi</h1>
+              <p className="subheading">
+                We're revolutionizing the way businesses handle reservations, making it simpler and more efficient for everyone involved.
+              </p>
+            </motion.div>
+
+            <div className="values">
+              {values.map((value, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.2 + index * 0.1 }}
+                  className="center"
+                >
+                  <div className="iconwrap">
+                    <value.icon className="valueicon" />
+                  </div>
+                  <h3 className="valuetitle">{value.title}</h3>
+                  <p className="valuedesc">{value.description}</p>
+                </motion.div>
+              ))}
+            </div>
+
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="mission"
+            >
+              <h2 className="missiontitle">Our Mission</h2>
+              <p className="missiontext">
+                To empower businesses with innovative scheduling solutions that save time, reduce complexity, and enhance the customer experience. We believe in making reservation management accessible, efficient, and stress-free for everyone.
+              </p>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* How It Works Section */}
+        <div className="howworks">
+          <div className="wrapper">
+
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="center"
+            >
+              <span className="badge">
+                Simple & Efficient
+              </span>
+              <h1 className="heading">How SlotZi Works</h1>
+              <p className="subheading">
+                Discover how our platform streamlines your business scheduling in three simple steps
+              </p>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Steps Section */}
+        <div className="steps">
+          <div className="wrapper">
+            <div className="stepsrow">
+              {steps.map((step, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ y: 20, opacity: 0 }}
+                  whileInView={{ y: 0, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.2 }}
+                  className="stepwrap"
+                >
+                  <div className="stepcard">
+                    <div className="stepicon">
+                      <step.icon className="icon" />
+                    </div>
+                    <h3 className="steptitle">{step.title}</h3>
+                    <p className="stepdesc">{step.description}</p>
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div className="connector" />
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Contact Section */}
+        <div className="contact">
+          <div className="wrapper">
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="center"
+            >
+              <h1 className="heading">Contact Us</h1>
+              <p className="subheading">
+                Have questions? We're here to help. Reach out to our team and we'll get back to you as soon as possible.
+              </p>
+            </motion.div>
+
+            <div className="contactgrid">
+              <motion.div
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="formcard"
+              >
+                <h2 className="formtitle">Get in Touch</h2>
+                <form className="form">
+                  <div className="field">
+                    <label htmlFor="name" className="label">Full Name</label>
+                    <input
+                      type="text"
+                      id="name"
+                      className="input"
+                      placeholder="John Doe"
+                    />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="email" className="label">Email Address</label>
+                    <input
+                      type="email"
+                      id="email"
+                      className="input"
+                      placeholder="john@example.com"
+                    />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="message" className="label">Message</label>
+                    <textarea
+                      id="message"
+                      rows="4"
+                      className="textarea"
+                      placeholder="How can we help you?"
+                    ></textarea>
+                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    type="submit"
+                    className="submit"
+                  >
+                    Send Message
+                  </motion.button>
+                </form>
+              </motion.div>
+
+              <motion.div
+                initial={{ x: 20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="infocard"
+              >
+                <h2 className="infotitle">Contact Information</h2>
+                <div className="infolist">
+                  <div className="infoitem">
+                    <Mail className="infoicon" />
+                    <div>
+                      <h3 className="itemtitle">Email</h3>
+                      <p className="itemtext">support@slotzi.com</p>
+                    </div>
+                  </div>
+                  <div className="infoitem">
+                    <Phone className="infoicon" />
+                    <div>
+                      <h3 className="itemtitle">Phone</h3>
+                      <p className="itemtext">+1 (555) 123-4567</p>
+                    </div>
+                  </div>
+                  <div className="infoitem">
+                    <MapPin className="infoicon" />
+                    <div>
+                    <h3 className="itemtitle">Location</h3>
+                      <p className="itemtext">123 Business Ave, Suite 200<br />San Francisco, CA 94107</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="social">
+                  <h3 className="socialtitle">Follow Us</h3>
+                  <div className="socialicons">
+                    <a href="#" className="sociallink">
+                      <Facebook className="socialicon" />
+                    </a>
+                    <a href="#" className="sociallink">
+                      <Twitter className="socialicon" />
+                    </a>
+                    <a href="#" className="sociallink">
+                      <Instagram className="socialicon" />
+                    </a>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <footer className="footer">
+          <div className="wrapper">
+            <div className="footergrid">
+              <div className="footercol">
+                <h3 className="footertitle">SlotZi</h3>
+                <p className="footertext">The intelligent scheduling platform for modern businesses.</p>
+                <div className="footersocial">
+                  <a href="#" className="footerlink">
+                    <Facebook className="footericon" />
+                  </a>
+                  <a href="#" className="footerlink">
+                    <Twitter className="footericon" />
+                  </a>
+                  <a href="#" className="footerlink">
+                    <Instagram className="footericon" />
+                  </a>
                 </div>
               </div>
-              <div className="step">
-                <div className="step-number">2</div>
-                <div className="step-info">
-                  <h3>Book Instantly</h3>
-                  <p>Secure your reservation with just a few taps - no phone calls needed.</p>
-                </div>
+              <div className="footercol">
+                <h3 className="footertitle">Product</h3>
+                <ul className="footermenu">
+                  <li><Link to="/features" className="footerlink">Features</Link></li>
+                  <li><Link to="/pricing" className="footerlink">Pricing</Link></li>
+                  <li><Link to="/testimonials" className="footerlink">Testimonials</Link></li>
+                  <li><Link to="/integrations" className="footerlink">Integrations</Link></li>
+                </ul>
               </div>
-              <div className="step">
-                <div className="step-number">3</div>
-                <div className="step-info">
-                  <h3>Get Reminders</h3>
-                  <p>Receive timely notifications and never miss an appointment.</p>
-                </div>
+              <div className="footercol">
+                <h3 className="footertitle">Company</h3>
+                <ul className="footermenu">
+                  <li><Link to="/about" className="footerlink">About Us</Link></li>
+                  <li><Link to="/careers" className="footerlink">Careers</Link></li>
+                  <li><Link to="/blog" className="footerlink">Blog</Link></li>
+                  <li><Link to="/contact" className="footerlink">Contact</Link></li>
+                </ul>
               </div>
-            </div>
-            <div className="tab-content" id="business">
-              <div className="step">
-                <div className="step-number">1</div>
-                <div className="step-info">
-                  <h3>Set Your Schedule</h3>
-                  <p>Define your availability and service durations with our easy-to-use dashboard.</p>
-                </div>
-              </div>
-              <div className="step">
-                <div className="step-number">2</div>
-                <div className="step-info">
-                  <h3>Manage Bookings</h3>
-                  <p>Accept, reschedule, or review all appointments from one central location.</p>
-                </div>
-              </div>
-              <div className="step">
-                <div className="step-number">3</div>
-                <div className="step-info">
-                  <h3>Grow Your Business</h3>
-                  <p>Reduce no-shows and increase customer satisfaction with automated workflows.</p>
-                </div>
+              <div className="footercol">
+                <h3 className="footertitle">Support</h3>
+                <ul className="footermenu">
+                  <li><Link to="/help" className="footerlink">Help Center</Link></li>
+                  <li><Link to="/faq" className="footerlink">FAQ</Link></li>
+                  <li><Link to="/privacy" className="footerlink">Privacy Policy</Link></li>
+                  <li><Link to="/terms" className="footerlink">Terms of Service</Link></li>
+                </ul>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section id="testimonials" className="testimonials">
-        <h2>What Our Users Say</h2>
-        <div className="testimonial-carousel">
-          {testimonials.map((testimonial, index) => (
-            <div key={index} className="testimonial-card">
-              <p>"{testimonial.text}"</p>
-              <div className="testimonial-author">
-                <h4>{testimonial.name}</h4>
-                <span>{testimonial.role}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Team Section */}
-      <section id="team" className="team">
-        <h2>Meet Our Team</h2>
-        <div className="team-grid">
-          <div className="team-member">
-            <img src={Nishanjali} alt="Team Member" />
-            <h3>Nishanjali Kamalendran</h3>
-            <p>CEO & Founder</p>
-          </div>
-          <div className="team-member">
-            <img src={Uvindu} alt="Team Member" />
-            <h3>Uvindu Amaratunga</h3>
-            <p>Chief Technology Officer</p>
-          </div>
-          <div className="team-member">
-            <img src={Abinath} alt="Team Member" />
-            <h3>Riley Smith</h3>
-            <p>Head of Customer Success</p>
-          </div>
-          <div className="team-member">
-            <img src={Ransika} alt="Team Member" />
-            <h3>Riley Smith</h3>
-            <p>Head of Customer Success</p>
-          </div>
-          <div className="team-member">
-            <img src={Seniya} alt="Team Member" />
-            <h3>Riley Smith</h3>
-            <p>Head of Customer Success</p>
-          </div>
-          <div className="team-member">
-            <img src={Kavindu} alt="Team Member" />
-            <h3>Riley Smith</h3>
-            <p>Head of Customer Success</p>
-          </div>
-          
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section id="contact" className="contact">
-        <h2>Get In Touch</h2>
-        <div className="contact-container">
-          <div className="contact-info">
-            <div className="contact-item">
-              <Mail size={20} />
-              <p>hello@slotzi.com</p>
-            </div>
-            <div className="contact-item">
-              <Phone size={20} />
-              <p>+1 (555) 123-4567</p>
-            </div>
-            <div className="contact-item">
-              <Building size={20} />
-              <p>123 Booking Street, App City, AC 12345</p>
+            <div className="copyright">
+              <p className="copyrighttext">© {new Date().getFullYear()} SlotZi. All rights reserved.</p>
             </div>
           </div>
-          <form className="contact-form">
-            <div className="form-group">
-              <input type="text" placeholder="Your Name" required />
-            </div>
-            <div className="form-group">
-              <input type="email" placeholder="Your Email" required />
-            </div>
-            <div className="form-group">
-              <select>
-                <option value="" disabled selected>I'm interested in...</option>
-                <option value="user">Using Slotzi as a customer</option>
-                <option value="business">Using Slotzi for my business</option>
-                <option value="partnership">Partnership opportunities</option>
-                <option value="other">Other inquiry</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <textarea placeholder="Your Message" rows="4" required></textarea>
-            </div>
-            <button type="submit" className="btn btn-primary">Send Message</button>
-          </form>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="cta">
-        <h2>Ready to Transform Your Reservation Experience?</h2>
-        <p>Join thousands of satisfied businesses and users.</p>
-        <div className="cta-buttons">
-          <a href="#users" className="btn btn-primary">
-            Get Started as User
-            <ArrowRight size={16} />
-          </a>
-          <a href="#business" className="btn btn-secondary">
-            Register Your Business
-            <ArrowRight size={16} />
-          </a>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="footer">
-        <div className="footer-content">
-          <div className="footer-logo">
-            <div className="logo">Slotzi</div>
-            <p>Simplify Reservations. Amplify Business.</p>
-          </div>
-          <div className="footer-links">
-            <div className="footer-column">
-              <h4>Product</h4>
-              <a href="#features">Features</a>
-              <a href="#how-it-works">How It Works</a>
-              <a href="#pricing">Pricing</a>
-            </div>
-            <div className="footer-column">
-              <h4>Company</h4>
-              <a href="#about">About Us</a>
-              <a href="#team">Our Team</a>
-              <a href="#careers">Careers</a>
-            </div>
-            <div className="footer-column">
-              <h4>Resources</h4>
-              <a href="#blog">Blog</a>
-              <a href="#guides">Guides</a>
-              <a href="#support">Support</a>
-            </div>
-            <div className="footer-column">
-              <h4>Legal</h4>
-              <a href="#terms">Terms of Service</a>
-              <a href="#privacy">Privacy Policy</a>
-              <a href="#cookies">Cookie Policy</a>
-            </div>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <p>&copy; {new Date().getFullYear()} Slotzi. All rights reserved.</p>
-        </div>
-      </footer>
+        </footer>
+      </motion.div>
     </div>
   );
 };
+
+
 
 export default Home;

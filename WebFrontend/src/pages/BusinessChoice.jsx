@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import "../styles/BusinessChoice.css";  // Ensure the correct path to the CSS file
+import "../style/BusinessChoice.css";  // Ensure the correct path to the CSS file
 
 const RegistrationButtons = () => {
     const navigate = useNavigate();

@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Home from "./pages/Home";
 import FloorPlanDesigner from "./pages/FloorPlanDesigner";
 import ReservationDashboard from "./pages/ReservationDashboard";
+import BusinessChoice from "./pages/BusinessChoice";
 
 
 
@@ -15,6 +16,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/floorplan" element={<FloorPlanDesigner />} />
         <Route path="/reservationDashboard" element={<ReservationDashboard />} />
+        <Route path="/BusinessChoice" element={<BusinessChoice />} />
         
       </Routes>
     </Router>
