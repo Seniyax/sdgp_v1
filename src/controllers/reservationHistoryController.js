@@ -1,15 +1,15 @@
 const { getReservationHistoryByUser } = require("../models/reservationHistory");
 
 exports.getReservationHistory = async (req, res) => {
-  const { userId } = req.query;
-
+  const { userId } = req.body;
+  
   if (!userId) {
     return res.status(400).json({
       success: false,
       message: "userId is required",
     });
   }
-
+  
   try {
     const reservationHistory = await getReservationHistoryByUser(userId);
     return res.status(200).json({
