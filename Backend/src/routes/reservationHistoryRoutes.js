@@ -2,6 +2,6 @@ const express = require("express");
 const router = express.Router();
 const { getReservationHistory } = require("../controllers/reservationHistoryController");
 
-router.get("/", getReservationHistory);
+router.post("/", getReservationHistory);
 
 module.exports = router;
