@@ -4,14 +4,9 @@ const supabase = require('../config/supabaseClient');
 const logger = require('../utils/logger');
 
 class NotificationController {
-  /**
-   * Get notifications for the authenticated user
-   * @param {Object} req Express request
-   * @param {Object} res Express response
-   */
   async getUserNotifications(req, res) {
     const { unread_only } = req.query;
-    const customerId = req.user.id; // Assuming auth middleware sets req.user
+    const customerId = req.user.id; 
     
     try {
       const notifications = await notificationService.getUserNotifications(
@@ -31,13 +26,9 @@ class NotificationController {
     }
   }
 
-  /**
-   * Get count of unread notifications for the user
-   * @param {Object} req Express request
-   * @param {Object} res Express response
-   */
+ 
   async getUnreadCount(req, res) {
-    const customerId = req.user.id; // Assuming auth middleware sets req.user
+    const customerId = req.user.id; 
     
     try {
       const { count, error } = await supabase
@@ -60,17 +51,12 @@ class NotificationController {
     }
   }
 
-  /**
-   * Mark a notification as read
-   * @param {Object} req Express request
-   * @param {Object} res Express response
-   */
+  
   async markAsRead(req, res) {
     const { id } = req.params;
-    const customerId = req.user.id; // Assuming auth middleware sets req.user
+    const customerId = req.user.id; 
     
     try {
-      // First check if the notification belongs to the user
       const { data: notification, error: fetchError } = await supabase
         .from('notification')
         .select('*')
@@ -99,13 +85,9 @@ class NotificationController {
     }
   }
 
-  /**
-   * Mark all user's notifications as read
-   * @param {Object} req Express request
-   * @param {Object} res Express response
-   */
+  
   async markAllAsRead(req, res) {
-    const customerId = req.user.id; // Assuming auth middleware sets req.user
+    const customerId = req.user.id; 
     
     try {
       await notificationService.markAllAsRead(customerId);
@@ -122,14 +104,10 @@ class NotificationController {
     }
   }
 
-  /**
-   * Register a device token for push notifications
-   * @param {Object} req Express request
-   * @param {Object} res Express response
-   */
+  
   async registerDeviceToken(req, res) {
     const { device_token, device_type } = req.body;
-    const customerId = req.user.id; // Assuming auth middleware sets req.user
+    const customerId = req.user.id; 
     
     if (!device_token || !device_type) {
       return ApiResponse.badRequest(res, {
@@ -137,7 +115,6 @@ class NotificationController {
       });
     }
     
-    // Make sure device_type matches the expected values in the DB schema
     const normalizedDeviceType = device_type.charAt(0).toUpperCase() + device_type.slice(1).toLowerCase();
     
     if (!['Android', 'iOS'].includes(normalizedDeviceType)) {
@@ -166,14 +143,10 @@ class NotificationController {
     }
   }
 
-  /**
-   * Delete a device token
-   * @param {Object} req Express request
-   * @param {Object} res Express response
-   */
+  
   async deleteDeviceToken(req, res) {
     const { device_token } = req.body;
-    const customerId = req.user.id; // Assuming auth middleware sets req.user
+    const customerId = req.user.id; 
     
     if (!device_token) {
       return ApiResponse.badRequest(res, {
@@ -202,18 +175,8 @@ class NotificationController {
     }
   }
 
-  /**
-   * Subscribe to real-time notifications
-   * This endpoint provides information to the client
-   * about how to subscribe to real-time updates
-   * @param {Object} req Express request
-   * @param {Object} res Express response 
-   */
-  async subscribeToNotifications(req, res) {
-    const customerId = req.user.id; // Assuming auth middleware sets req.user
-    
-    // The client will need to use Supabase's subscribe functionality
-    // We're just providing instructions here
+   subscribeToNotifications(req, res) {
+    const customerId = req.user.id; 
     return ApiResponse.success(res, {
       message: 'To receive real-time notifications, subscribe to the notification table with your customer ID',
       data: {

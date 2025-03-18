@@ -10,8 +10,6 @@ class Category {
         this.image_url = data.image_url;
         this.status = data.status;
     }
-
-    // Get all categories
     static async getAll() {
         try {
             const { data, error } = await supabaseClient
@@ -27,7 +25,6 @@ class Category {
         }
     }
 
-    // Get category by ID
     static async getById(id) {
         try {
             const { data, error } = await supabaseClient
@@ -44,7 +41,6 @@ class Category {
         }
     }
 
-    // Get active categories
     static async getActive() {
         try {
             const { data, error } = await supabaseClient
@@ -61,7 +57,6 @@ class Category {
         }
     }
 
-    // Get businesses in category
     async getBusinesses(page = 1, limit = 10) {
         try {
             const from = (page - 1) * limit;

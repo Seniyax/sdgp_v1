@@ -2,14 +2,8 @@ const supabase = require('../config/supabaseClient');
 const logger = require('../utils/logger');
 
 class NotificationService {
-  /**
-   * Create a notification in the database
-   * @param {Object} data Notification data
-   * @returns {Promise<Object>} Created notification
-   */
   async createNotification(data) {
     try {
-      // Validate type to ensure it matches the allowed values
       const allowedTypes = ['New Reservation', 'Cancelled', 'Reminder', 'Promotional', 'Other'];
       if (!allowedTypes.includes(data.type)) {
         throw new Error(`Notification type must be one of: ${allowedTypes.join(', ')}`);
@@ -25,17 +19,11 @@ class NotificationService {
           title: data.title,
           message: data.message,
           is_read: false
-          // created_at is handled automatically by Supabase
         }])
         .select('*')
         .single();
 
       if (error) throw error;
-      
-      // For in-app notifications, Supabase Realtime will automatically send updates
-      // to subscribed clients via WebSockets
-      
-      // If push notification is enabled, trigger it
       if (data.sendPush) {
         await this.triggerPushNotification(data.customer_id, data.title, data.message);
       }
@@ -47,12 +35,7 @@ class NotificationService {
     }
   }
 
-  /**
-   * Get all notifications for a user
-   * @param {string} customerId Customer ID (UUID)
-   * @param {boolean} unreadOnly Only get unread notifications
-   * @returns {Promise<Array>} User notifications
-   */
+  
   async getUserNotifications(customerId, unreadOnly = false) {
     try {
       let query = supabase
@@ -75,11 +58,7 @@ class NotificationService {
     }
   }
 
-  /**
-   * Mark a notification as read
-   * @param {number} notificationId Notification ID
-   * @returns {Promise<Object>} Updated notification
-   */
+
   async markAsRead(notificationId) {
     try {
       const { data, error } = await supabase
@@ -100,11 +79,7 @@ class NotificationService {
     }
   }
 
-  /**
-   * Mark all user's notifications as read
-   * @param {string} customerId Customer ID (UUID)
-   * @returns {Promise<boolean>} Success status
-   */
+  
   async markAllAsRead(customerId) {
     try {
       const { error } = await supabase
@@ -124,22 +99,12 @@ class NotificationService {
     }
   }
 
-  /**
-   * Register a device token for push notifications
-   * @param {string} customerId Customer ID (UUID)
-   * @param {string} deviceToken Device token
-   * @param {string} deviceType Device type ('Android', 'iOS')
-   * @returns {Promise<Object>} Created or updated device token
-   */
+  
   async registerDeviceToken(customerId, deviceToken, deviceType) {
     try {
-      // Validate device type
       if (!['Android', 'iOS'].includes(deviceType)) {
         throw new Error("Device type must be 'Android' or 'iOS'");
       }
-
-      // Due to the UNIQUE constraint on device_token, we can just insert
-      // and handle conflicts by updating the record
       const { data, error } = await supabase
         .from('device_token')
         .upsert([{
@@ -162,17 +127,9 @@ class NotificationService {
     }
   }
 
-  /**
-   * Trigger push notification to a user's devices
-   * This will be handled by the mobile app subscribing to Supabase Realtime
-   * @param {string} customerId Customer ID (UUID)
-   * @param {string} title Notification title
-   * @param {string} message Notification message
-   * @returns {Promise<boolean>} Success status
-   */
+  
   async triggerPushNotification(customerId, title, message) {
     try {
-      // Get user's device tokens
       const { data: tokens, error } = await supabase
         .from('device_token')
         .select('device_token, device_type')
@@ -185,25 +142,17 @@ class NotificationService {
         return false;
       }
       
-      // With Supabase, the app uses Realtime subscriptions to handle push notifications
-      // This means the app will listen for changes to the notification table
-      // and handle notifications as they come in
       
       logger.info(`Push notification triggerable for customer ${customerId} with ${tokens.length} devices`);
       
       return true;
     } catch (error) {
       logger.error(`Error triggering push notification: ${error.message}`, { error });
-      // Don't throw the error, just log it and return false
       return false;
     }
   }
 
-  /**
-   * Create new reservation notification
-   * @param {Object} reservation Reservation object
-   * @returns {Promise<Object>} Created notification
-   */
+  
   async createNewReservationNotification(reservation) {
     return this.createNotification({
       customer_id: reservation.user_id,
@@ -216,14 +165,7 @@ class NotificationService {
     });
   }
 
-  /**
-   * Create reservation update notification (used for both updates and reminders)
-   * @param {Object} reservation Updated reservation object
-   * @param {string} notificationType Type of notification ('Reminder' or 'Other')
-   * @param {string} title Notification title
-   * @param {string} message Notification message
-   * @returns {Promise<Object>} Created notification
-   */
+  
   async createReservationUpdateNotification(reservation, notificationType, title, message) {
     return this.createNotification({
       customer_id: reservation.user_id,
@@ -236,11 +178,7 @@ class NotificationService {
     });
   }
 
-  /**
-   * Create reservation cancellation notification
-   * @param {Object} reservation Cancelled reservation object
-   * @returns {Promise<Object>} Created notification
-   */
+  
   async createCancellationNotification(reservation) {
     return this.createNotification({
       customer_id: reservation.user_id,
@@ -253,11 +191,7 @@ class NotificationService {
     });
   }
 
-  /**
-   * Create reservation reminder notification
-   * @param {Object} reservation Reservation object
-   * @returns {Promise<Object>} Created notification
-   */
+  
   async createReminderNotification(reservation) {
     return this.createNotification({
       customer_id: reservation.user_id,
@@ -270,12 +204,7 @@ class NotificationService {
     });
   }
 
-  /**
-   * Create business notification about new reservation
-   * @param {Object} reservation New reservation object
-   * @param {string} businessOwnerCustomerId Business owner customer ID (UUID)
-   * @returns {Promise<Object>} Created notification
-   */
+  
   async createBusinessReservationNotification(reservation, businessOwnerCustomerId) {
     return this.createNotification({
       customer_id: businessOwnerCustomerId,
@@ -288,14 +217,7 @@ class NotificationService {
     });
   }
 
-  /**
-   * Create promotional notification
-   * @param {string} customerId Customer ID (UUID)
-   * @param {number} businessId Business ID 
-   * @param {string} title Notification title
-   * @param {string} message Notification message
-   * @returns {Promise<Object>} Created notification
-   */
+  
   async createPromotionalNotification(customerId, businessId, title, message) {
     return this.createNotification({
       customer_id: customerId,

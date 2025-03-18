@@ -8,14 +8,12 @@ const notificationRoutes = require('./routes/notificationRoutes');
 
 const app = express();
 
-// Middleware
-app.use(cors()); // Enable CORS for frontend requests
-app.use(express.json()); // Parse JSON requests
-app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+app.use(cors()); 
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true })); 
 app.use('/api/notifications', notificationRoutes);
 
 
-// Health check endpoint
 app.get('/health', (req, res) => {
     res.status(200).json({
         status: 'OK',
@@ -23,13 +21,11 @@ app.get('/health', (req, res) => {
     });
 });
 
-// API Routes
+
 app.use('/api/categories', categoryRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/reservations/history', reservationHistoryRoutes); 
 
-
-// Error handler middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({
@@ -39,7 +35,6 @@ app.use((err, req, res, next) => {
     });
 });
 
-// 404 handler - for unmatched routes
 app.use((req, res) => {
     res.status(404).json({
         success: false,
