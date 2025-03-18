@@ -1,18 +1,17 @@
-// Environment configs
+
 const ENV = {
     NODE_ENV: process.env.NODE_ENV || 'development',
     PORT: process.env.PORT || 3000,
     CORS_ORIGIN: process.env.CORS_ORIGIN || '*'
   };
   
-  // Supabase table names
   const TABLES = {
-    CATEGORY: 'category', // Changed to match your schema
-    BUSINESS: 'business', // Changed to match your schema
-    CUSTOMER_PAYMENT: 'customer_payment' // Added this based on your Payment model
+    CATEGORY: 'category', 
+    BUSINESS: 'business',
+    CUSTOMER_PAYMENT: 'customer_payment' 
   };
   
-  // HTTP Status codes
+
   const HTTP_STATUS = {
     OK: 200,
     CREATED: 201,
@@ -24,7 +23,6 @@ const ENV = {
     INTERNAL_SERVER: 500
   };
   
-  // Error messages
   const ERROR_MESSAGES = {
     CATEGORY: {
       NOT_FOUND: 'Category not found',
@@ -44,7 +42,6 @@ const ENV = {
     }
   };
   
-  // Success messages
   const SUCCESS_MESSAGES = {
     CATEGORY: {
       FETCHED: 'Categories fetched successfully'

@@ -2,7 +2,7 @@ const supabaseClient = require('../config/supabaseClient');
 const { TABLES, HTTP_STATUS, ERROR_MESSAGES, SUCCESS_MESSAGES } = require('../config/constants');
 const logger = require('../utils/logger');
 
-// Get all categories
+
 const getAllCategories = async (req, res) => {
     try {
         const { data, error } = await supabaseClient
@@ -29,7 +29,6 @@ const getAllCategories = async (req, res) => {
     }
 };
 
-// Get category by ID
 const getCategoryById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -63,17 +62,14 @@ const getCategoryById = async (req, res) => {
     }
 };
 
-// Get businesses by category
 const getBusinessesByCategory = async (req, res) => {
     try {
         const { id } = req.params;
         const { page = 1, limit = 10 } = req.query;
 
-        // Calculate pagination
         const from = (page - 1) * limit;
         const to = from + limit - 1;
 
-        // Get businesses
         const { data, count, error } = await supabaseClient
             .from(TABLES.BUSINESS)
             .select('*', { count: 'exact' })

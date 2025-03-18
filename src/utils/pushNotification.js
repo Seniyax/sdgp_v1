@@ -1,23 +1,10 @@
-// utils/pushNotification.js
 const notificationService = require('../services/notificationService');
 const logger = require('./logger');
 
 class PushNotification {
-  /**
-   * Send a notification to a specific user
-   * @param {string} customerId - Customer ID to send notification to
-   * @param {string} title - Notification title
-   * @param {string} message - Notification message
-   * @param {Object} metadata - Additional metadata for the notification
-   * @returns {Promise<Object>} - Created notification
-   */
   async sendToUser(customerId, title, message, metadata = {}) {
     try {
-      // Always use 'Other' for payment notifications for now
-      // We'll change this to 'Payment' when the database schema is updated
       let notificationType = 'Other';
-
-      // Create notification in database using notification service
       const notification = await notificationService.createNotification({
         customer_id: customerId,
         business_id: metadata.businessId,
@@ -25,7 +12,7 @@ class PushNotification {
         type: notificationType,
         title: title,
         message: message,
-        sendPush: true, // Enable push notification
+        sendPush: true, 
         metadata: metadata
       });
 
@@ -33,16 +20,11 @@ class PushNotification {
       return notification;
     } catch (error) {
       logger.error(`Error sending notification to user ${customerId}: ${error.message}`);
-      // Don't throw to prevent disrupting payment flow
       return null;
     }
   }
 
-  /**
-   * Send a payment confirmation notification
-   * @param {Object} payment - Payment record
-   * @returns {Promise<Object>} - Created notification
-   */
+ 
   async sendPaymentConfirmation(payment) {
     try {
       const title = 'Payment Confirmed';
@@ -60,11 +42,7 @@ class PushNotification {
     }
   }
 
-  /**
-   * Send a payment failure notification
-   * @param {Object} payment - Payment record
-   * @returns {Promise<Object>} - Created notification
-   */
+  
   async sendPaymentFailure(payment) {
     try {
       const title = 'Payment Failed';
@@ -82,11 +60,7 @@ class PushNotification {
     }
   }
 
-  /**
-   * Send a payment cancellation notification
-   * @param {Object} payment - Payment record
-   * @returns {Promise<Object>} - Created notification
-   */
+  
   async sendPaymentCancellation(payment) {
     try {
       const title = 'Payment Cancelled';
@@ -104,11 +78,7 @@ class PushNotification {
     }
   }
 
-  /**
-   * Send notification based on payment status
-   * @param {Object} payment - Payment record
-   * @returns {Promise<Object>} - Created notification
-   */
+  
   async sendPaymentStatusNotification(payment) {
     switch (payment.status) {
       case 'COMPLETED':
@@ -118,7 +88,6 @@ class PushNotification {
       case 'CANCELED':
         return this.sendPaymentCancellation(payment);
       default:
-        // Don't send notifications for pending or other statuses
         return null;
     }
   }

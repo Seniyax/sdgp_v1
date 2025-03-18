@@ -3,11 +3,7 @@ const { TABLES } = require('../config/constants');
 const logger = require('../utils/logger');
 
 class Payment {
-  /**
-   * Create a new payment record
-   * @param {Object} paymentData - Payment data
-   * @returns {Object} - Created payment record
-   */
+  
   static async create(paymentData) {
     try {
       const { data, error } = await supabaseClient
@@ -24,11 +20,7 @@ class Payment {
     }
   }
   
-  /**
-   * Get payment by order ID
-   * @param {string} orderId - Payment order ID
-   * @returns {Object} - Payment record
-   */
+  
   static async getByOrderId(orderId) {
     try {
       const { data, error } = await supabaseClient
@@ -45,12 +37,7 @@ class Payment {
     }
   }
   
-  /**
-   * Update payment status
-   * @param {string} orderId - Payment order ID
-   * @param {Object} updateData - Data to update
-   * @returns {Object} - Updated payment record
-   */
+ 
   static async updateStatus(orderId, updateData) {
     try {
       const { data, error } = await supabaseClient
@@ -68,16 +55,9 @@ class Payment {
     }
   }
   
-  /**
-   * Get payments by customer ID
-   * @param {string} customerId - Customer ID
-   * @param {number} page - Page number
-   * @param {number} limit - Items per page
-   * @returns {Object} - Payments with pagination
-   */
+  
   static async getByCustomerId(customerId, page = 1, limit = 10) {
     try {
-      // Calculate pagination
       const from = (page - 1) * limit;
       const to = from + limit - 1;
       
@@ -105,11 +85,7 @@ class Payment {
     }
   }
   
-  /**
-   * Get payments by reservation ID
-   * @param {string} reservationId - Reservation ID
-   * @returns {Array} - Payment records
-   */
+  
   static async getByReservationId(reservationId) {
     try {
       const { data, error } = await supabaseClient
