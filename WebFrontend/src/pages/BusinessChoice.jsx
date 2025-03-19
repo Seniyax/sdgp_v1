@@ -48,7 +48,7 @@ const RegistrationButtons = () => {
                         className={`btn join-btn ${hoverJoin ? 'hover' : ''}`}
                         onMouseEnter={() => setHoverJoin(true)}
                         onMouseLeave={() => setHoverJoin(false)}
-                        onClick={() => navigate('/join')}
+                        onClick={() => navigate('/business-join')}
                     >
                         <span className="btn-content">Join</span>
                         <span className="btn-pulse"></span>

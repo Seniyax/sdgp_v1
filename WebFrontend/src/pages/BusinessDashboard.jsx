@@ -1,21 +1,21 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Building, 
-  MapPin, 
-  Phone, 
-  Mail, 
-  Globe, 
-  Calendar, 
-  Clock, 
-  Edit, 
-  Trash2, 
-  ChevronDown, 
-  ChevronUp, 
-  Camera, 
-  Facebook, 
-  Instagram, 
-  Twitter, 
+import {
+  Building,
+  MapPin,
+  Phone,
+  Mail,
+  Globe,
+  Calendar,
+  Clock,
+  Edit,
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+  Camera,
+  Facebook,
+  Instagram,
+  Twitter,
   AlertTriangle,
   X,
   CheckCircle,
@@ -123,11 +123,9 @@ const BusinessDashboard = () => {
   const handleConfirmDetails = () => {
     // Here you would call your API to confirm business details
     setShowConfirmModal(false);
-    // Show success toast
-    setShowSuccessToast(true);
-    setTimeout(() => {
-      setShowSuccessToast(false);
-    }, 3000);
+    
+    // Navigate to verification.jsx page
+    navigate('/verification');
   };
 
   const handleEditBusiness = () => {
@@ -144,13 +142,15 @@ const BusinessDashboard = () => {
   };
 
   return (
-    <div className="dashboard-container">
+    <div className="business-dashboard">
       {/* Success Toast */}
       {showSuccessToast && (
         <div className="success-toast">
-          <CheckCircle size={20} />
-          <span>Business successfully deleted</span>
-          <button onClick={() => setShowSuccessToast(false)}><X size={16} /></button>
+          <CheckCircle className="success-icon" />
+          <p>Business successfully deleted</p>
+          <button className="close-toast" onClick={() => setShowSuccessToast(false)}>
+            <X size={20} />
+          </button>
         </div>
       )}
 
@@ -160,34 +160,36 @@ const BusinessDashboard = () => {
           <div className="business-logo">
             <img src={businessData.logo} alt={`${businessData.businessName} logo`} />
           </div>
-          <div className="business-title">
-            <h1>{businessData.businessName}</h1>
-            <span className="business-category">{businessData.category}</span>
+          <div className="business-header-info">
+            <h1 className="business-name">{businessData.businessName}</h1>
+            <span className="business-category">
+              <Building size={16} className="icon" />
+              {businessData.category}
+            </span>
           </div>
         </div>
       </div>
 
       {/* Dashboard Actions */}
       <div className="dashboard-actions">
-        <button className="action-button edit-button" onClick={handleEditClick}>
-          <Edit size={18} />
-          Edit Business
+        <div className="edit-dropdown">
+          <button className="btn btn-primary" onClick={handleEditClick}>
+            <Edit size={16} className="icon" /> Edit Business
+          </button>
           {showEditOptions && (
-            <div className="edit-dropdown">
+            <div className="edit-dropdown-content">
               <button onClick={handleEditBusiness}>Edit All Information</button>
-              <button>Edit Business Hours</button>
-              <button>Edit Images</button>
-              <button>Edit Contact Info</button>
+              <button onClick={handleEditBusiness}>Edit Business Hours</button>
+              <button onClick={handleEditBusiness}>Edit Images</button>
+              <button onClick={handleEditBusiness}>Edit Contact Info</button>
             </div>
           )}
+        </div>
+        <button className="btn btn-secondary" onClick={handleConfirmClick}>
+          <CheckSquare size={16} className="icon" /> Confirm Details
         </button>
-        <button className="action-button confirm-button" onClick={handleConfirmClick}>
-          <CheckSquare size={18} />
-          Confirm Details
-        </button>
-        <button className="action-button delete-button" onClick={handleDeleteClick}>
-          <Trash2 size={18} />
-          Delete Business
+        <button className="btn btn-danger" onClick={handleDeleteClick}>
+          <Trash2 size={16} className="icon" /> Delete Business
         </button>
       </div>
 
@@ -195,23 +197,47 @@ const BusinessDashboard = () => {
       <div className="dashboard-content">
         {/* Business Details Section */}
         <div className="dashboard-section">
-          <div className="section-header" onClick={() => toggleSection('details')}>
-            <h2><Building size={20} /> Business Details</h2>
-            {expandedSections.details ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+          <div 
+            className="section-header" 
+            onClick={() => toggleSection('details')}
+          >
+            <h2>
+              <Building size={20} className="icon" /> Business Details
+            </h2>
+            <button className="toggle-btn">
+              {expandedSections.details ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>
           </div>
+
           {expandedSections.details && (
             <div className="section-content">
-              <div className="content-row">
-                <div className="content-label">Business Name</div>
-                <div className="content-value">{businessData.businessName}</div>
-              </div>
-              <div className="content-row">
-                <div className="content-label">Category</div>
-                <div className="content-value">{businessData.category}</div>
-              </div>
-              <div className="content-row">
-                <div className="content-label">Description</div>
-                <div className="content-value description">{businessData.description}</div>
+              <div className="info-grid">
+                <div className="info-item">
+                  <div className="info-label">
+                    Business Name
+                  </div>
+                  <div className="info-value">
+                    {businessData.businessName}
+                  </div>
+                </div>
+
+                <div className="info-item">
+                  <div className="info-label">
+                    Category
+                  </div>
+                  <div className="info-value">
+                    {businessData.category}
+                  </div>
+                </div>
+
+                <div className="info-item">
+                  <div className="info-label">
+                    Description
+                  </div>
+                  <div className="info-value">
+                    {businessData.description}
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -219,60 +245,90 @@ const BusinessDashboard = () => {
 
         {/* Location & Contact Section */}
         <div className="dashboard-section">
-          <div className="section-header" onClick={() => toggleSection('contact')}>
-            <h2><MapPin size={20} /> Location & Contact</h2>
-            {expandedSections.contact ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+          <div 
+            className="section-header" 
+            onClick={() => toggleSection('contact')}
+          >
+            <h2>
+              <MapPin size={20} className="icon" /> Location & Contact
+            </h2>
+            <button className="toggle-btn">
+              {expandedSections.contact ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>
           </div>
+
           {expandedSections.contact && (
             <div className="section-content">
-              <div className="content-row">
-                <div className="content-label">Address</div>
-                <div className="content-value">
-                  {businessData.address}, {businessData.city}, {businessData.state} {businessData.zipCode} 
-                  {businessData.country && `, ${businessData.country}`}
-                </div>
-              </div>
-              <div className="content-row">
-                <div className="content-label">Phone</div>
-                <div className="content-value">
-                  <Phone size={16} className="icon-small" /> {businessData.phone}
-                </div>
-              </div>
-              <div className="content-row">
-                <div className="content-label">Email</div>
-                <div className="content-value">
-                  <Mail size={16} className="icon-small" /> {businessData.email}
-                </div>
-              </div>
-              {businessData.website && (
-                <div className="content-row">
-                  <div className="content-label">Website</div>
-                  <div className="content-value">
-                    <Globe size={16} className="icon-small" /> 
-                    <a href={businessData.website} target="_blank" rel="noopener noreferrer">
-                      {businessData.website}
-                    </a>
+              <div className="info-grid">
+                <div className="info-item">
+                  <div className="info-label">
+                    <MapPin size={16} className="icon" /> Address
+                  </div>
+                  <div className="info-value">
+                    {businessData.address}, {businessData.city}, {businessData.state} {businessData.zipCode}
+                    {businessData.country && `, ${businessData.country}`}
                   </div>
                 </div>
-              )}
+
+                <div className="info-item">
+                  <div className="info-label">
+                    <Phone size={16} className="icon" /> Phone
+                  </div>
+                  <div className="info-value">
+                    {businessData.phone}
+                  </div>
+                </div>
+
+                <div className="info-item">
+                  <div className="info-label">
+                    <Mail size={16} className="icon" /> Email
+                  </div>
+                  <div className="info-value">
+                    {businessData.email}
+                  </div>
+                </div>
+
+                {businessData.website && (
+                  <div className="info-item">
+                    <div className="info-label">
+                      <Globe size={16} className="icon" /> Website
+                    </div>
+                    <div className="info-value">
+                      <a href={businessData.website} target="_blank" rel="noopener noreferrer">
+                        {businessData.website}
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
 
         {/* Business Hours Section */}
         <div className="dashboard-section">
-          <div className="section-header" onClick={() => toggleSection('hours')}>
-            <h2><Clock size={20} /> Business Hours</h2>
-            {expandedSections.hours ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+          <div 
+            className="section-header" 
+            onClick={() => toggleSection('hours')}
+          >
+            <h2>
+              <Clock size={20} className="icon" /> Business Hours
+            </h2>
+            <button className="toggle-btn">
+              {expandedSections.hours ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>
           </div>
+
           {expandedSections.hours && (
             <div className="section-content hours-grid">
               {Object.entries(businessData.openingHours).map(([day, hours]) => (
-                <div key={day} className="hours-row">
-                  <div className="day-name">{day.charAt(0).toUpperCase() + day.slice(1)}</div>
+                <div className="hours-item" key={day}>
+                  <div className="day-name">
+                    {day.charAt(0).toUpperCase() + day.slice(1)}
+                  </div>
                   <div className="hours-value">
                     {hours.closed ? (
-                      <span className="closed-text">Closed</span>
+                      <span className="closed">Closed</span>
                     ) : (
                       <span>{formatTime(hours.open)} - {formatTime(hours.close)}</span>
                     )}
@@ -285,16 +341,24 @@ const BusinessDashboard = () => {
 
         {/* Business Images Section */}
         <div className="dashboard-section">
-          <div className="section-header" onClick={() => toggleSection('media')}>
-            <h2><Camera size={20} /> Business Images</h2>
-            {expandedSections.media ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+          <div 
+            className="section-header" 
+            onClick={() => toggleSection('media')}
+          >
+            <h2>
+              <Camera size={20} className="icon" /> Business Images
+            </h2>
+            <button className="toggle-btn">
+              {expandedSections.media ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>
           </div>
+
           {expandedSections.media && (
             <div className="section-content">
               <div className="image-gallery">
                 {businessData.images.map((image, index) => (
-                  <div key={index} className="gallery-image">
-                    <img src={image} alt={`Business ${index + 1}`} />
+                  <div className="gallery-image" key={index}>
+                    <img src={image} alt={`Business image ${index + 1}`} />
                   </div>
                 ))}
               </div>
@@ -304,23 +368,47 @@ const BusinessDashboard = () => {
 
         {/* Reservation Settings Section */}
         <div className="dashboard-section">
-          <div className="section-header" onClick={() => toggleSection('reservations')}>
-            <h2><Calendar size={20} /> Reservation Settings</h2>
-            {expandedSections.reservations ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+          <div 
+            className="section-header" 
+            onClick={() => toggleSection('reservations')}
+          >
+            <h2>
+              <Calendar size={20} className="icon" /> Reservation Settings
+            </h2>
+            <button className="toggle-btn">
+              {expandedSections.reservations ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>
           </div>
+
           {expandedSections.reservations && (
             <div className="section-content">
-              <div className="content-row">
-                <div className="content-label">Default Duration</div>
-                <div className="content-value">{businessData.reservationSlots.defaultDuration} minutes</div>
-              </div>
-              <div className="content-row">
-                <div className="content-label">Maximum Bookings per Slot</div>
-                <div className="content-value">{businessData.reservationSlots.capacity} customers</div>
-              </div>
-              <div className="content-row">
-                <div className="content-label">Advance Booking Period</div>
-                <div className="content-value">{businessData.reservationSlots.advance} days</div>
+              <div className="info-grid">
+                <div className="info-item">
+                  <div className="info-label">
+                    Default Duration
+                  </div>
+                  <div className="info-value">
+                    {businessData.reservationSlots.defaultDuration} minutes
+                  </div>
+                </div>
+
+                <div className="info-item">
+                  <div className="info-label">
+                    Maximum Bookings per Slot
+                  </div>
+                  <div className="info-value">
+                    {businessData.reservationSlots.capacity} customers
+                  </div>
+                </div>
+
+                <div className="info-item">
+                  <div className="info-label">
+                    Advance Booking Period
+                  </div>
+                  <div className="info-value">
+                    {businessData.reservationSlots.advance} days
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -328,29 +416,37 @@ const BusinessDashboard = () => {
 
         {/* Social Media Section */}
         <div className="dashboard-section">
-          <div className="section-header" onClick={() => toggleSection('social')}>
-            <h2><Globe size={20} /> Social Media</h2>
-            {expandedSections.social ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+          <div 
+            className="section-header" 
+            onClick={() => toggleSection('social')}
+          >
+            <h2>
+              <Globe size={20} className="icon" /> Social Media
+            </h2>
+            <button className="toggle-btn">
+              {expandedSections.social ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>
           </div>
+
           {expandedSections.social && (
             <div className="section-content">
               <div className="social-links">
                 {businessData.socialMedia.facebook && (
-                  <a href={businessData.socialMedia.facebook} target="_blank" rel="noopener noreferrer" className="social-link facebook">
-                    <Facebook size={20} />
-                    <span>Facebook</span>
+                  <a href={businessData.socialMedia.facebook} target="_blank" rel="noopener noreferrer" className="social-link">
+                    <Facebook size={20} className="icon" />
+                    Facebook
                   </a>
                 )}
                 {businessData.socialMedia.instagram && (
-                  <a href={businessData.socialMedia.instagram} target="_blank" rel="noopener noreferrer" className="social-link instagram">
-                    <Instagram size={20} />
-                    <span>Instagram</span>
+                  <a href={businessData.socialMedia.instagram} target="_blank" rel="noopener noreferrer" className="social-link">
+                    <Instagram size={20} className="icon" />
+                    Instagram
                   </a>
                 )}
                 {businessData.socialMedia.twitter && (
-                  <a href={businessData.socialMedia.twitter} target="_blank" rel="noopener noreferrer" className="social-link twitter">
-                    <Twitter size={20} />
-                    <span>Twitter</span>
+                  <a href={businessData.socialMedia.twitter} target="_blank" rel="noopener noreferrer" className="social-link">
+                    <Twitter size={20} className="icon" />
+                    Twitter
                   </a>
                 )}
               </div>
@@ -360,26 +456,36 @@ const BusinessDashboard = () => {
 
         {/* Contact Person Section */}
         <div className="dashboard-section">
-          <div className="section-header" onClick={() => toggleSection('contact')}>
-            <h2><User size={20} /> Primary Contact</h2>
-            {expandedSections.contact ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+          <div 
+            className="section-header" 
+            onClick={() => toggleSection('contact')}
+          >
+            <h2>
+              <User size={20} className="icon" /> Primary Contact
+            </h2>
+            <button className="toggle-btn">
+              {expandedSections.contact ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>
           </div>
+
           {expandedSections.contact && (
             <div className="section-content">
-              <div className="contact-person-card">
-                <div className="contact-person-avatar">
-                  <User size={40} />
+              <div className="contact-person">
+                <div className="contact-avatar">
+                  <User size={48} />
                 </div>
-                <div className="contact-person-details">
-                  <h3>{businessData.contactPerson.name}</h3>
+                <div className="contact-details">
+                  <h3 className="contact-name">
+                    {businessData.contactPerson.name}
+                  </h3>
                   <p className="contact-position">
-                    <Briefcase size={14} className="icon-tiny" /> {businessData.contactPerson.position}
+                    <Briefcase size={14} className="icon" /> {businessData.contactPerson.position}
                   </p>
-                  <p>
-                    <Phone size={14} className="icon-tiny" /> {businessData.contactPerson.phone}
+                  <p className="contact-phone">
+                    <Phone size={14} className="icon" /> {businessData.contactPerson.phone}
                   </p>
-                  <p>
-                    <Mail size={14} className="icon-tiny" /> {businessData.contactPerson.email}
+                  <p className="contact-email">
+                    <Mail size={14} className="icon" /> {businessData.contactPerson.email}
                   </p>
                 </div>
               </div>
@@ -391,18 +497,30 @@ const BusinessDashboard = () => {
       {/* Delete Business Confirmation Modal */}
       {showDeleteModal && (
         <div className="modal-overlay">
-          <div className="delete-modal">
+          <div className="modal-container">
             <div className="modal-header">
-              <AlertTriangle size={24} className="warning-icon" />
-              <h2>Delete Business?</h2>
+              <h2>
+                <AlertTriangle size={24} className="icon warning" /> Delete Business?
+              </h2>
+              <button className="modal-close" onClick={handleCancelDelete}>
+                <X size={24} />
+              </button>
             </div>
-            <div className="modal-body">
-              <p>Are you sure you want to delete <strong>{businessData.businessName}</strong>? This action cannot be undone.</p>
-              <p>All business information, including reservation settings and customer data, will be permanently removed.</p>
+            <div className="modal-content">
+              <p className="warning-message">
+                Are you sure you want to delete {businessData.businessName}? This action cannot be undone.
+              </p>
+              <p className="info-message">
+                All business information, including reservation settings and customer data, will be permanently removed.
+              </p>
             </div>
-            <div className="modal-footer">
-              <button className="btn-cancel" onClick={handleCancelDelete}>Cancel</button>
-              <button className="btn-delete" onClick={handleConfirmDelete}>Delete Business</button>
+            <div className="modal-actions">
+              <button className="btn btn-secondary" onClick={handleCancelDelete}>
+                Cancel
+              </button>
+              <button className="btn btn-danger" onClick={handleConfirmDelete}>
+                Delete Business
+              </button>
             </div>
           </div>
         </div>
@@ -411,18 +529,30 @@ const BusinessDashboard = () => {
       {/* Confirm Details Modal */}
       {showConfirmModal && (
         <div className="modal-overlay">
-          <div className="confirm-modal">
+          <div className="modal-container">
             <div className="modal-header">
-              <CheckCircle size={24} className="success-icon" />
-              <h2>Confirm Business Details</h2>
+              <h2>
+                <CheckCircle size={24} className="icon success" /> Confirm Business Details
+              </h2>
+              <button className="modal-close" onClick={handleCancelConfirm}>
+                <X size={24} />
+              </button>
             </div>
-            <div className="modal-body">
-              <p>Please review and confirm that all details for <strong>{businessData.businessName}</strong> are accurate and up-to-date.</p>
-              <p>Confirming these details will mark your business information as verified in our system.</p>
+            <div className="modal-content">
+              <p className="confirm-message">
+                Please review and confirm that all details for {businessData.businessName} are accurate and up-to-date.
+              </p>
+              <p className="info-message">
+                Confirming these details will mark your business information as verified in our system.
+              </p>
             </div>
-            <div className="modal-footer">
-              <button className="btn-cancel" onClick={handleCancelConfirm}>Cancel</button>
-              <button className="btn-confirm" onClick={handleConfirmDetails}>Confirm Details</button>
+            <div className="modal-actions">
+              <button className="btn btn-secondary" onClick={handleCancelConfirm}>
+                Cancel
+              </button>
+              <button className="btn btn-success" onClick={handleConfirmDetails}>
+                Confirm Details
+              </button>
             </div>
           </div>
         </div>
