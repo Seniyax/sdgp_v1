@@ -114,7 +114,7 @@ exports.signin = async (req, res) => {
 exports.socialLogin = async (req, res) => {
     try {
         const { provider } = req.params;
-        const { access_token } = req.body;
+        const { id_token } = req.body;
 
         let authResponse;
 
@@ -122,9 +122,9 @@ exports.socialLogin = async (req, res) => {
             case 'google':
             case 'facebook':
             case 'apple':
-                authResponse = await supabase.auth.signInWithOAuth({
+                authResponse = await supabase.auth.signInWithIdToken({
                     provider,
-                    options: { access_token }
+                    token:  id_token 
                 });
                 break;
             default:
@@ -132,6 +132,8 @@ exports.socialLogin = async (req, res) => {
                     error: 'Unsupported social login'
                 });
         }
+
+        console.log("Supabase Auth Response:",authResponse);
 
         const { data, error } = authResponse;
 
@@ -161,10 +163,10 @@ exports.socialLogin = async (req, res) => {
             message: 'Social login successful',
             user: {
                 id: data.user.id,
-                email: data.user.email,
+                email:data. user.email,
                 full_name: data.user.user_metadata?.full_name
             },
-            session: data.session
+            session: session
         });
 
     } catch (error) {
