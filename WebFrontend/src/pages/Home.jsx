@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { 
   ArrowRight, Users, Building2, Calendar, Star, Clock, Shield, 
   BarChart as ChartBar, Settings, Zap, Facebook, Twitter, 
-  Instagram, Mail, Phone, Award, CheckCircle, MapPin
+  Instagram, Mail, Phone, Award, CheckCircle, MapPin, HelpCircle
 } from 'lucide-react';
 import "../style/Home.css";
 
@@ -19,11 +19,15 @@ const Home = () => {
   ];
   
   const handleUserClick = () => {
-    navigate('/users');
+    navigate('/business-registration'); 
   };
 
   const handleBusinessClick = () => {
-    navigate('/business-choice'); // Navigate to BusinessChoice page
+    navigate('/business-join'); // Navigate to Business Join page
+  };
+
+  const handleSupportClick = () => {
+    navigate('/manage-business'); // Navigate to Support page
   };
 
 
@@ -123,7 +127,7 @@ const Home = () => {
               className="center"
             >
               <span className="badge">
-                Revolutionizing Business Management
+                Revolutionizing Time Management
               </span>
               <h1 className="title">
                 Smart Scheduling for<br />Modern Businesses
@@ -140,7 +144,7 @@ const Home = () => {
                   onClick={handleUserClick}
                 >
                   <Users className="icon" />
-                  For Users
+                  Register Business
                   <ArrowRight className="icon" />
                 </motion.button>
                 <motion.button
@@ -150,7 +154,17 @@ const Home = () => {
                   onClick={handleBusinessClick}
                 >
                   <Building2 className="icon" />
-                  For Business
+                  Join Business
+                  <ArrowRight className="icon" />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="tertiary"
+                  onClick={handleSupportClick}
+                >
+                  <HelpCircle className="icon" />
+                  Manage Business
                   <ArrowRight className="icon" />
                 </motion.button>
               </div>
@@ -527,7 +541,5 @@ const Home = () => {
     </div>
   );
 };
-
-
 
 export default Home;

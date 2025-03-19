@@ -12,6 +12,7 @@ import Verification from "./pages/Verification";
 import SignIn from "./pages/Signin";
 import SignUp from "./pages/Signup";
 import BusinessJoin from "./pages/BusinessJoin";
+import ManageBusiness from "./pages/ManageBusiness";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route path="/sign-in" element={<SignIn />} /> 
         <Route path="/sign-up" element={<SignUp />} /> 
         <Route path="/business-join" element={<BusinessJoin />} /> 
+        <Route path="/manage-business" element={<ManageBusiness />} /> 
       </Routes>
     </Router>
   );

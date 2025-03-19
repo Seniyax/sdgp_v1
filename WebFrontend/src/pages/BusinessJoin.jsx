@@ -14,12 +14,13 @@ const BusinessJoin = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    
     // Fetch businesses from API
     const fetchBusinesses = async () => {
       try {
         setIsLoading(true);
         // Replace with your actual API endpoint
-        const response = await fetch('https://api.example.com/businesses');
+        const response = await fetch('https://api.example.com/businesses');// apiiiiiii
         if (!response.ok) {
           throw new Error('Failed to fetch businesses');
         }
