@@ -1,0 +1,386 @@
+/* Customer Support Portal - Theme: #420e54 */
+.customer-support {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    color: #333;
+    line-height: 1.6;
+  }
+  
+  /* Header Styles */
+  .customer-support .header {
+    text-align: center;
+    padding: 60px 20px;
+    background: linear-gradient(135deg, #420e54, #6a1b87);
+    color: white;
+    border-radius: 0 0 15px 15px;
+    margin-bottom: 40px;
+    box-shadow: 0 4px 20px rgba(66, 14, 84, 0.25);
+  }
+  
+  .customer-support .header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    font-weight: 700;
+  }
+  
+  .customer-support .search-container {
+    display: flex;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .customer-support .search-input {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 30px 0 0 30px;
+    font-size: 16px;
+    outline: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .customer-support .search-button {
+    padding: 15px 25px;
+    background-color: #5a1474;
+    color: white;
+    border: none;
+    border-radius: 0 30px 30px 0;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  
+  .customer-support .search-button:hover {
+    background-color: #7a1e9d;
+  }
+  
+  /* Content Styles */
+  .customer-support .content {
+    padding: 20px 0;
+  }
+  
+  .customer-support .categories {
+    margin-bottom: 40px;
+  }
+  
+  .customer-support .category-block {
+    background-color: white;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.3s, transform 0.2s;
+    border-left: 4px solid #420e54;
+  }
+  
+  .customer-support .category-block:hover {
+    box-shadow: 0 5px 15px rgba(66, 14, 84, 0.15);
+    transform: translateY(-2px);
+  }
+  
+  .customer-support .category-header {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    cursor: pointer;
+    background-color: white;
+    transition: background-color 0.3s;
+  }
+  
+  .customer-support .category-header.active {
+    background-color: rgba(66, 14, 84, 0.05);
+  }
+  
+  .customer-support .category-icon {
+    font-size: 24px;
+    margin-right: 15px;
+    color: #420e54;
+  }
+  
+  .customer-support .category-header h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    flex: 1;
+    color: #420e54;
+  }
+  
+  .customer-support .toggle-icon {
+    font-size: 24px;
+    font-weight: bold;
+    color: #420e54;
+  }
+  
+  .customer-support .faq-container {
+    padding: 0 20px 20px;
+  }
+  
+  .customer-support .faq-item {
+    background-color: #f9f6fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    border-left: 3px solid rgba(66, 14, 84, 0.3);
+  }
+  
+  .customer-support .faq-item h3 {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    color: #420e54;
+    font-weight: 500;
+  }
+  
+  .customer-support .faq-item p {
+    color: #555;
+    font-size: 0.95rem;
+  }
+  
+  .customer-support .no-results {
+    text-align: center;
+    padding: 40px 20px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+  
+  .customer-support .no-results p {
+    color: #666;
+    font-size: 1.1rem;
+  }
+  
+  /* Contact Section */
+  .customer-support .contact-section {
+    text-align: center;
+    padding: 40px 20px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 40px;
+    border-top: 4px solid #420e54;
+  }
+  
+  .customer-support .contact-section h2 {
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #420e54;
+  }
+  
+  .customer-support .contact-button {
+    padding: 15px 30px;
+    background-color: #420e54;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(66, 14, 84, 0.25);
+  }
+  
+  .customer-support .contact-button:hover {
+    background-color: #5a1474;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(66, 14, 84, 0.3);
+  }
+  
+  /* Contact Form */
+  .customer-support .form-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+  }
+  
+  .customer-support .contact-form {
+    width: 90%;
+    max-width: 500px;
+    background-color: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(66, 14, 84, 0.25);
+    position: relative;
+    border-top: 5px solid #420e54;
+  }
+  
+  .customer-support .close-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    transition: color 0.3s;
+  }
+  
+  .customer-support .close-button:hover {
+    color: #420e54;
+  }
+  
+  .customer-support .contact-form h2 {
+    margin-bottom: 25px;
+    text-align: center;
+    font-size: 1.8rem;
+    color: #420e54;
+  }
+  
+  .customer-support .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .customer-support .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #555;
+  }
+  
+  .customer-support .form-group input,
+  .customer-support .form-group textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: inherit;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  
+  .customer-support .form-group input:focus,
+  .customer-support .form-group textarea:focus {
+    border-color: #420e54;
+    box-shadow: 0 0 0 3px rgba(66, 14, 84, 0.1);
+    outline: none;
+  }
+  
+  .customer-support .form-group textarea {
+    height: 150px;
+    resize: vertical;
+  }
+  
+  .customer-support .submit-button {
+    width: 100%;
+    padding: 15px;
+    background-color: #420e54;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(66, 14, 84, 0.25);
+  }
+  
+  .customer-support .submit-button:hover {
+    background-color: #5a1474;
+    box-shadow: 0 6px 15px rgba(66, 14, 84, 0.3);
+  }
+  
+  /* Success Message */
+  .customer-support .success-message {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .customer-support .check-icon {
+    font-size: 50px;
+    color: #420e54;
+    margin-bottom: 10px;
+  }
+  
+  .customer-support .success-message h2 {
+    color: #420e54;
+    margin-bottom: 10px;
+  }
+  
+  .customer-support .success-message p {
+    color: #666;
+  }
+  
+  /* Footer */
+  .customer-support .footer {
+    padding: 30px 0;
+    margin-top: 40px;
+    text-align: center;
+    border-top: 1px solid rgba(66, 14, 84, 0.1);
+  }
+  
+  .customer-support .footer-links {
+    margin-bottom: 15px;
+  }
+  
+  .customer-support .footer-links a {
+    color: #666;
+    margin: 0 15px;
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  
+  .customer-support .footer-links a:hover {
+    color: #420e54;
+  }
+  
+  .customer-support .footer p {
+    color: #999;
+    font-size: 0.9rem;
+  }
+  
+  /* Responsive Styles */
+  @media (max-width: 768px) {
+    .customer-support .header {
+      padding: 40px 20px;
+    }
+    
+    .customer-support .header h1 {
+      font-size: 2rem;
+    }
+    
+    .customer-support .search-input,
+    .customer-support .search-button {
+      padding: 12px;
+    }
+    
+    .customer-support .faq-item {
+      padding: 15px;
+    }
+    
+    .customer-support .contact-button {
+      padding: 12px 25px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .customer-support .header h1 {
+      font-size: 1.8rem;
+    }
+    
+    .customer-support .search-container {
+      flex-direction: column;
+    }
+    
+    .customer-support .search-input {
+      border-radius: 30px;
+      margin-bottom: 10px;
+    }
+    
+    .customer-support .search-button {
+      border-radius: 30px;
+    }
+    
+    .customer-support .category-header h2 {
+      font-size: 1rem;
+    }
+  }

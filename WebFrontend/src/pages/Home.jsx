@@ -30,8 +30,9 @@ const Home = () => {
     navigate('/manage-business'); // Navigate to Support page
   };
 
-
-  
+  const handleContactClick = () => {
+    navigate('/customer-support'); // Navigate to CustomerSupport page
+  };
 
   // Data for features section
   const features = [
@@ -430,6 +431,7 @@ const Home = () => {
                     whileTap={{ scale: 0.95 }}
                     type="submit"
                     className="submit"
+                    onClick={handleContactClick}
                   >
                     Send Message
                   </motion.button>
@@ -519,13 +521,13 @@ const Home = () => {
                   <li><Link to="/about" className="footerlink">About Us</Link></li>
                   <li><Link to="/careers" className="footerlink">Careers</Link></li>
                   <li><Link to="/blog" className="footerlink">Blog</Link></li>
-                  <li><Link to="/contact" className="footerlink">Contact</Link></li>
+                  <li><Link to="/customer-support" className="footerlink">Contact</Link></li>
                 </ul>
               </div>
               <div className="footercol">
                 <h3 className="footertitle">Support</h3>
                 <ul className="footermenu">
-                  <li><Link to="/help" className="footerlink">Help Center</Link></li>
+                  <li><Link to="/customer-support" className="footerlink">Help Center</Link></li>
                   <li><Link to="/faq" className="footerlink">FAQ</Link></li>
                   <li><Link to="/privacy" className="footerlink">Privacy Policy</Link></li>
                   <li><Link to="/terms" className="footerlink">Terms of Service</Link></li>
