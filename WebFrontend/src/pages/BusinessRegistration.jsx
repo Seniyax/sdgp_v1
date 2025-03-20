@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, Info, ArrowRight, Building, MapPin, Phone, Mail, Globe, Calendar, Clock, Camera, Upload } from 'lucide-react';
@@ -16,8 +15,8 @@ const BusinessRegistration = () => {
         state: '',
         zipCode: '',
         country: '',
-        phone: '',
-        email: '',
+        phoneNumbers: [{ number: '', label: 'Primary' }],
+        emails: [{ email: '', label: 'Primary' }],
         website: '',
         openingHours: {
             monday: { open: '09:00', close: '17:00', closed: false },
@@ -76,6 +75,44 @@ const BusinessRegistration = () => {
                 ...formData[category],
                 [field]: value
             }
+        });
+    };
+
+    const handlePhoneChange = (index, event) => {
+        const newPhoneNumbers = [...formData.phoneNumbers];
+        newPhoneNumbers[index].number = event.target.value;
+        setFormData({ ...formData, phoneNumbers: newPhoneNumbers });
+    };
+
+    const handleEmailChange = (index, event) => {
+        const newEmails = [...formData.emails];
+        newEmails[index].email = event.target.value;
+        setFormData({ ...formData, emails: newEmails });
+    };
+
+    const handlePhoneLabelChange = (index, event) => {
+        const newPhoneNumbers = [...formData.phoneNumbers];
+        newPhoneNumbers[index].label = event.target.value;
+        setFormData({ ...formData, phoneNumbers: newPhoneNumbers });
+    };
+
+    const handleEmailLabelChange = (index, event) => {
+        const newEmails = [...formData.emails];
+        newEmails[index].label = event.target.value;
+        setFormData({ ...formData, emails: newEmails });
+    };
+
+    const addPhoneNumber = () => {
+        setFormData({
+            ...formData,
+            phoneNumbers: [...formData.phoneNumbers, { number: '', label: 'Secondary' }]
+        });
+    };
+
+    const addEmail = () => {
+        setFormData({
+            ...formData,
+            emails: [...formData.emails, { email: '', label: 'Secondary' }]
         });
     };
 
@@ -186,15 +223,15 @@ const BusinessRegistration = () => {
                 isValid = false;
             }
 
-            if (!formData.phone.trim()) {
+            if (!formData.phoneNumbers[0].number.trim()) {
                 newErrors.phone = 'Phone number is required';
                 isValid = false;
             }
 
-            if (!formData.email.trim()) {
+            if (!formData.emails[0].email.trim()) {
                 newErrors.email = 'Email is required';
                 isValid = false;
-            } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+            } else if (!/\S+@\S+\.\S+/.test(formData.emails[0].email)) {
                 newErrors.email = 'Email is invalid';
                 isValid = false;
             }
@@ -406,39 +443,63 @@ const BusinessRegistration = () => {
                             />
                         </div>
 
-                        <div className="form-group">
-                            <label htmlFor="phone">Phone Number <span className="required">*</span></label>
-                            <div className="input-container">
-                                <Phone size={18} className="input-icon" />
-                                <input
-                                    type="tel"
-                                    id="phone"
-                                    name="phone"
-                                    value={formData.phone}
-                                    onChange={handleChange}
-                                    placeholder="Enter your phone number"
-                                    className={errors.phone ? 'error' : ''}
-                                />
+                        {formData.phoneNumbers.map((phone, index) => (
+                            <div className="form-group" key={index}>
+                                <label htmlFor={`phone-${index}`}>Phone Number ({phone.label}) <span className="required">*</span></label>
+                                <div className="input-container">
+                                    <Phone size={10} className="input-icon" />
+                                    <input
+                                        type="tel"
+                                        id={`phone-${index}`}
+                                        name={`phone-${index}`}
+                                        value={phone.number}
+                                        onChange={(e) => handlePhoneChange(index, e)}
+                                        placeholder="Enter your phone number"
+                                        className={errors[`phone-${index}`] ? 'error' : ''}
+                                    />
+                                    <select
+                                        value={phone.label}
+                                        onChange={(e) => handlePhoneLabelChange(index, e)}
+                                        className="phone-label-select"
+                                    >
+                                        <option value="Primary">Primary</option>
+                                        <option value="Secondary">Secondary</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                {errors[`phone-${index}`] && <div className="error-message">{errors[`phone-${index}`]}</div>}
                             </div>
-                            {errors.phone && <div className="error-message">{errors.phone}</div>}
-                        </div>
+                        ))}
+                        <button type="button" className="add-phone" onClick={addPhoneNumber}>Add Another Phone</button>
 
-                        <div className="form-group">
-                            <label htmlFor="email">Business Email <span className="required">*</span></label>
-                            <div className="input-container">
-                                <Mail size={18} className="input-icon" />
-                                <input
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    placeholder="Enter your business email"
-                                    className={errors.email ? 'error' : ''}
-                                />
+                        {formData.emails.map((email, index) => (
+                            <div className="form-group" key={index}>
+                                <label htmlFor={`email-${index}`}>Business Email ({email.label}) <span className="required">*</span></label>
+                                <div className="input-container">
+                                    <Mail size={18} className="input-icon" />
+                                    <input
+                                        type="email"
+                                        id={`email-${index}`}
+                                        name={`email-${index}`}
+                                        value={email.email}
+                                        onChange={(e) => handleEmailChange(index, e)}
+                                        placeholder="Enter your business email"
+                                        className={errors[`email-${index}`] ? 'error' : ''}
+                                    />
+                                    <select
+                                        value={email.label}
+                                        onChange={(e) => handleEmailLabelChange(index, e)}
+                                        className="email-label-select"
+                                    >
+                                        <option value="Primary">Primary</option>
+                                        <option value="Secondary">Secondary</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                {errors[`email-${index}`] && <div className="error-message">{errors[`email-${index}`]}</div>}
                             </div>
-                            {errors.email && <div className="error-message">{errors.email}</div>}
-                        </div>
+                        ))}
+                        <button type="button" className="add-phone" onClick={addEmail}>Add Another Email</button>
 
                         <div className="form-group">
                             <label htmlFor="website">Website</label>
