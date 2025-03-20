@@ -37,16 +37,4 @@ router.put(
   asyncHandler(notificationController.markAllAsRead)
 );
 
-// Register device token for push notifications
-router.post(
-  '/device-token',
-  asyncHandler(notificationController.registerDeviceToken)
-);
-
-// Delete device token
-router.delete(
-  '/device-token',
-  asyncHandler(notificationController.deleteDeviceToken)
-);
-
 module.exports = router;

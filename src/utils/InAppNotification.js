@@ -1,7 +1,7 @@
 const notificationService = require('../services/notificationService');
 const logger = require('./logger');
 
-class PushNotification {
+class InAppNotification {
   async sendToUser(customerId, title, message, metadata = {}) {
     try {
       let notificationType = 'Other';
@@ -11,11 +11,9 @@ class PushNotification {
         reservation_id: metadata.reservationId,
         type: notificationType,
         title: title,
-        message: message,
-        sendPush: true, 
-        metadata: metadata
+        message: message
       });
-
+      
       logger.info(`Notification sent to user ${customerId}: ${title}`);
       return notification;
     } catch (error) {
@@ -24,12 +22,11 @@ class PushNotification {
     }
   }
 
- 
   async sendPaymentConfirmation(payment) {
     try {
       const title = 'Payment Confirmed';
       const message = `Your payment of ${payment.amount} ${payment.currency} for reservation #${payment.reservation_id} has been confirmed.`;
-
+      
       return this.sendToUser(payment.customer_id, title, message, {
         type: 'PAYMENT',
         paymentId: payment.id,
@@ -42,12 +39,11 @@ class PushNotification {
     }
   }
 
-  
   async sendPaymentFailure(payment) {
     try {
       const title = 'Payment Failed';
       const message = `Your payment of ${payment.amount} ${payment.currency} for reservation #${payment.reservation_id} was unsuccessful. Please try again.`;
-
+      
       return this.sendToUser(payment.customer_id, title, message, {
         type: 'PAYMENT',
         paymentId: payment.id,
@@ -60,12 +56,11 @@ class PushNotification {
     }
   }
 
-  
   async sendPaymentCancellation(payment) {
     try {
       const title = 'Payment Cancelled';
       const message = `Your payment of ${payment.amount} ${payment.currency} for reservation #${payment.reservation_id} has been cancelled.`;
-
+      
       return this.sendToUser(payment.customer_id, title, message, {
         type: 'PAYMENT',
         paymentId: payment.id,
@@ -78,7 +73,6 @@ class PushNotification {
     }
   }
 
-  
   async sendPaymentStatusNotification(payment) {
     switch (payment.status) {
       case 'COMPLETED':
@@ -93,4 +87,4 @@ class PushNotification {
   }
 }
 
-module.exports = new PushNotification();
+module.exports = new InAppNotification();

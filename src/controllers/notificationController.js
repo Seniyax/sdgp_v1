@@ -26,7 +26,6 @@ class NotificationController {
     }
   }
 
- 
   async getUnreadCount(req, res) {
     const customerId = req.user.id; 
     
@@ -50,7 +49,6 @@ class NotificationController {
       });
     }
   }
-
   
   async markAsRead(req, res) {
     const { id } = req.params;
@@ -84,7 +82,6 @@ class NotificationController {
       });
     }
   }
-
   
   async markAllAsRead(req, res) {
     const customerId = req.user.id; 
@@ -104,78 +101,7 @@ class NotificationController {
     }
   }
 
-  
-  async registerDeviceToken(req, res) {
-    const { device_token, device_type } = req.body;
-    const customerId = req.user.id; 
-    
-    if (!device_token || !device_type) {
-      return ApiResponse.badRequest(res, {
-        message: 'Device token and device type are required'
-      });
-    }
-    
-    const normalizedDeviceType = device_type.charAt(0).toUpperCase() + device_type.slice(1).toLowerCase();
-    
-    if (!['Android', 'iOS'].includes(normalizedDeviceType)) {
-      return ApiResponse.badRequest(res, {
-        message: "Device type must be 'Android' or 'iOS'"
-      });
-    }
-    
-    try {
-      const token = await notificationService.registerDeviceToken(
-        customerId,
-        device_token,
-        normalizedDeviceType
-      );
-      
-      return ApiResponse.success(res, {
-        message: 'Device token registered successfully',
-        data: token
-      });
-    } catch (error) {
-      logger.error(`Error registering device token: ${error.message}`);
-      return ApiResponse.error(res, {
-        message: 'Error registering device token',
-        errors: error.message
-      });
-    }
-  }
-
-  
-  async deleteDeviceToken(req, res) {
-    const { device_token } = req.body;
-    const customerId = req.user.id; 
-    
-    if (!device_token) {
-      return ApiResponse.badRequest(res, {
-        message: 'Device token is required'
-      });
-    }
-    
-    try {
-      const { error } = await supabase
-        .from('device_token')
-        .delete()
-        .eq('device_token', device_token)
-        .eq('customer_id', customerId);
-        
-      if (error) throw error;
-      
-      return ApiResponse.success(res, {
-        message: 'Device token deleted successfully'
-      });
-    } catch (error) {
-      logger.error(`Error deleting device token: ${error.message}`);
-      return ApiResponse.error(res, {
-        message: 'Error deleting device token',
-        errors: error.message
-      });
-    }
-  }
-
-   subscribeToNotifications(req, res) {
+  subscribeToNotifications(req, res) {
     const customerId = req.user.id; 
     return ApiResponse.success(res, {
       message: 'To receive real-time notifications, subscribe to the notification table with your customer ID',

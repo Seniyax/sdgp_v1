@@ -24,10 +24,6 @@ class NotificationService {
         .single();
 
       if (error) throw error;
-      if (data.sendPush) {
-        await this.triggerPushNotification(data.customer_id, data.title, data.message);
-      }
-      
       return notification;
     } catch (error) {
       logger.error(`Error creating notification: ${error.message}`, { error });
@@ -35,7 +31,6 @@ class NotificationService {
     }
   }
 
-  
   async getUserNotifications(customerId, unreadOnly = false) {
     try {
       let query = supabase
@@ -58,7 +53,6 @@ class NotificationService {
     }
   }
 
-
   async markAsRead(notificationId) {
     try {
       const { data, error } = await supabase
@@ -78,7 +72,6 @@ class NotificationService {
       throw error;
     }
   }
-
   
   async markAllAsRead(customerId) {
     try {
@@ -99,60 +92,6 @@ class NotificationService {
     }
   }
 
-  
-  async registerDeviceToken(customerId, deviceToken, deviceType) {
-    try {
-      if (!['Android', 'iOS'].includes(deviceType)) {
-        throw new Error("Device type must be 'Android' or 'iOS'");
-      }
-      const { data, error } = await supabase
-        .from('device_token')
-        .upsert([{
-          customer_id: customerId,
-          device_token: deviceToken,
-          device_type: deviceType,
-          last_used_at: new Date().toISOString()
-        }], {
-          onConflict: 'device_token',
-          returning: 'representation'
-        })
-        .select('*')
-        .single();
-          
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      logger.error(`Error registering device token: ${error.message}`, { error });
-      throw error;
-    }
-  }
-
-  
-  async triggerPushNotification(customerId, title, message) {
-    try {
-      const { data: tokens, error } = await supabase
-        .from('device_token')
-        .select('device_token, device_type')
-        .eq('customer_id', customerId);
-        
-      if (error) throw error;
-      
-      if (!tokens || tokens.length === 0) {
-        logger.info(`No device tokens found for customer ${customerId}`);
-        return false;
-      }
-      
-      
-      logger.info(`Push notification triggerable for customer ${customerId} with ${tokens.length} devices`);
-      
-      return true;
-    } catch (error) {
-      logger.error(`Error triggering push notification: ${error.message}`, { error });
-      return false;
-    }
-  }
-
-  
   async createNewReservationNotification(reservation) {
     return this.createNotification({
       customer_id: reservation.user_id,
@@ -160,12 +99,10 @@ class NotificationService {
       reservation_id: reservation.id,
       type: 'New Reservation',
       title: 'Reservation Confirmed',
-      message: `Your reservation on ${new Date(reservation.start_time).toLocaleDateString()} has been confirmed.`,
-      sendPush: true
+      message: `Your reservation on ${new Date(reservation.start_time).toLocaleDateString()} has been confirmed.`
     });
   }
 
-  
   async createReservationUpdateNotification(reservation, notificationType, title, message) {
     return this.createNotification({
       customer_id: reservation.user_id,
@@ -173,12 +110,10 @@ class NotificationService {
       reservation_id: reservation.id,
       type: notificationType,
       title: title,
-      message: message,
-      sendPush: true
+      message: message
     });
   }
 
-  
   async createCancellationNotification(reservation) {
     return this.createNotification({
       customer_id: reservation.user_id,
@@ -186,12 +121,10 @@ class NotificationService {
       reservation_id: reservation.id,
       type: 'Cancelled',
       title: 'Reservation Cancelled',
-      message: `Your reservation on ${new Date(reservation.start_time).toLocaleDateString()} has been cancelled.`,
-      sendPush: true
+      message: `Your reservation on ${new Date(reservation.start_time).toLocaleDateString()} has been cancelled.`
     });
   }
 
-  
   async createReminderNotification(reservation) {
     return this.createNotification({
       customer_id: reservation.user_id,
@@ -199,12 +132,10 @@ class NotificationService {
       reservation_id: reservation.id,
       type: 'Reminder',
       title: 'Upcoming Reservation',
-      message: `Reminder: You have a reservation tomorrow at ${new Date(reservation.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`,
-      sendPush: true
+      message: `Reminder: You have a reservation tomorrow at ${new Date(reservation.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`
     });
   }
 
-  
   async createBusinessReservationNotification(reservation, businessOwnerCustomerId) {
     return this.createNotification({
       customer_id: businessOwnerCustomerId,
@@ -212,20 +143,17 @@ class NotificationService {
       reservation_id: reservation.id,
       type: 'New Reservation',
       title: 'New Reservation',
-      message: `You have a new reservation for ${new Date(reservation.start_time).toLocaleDateString()} at ${new Date(reservation.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`,
-      sendPush: true
+      message: `You have a new reservation for ${new Date(reservation.start_time).toLocaleDateString()} at ${new Date(reservation.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`
     });
   }
 
-  
   async createPromotionalNotification(customerId, businessId, title, message) {
     return this.createNotification({
       customer_id: customerId,
       business_id: businessId,
       type: 'Promotional',
       title: title,
-      message: message,
-      sendPush: true
+      message: message
     });
   }
 }
