@@ -3,7 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 const Payment = require('../models/payment');
 const { ERROR_MESSAGES } = require('../config/constants');
 const logger = require('../utils/logger');
-const pushNotification = require('../utils/pushNotification');
+const inAppNotification = require('../utils/InAppNotification');
 const supabaseClient = require('../config/supabaseClient');
 
 class PaymentService {
@@ -127,7 +127,7 @@ class PaymentService {
       
       if (updatedPayment && updatedPayment.customer_id) {
         try {
-          await pushNotification.sendPaymentStatusNotification(updatedPayment);
+          await inAppNotification.sendPaymentStatusNotification(updatedPayment);
         } catch (notificationError) {
           logger.error('Error sending payment notification:', notificationError);
         }

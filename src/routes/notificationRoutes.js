@@ -2,10 +2,10 @@ const express = require('express');
 const router = express.Router();
 const notificationController = require('../controllers/notificationController');
 const asyncHandler = require('../utils/asyncHandler');
-const authMiddleware = require('../middleware/authMiddleware');
+const authController = require('../controllers/authControllers'); // Changed import
 
 // Apply auth middleware to all notification routes
-router.use(authMiddleware);
+router.use(authController.requireAuth); // Using requireAuth instead of authMiddleware
 
 // Get user's notifications
 router.get(
