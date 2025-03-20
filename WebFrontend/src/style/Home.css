@@ -110,7 +110,7 @@
 
 
 .secondary {
-  background: rgba(255, 255, 255, 0.15);
+  background: linear-gradient(135deg, #420e54 0%, #6a1b86 100%);
   color: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.3);
   backdrop-filter: blur(10px);

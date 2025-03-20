@@ -18,16 +18,16 @@ const Home = () => {
     { icon: Calendar, value: "1.2M+", label: "Bookings Monthly" }
   ];
   
-  const handleUserClick = () => {
-    navigate('/business-registration'); 
+  const handleRegisterClick = () => {
+    navigate('/business-registration'); // Navigate to Business Registration page
   };
 
-  const handleBusinessClick = () => {
+  const handleJoinClick = () => {
     navigate('/business-join'); // Navigate to Business Join page
   };
 
-  const handleSupportClick = () => {
-    navigate('/manage-business'); // Navigate to Support page
+  const handleManageClick = () => {
+    navigate('/manage-business'); // Navigate to manage page
   };
 
   const handleContactClick = () => {
@@ -141,8 +141,8 @@ const Home = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="primary"
-                  onClick={handleUserClick}
+                  className="secondary"
+                  onClick={handleRegisterClick}
                 >
                   <Users className="icon" />
                   Register Business
@@ -152,7 +152,7 @@ const Home = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="secondary"
-                  onClick={handleBusinessClick}
+                  onClick={handleJoinClick}
                 >
                   <Building2 className="icon" />
                   Join Business
@@ -162,7 +162,7 @@ const Home = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="tertiary"
-                  onClick={handleSupportClick}
+                  onClick={handleManageClick}
                 >
                   <HelpCircle className="icon" />
                   Manage Business
@@ -457,14 +457,14 @@ const Home = () => {
                     <Phone className="infoicon" />
                     <div>
                       <h3 className="itemtitle">Phone</h3>
-                      <p className="itemtext">+1 (555) 123-4567</p>
+                      <p className="itemtext">+94 (71) 667 2617</p>
                     </div>
                   </div>
                   <div className="infoitem">
                     <MapPin className="infoicon" />
                     <div>
                     <h3 className="itemtitle">Location</h3>
-                      <p className="itemtext">123 Business Ave, Suite 200<br />San Francisco, CA 94107</p>
+                      <p className="itemtext">IIT CIty Offcie<br />Galle Road, Colombo</p>
                     </div>
                   </div>
                 </div>
