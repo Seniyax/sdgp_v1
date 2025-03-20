@@ -1,12 +1,7 @@
 const { getReservationHistoryByUser } = require("../models/reservationHistory");
 
 exports.getReservationHistory = async (req, res) => {
-  // Default user ID
-  const defaultUserId = "86b0fb25-e1f7-41a1-8338-fee52ca2669d";
-  
-  // For POST requests, try to get userId from body
-  // For GET requests, use the default userId
-  const userId = req.method === 'POST' ? (req.body.userId || defaultUserId) : defaultUserId;
+  const userId = req.user.id;
   
   try {
     const reservationHistory = await getReservationHistoryByUser(userId);
