@@ -1,4 +1,3 @@
-// App.js
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 // Import pages
@@ -14,6 +13,8 @@ import ManageBusiness from "./pages/ManageBusiness";
 import CustomerSupport from "./pages/CustomerSupport";
 import BusinessRegistration from "./pages/BusinessRegistration";
 import BusinessReport from "./pages/BusinessReport";
+import UserProfile from "./pages/UserProfile";
+
 
 function App() {
   return (
@@ -23,14 +24,15 @@ function App() {
         <Route path="/floorplan" element={<FloorPlanDesigner />} />
         <Route path="/reservationDashboard" element={<ReservationDashboard />} />
         <Route path="/business-registration" element={<BusinessRegistration />} />
-        <Route path="/business-dashboard" element={<BusinessDashboard />} /> 
-        <Route path="/verification" element={<Verification />} /> 
-        <Route path="/sign-in" element={<SignIn />} /> 
-        <Route path="/sign-up" element={<SignUp />} /> 
-        <Route path="/business-join" element={<BusinessJoin />} /> 
-        <Route path="/manage-business" element={<ManageBusiness />} /> 
-        <Route path="/customer-support" element={<CustomerSupport />} /> 
-        <Route path="/business-report" element={<BusinessReport />} /> 
+        <Route path="/business-dashboard" element={<BusinessDashboard />} />
+        <Route path="/verification" element={<Verification />} />
+        <Route path="/sign-in" element={<SignIn />} />
+        <Route path="/sign-up" element={<SignUp />} />
+        <Route path="/business-join" element={<BusinessJoin />} />
+        <Route path="/manage-business" element={<ManageBusiness />} />
+        <Route path="/customer-support" element={<CustomerSupport />} />
+        <Route path="/business-report" element={<BusinessReport />} />
+        <Route path="/user-profile" element={<UserProfile />} />
       </Routes>
     </Router>
   );
