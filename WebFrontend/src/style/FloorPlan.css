@@ -1,25 +1,240 @@
 @import url("bootstrap/dist/css/bootstrap.min.css");
 
+@import url("bootstrap/dist/css/bootstrap.min.css");
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
 
-.btn-violet {
-  background-color: rgb(191, 97, 214);
-  border-color: rgb(146, 64, 167);
+/* Main Container Styles */
+.floorplan-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #420e54;
+  padding: 1.5rem;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Card Styles */
+.floorplan-card {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 2rem;
+  width: 100%;
+  max-width: 800px;
+  transition: all 0.3s ease;
+}
+
+.floorplan-card:hover {
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+}
+
+/* Header Styles */
+.floorplan-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #eee;
+}
+
+.header-icon {
+  font-size: 1.5rem;
+  margin-right: 0.75rem;
+  color: rgb(146, 64, 167);
+}
+
+.header-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.floorplan-description {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+/* Form Styles */
+.floorplan-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #495057;
+}
+
+.form-input {
+  height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.95rem;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-input:focus {
+  border-color: rgb(191, 97, 214);
+  box-shadow: 0 0 0 3px rgba(191, 97, 214, 0.2);
+  outline: none;
+}
+
+/* Floor Names Container */
+.floor-names-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.75rem;
+  transition: opacity 300ms ease, transform 300ms ease;
+}
+
+.floor-names-container.animating {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.floor-name-input {
+  height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  width: 100%;
+}
+
+.floor-name-input:focus {
+  border-color: rgb(191, 97, 214);
+  box-shadow: 0 0 0 3px rgba(191, 97, 214, 0.2);
+  outline: none;
+}
+
+/* Pagination Controls */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.pagination-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background-color: #f8f9fa;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  color: #6c757d;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: rgb(196, 138, 211);
   color: white;
+  border-color: rgb(191, 97, 214);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+/* Error Message */
+.error-message {
+  color: #dc3545;
+  font-size: 0.85rem;
+  margin-top: -0.5rem;
+  padding: 0.25rem 0;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+/* Button Styles */
+.btn-violet {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: rgb(191, 97, 214);
+  border: none;
+  color: white;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .btn-violet:hover {
-  background-color: #9400d3; /* A slightly darker violet on hover */
-  border-color: #9400d3;
+  background-color: #9400d3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(148, 0, 211, 0.2);
+}
+
+.btn-violet:active {
+  transform: translateY(0);
 }
 
 .btn-violet-light {
   background-color: rgb(196, 138, 211);
-  border-color: rgb(110, 46, 126);
-  color: black;
+  border: none;
+  color: #333;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .btn-violet-light:hover {
   background-color: rgb(105, 72, 117);
-  border-color: rgb(94, 46, 126);
   color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(105, 72, 117, 0.2);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 576px) {
+  .floorplan-card {
+    padding: 1.5rem;
+  }
+  
+  .floor-names-container {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+  
+  .form-input,
+  .floor-name-input {
+    font-size: 0.85rem;
+  }
 }
