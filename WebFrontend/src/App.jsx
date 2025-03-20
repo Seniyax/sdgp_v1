@@ -14,6 +14,7 @@ import CustomerSupport from "./pages/CustomerSupport";
 import BusinessRegistration from "./pages/BusinessRegistration";
 import BusinessReport from "./pages/BusinessReport";
 import UserProfile from "./pages/UserProfile";
+// import dasboard from "./pages/dashboard";
 
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
         <Route path="/customer-support" element={<CustomerSupport />} />
         <Route path="/business-report" element={<BusinessReport />} />
         <Route path="/user-profile" element={<UserProfile />} />
+        {/*<Route path="/dashboard" element={<Dashboard />} />*/}
       </Routes>
     </Router>
   );
