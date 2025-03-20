@@ -1,4 +1,5 @@
 import React from 'react';
+import video from '../assets/video.mp4';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -117,76 +118,79 @@ const Home = () => {
         exit={{ opacity: 0 }}
         className="main"
       >
-        {/* Hero Section */}
-        <div className="hero">
-          <div className="grid"></div>
-          <div className="wrapper padded">
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="center"
-            >
-              <span className="badge">
-                Revolutionizing Time Management
-              </span>
-              <h1 className="title">
-                Smart Scheduling for<br />Modern Businesses
-              </h1>
-              <p className="subtitle">
-                Transform your business operations with SlotZi's intelligent reservation platform. 
-                Streamline bookings, reduce no-shows, and delight your customers.
-              </p>
-              <div className="buttons">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="secondary"
-                  onClick={handleRegisterClick}
-                >
-                  <Users className="icon" />
-                  Register Business
-                  <ArrowRight className="icon" />
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="secondary"
-                  onClick={handleJoinClick}
-                >
-                  <Building2 className="icon" />
-                  Join Business
-                  <ArrowRight className="icon" />
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="tertiary"
-                  onClick={handleManageClick}
-                >
-                  <HelpCircle className="icon" />
-                  Manage Business
-                  <ArrowRight className="icon" />
-                </motion.button>
-              </div>
-              <div className="stats">
-                {stats.map((stat, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.4 + index * 0.1 }}
-                    className="card"
-                  >
-                    <stat.icon className="staticon" />
-                    <h3 className="statvalue">{stat.value}</h3>
-                    <p className="statlabel">{stat.label}</p>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-        </div>
+       {/* Hero Section */}
+<div className="hero">
+  <video className="hero-video" autoPlay loop muted playsInline>
+    <source src={video} type="video/mp4" />
+  </video>
+  <div className="hero-overlay"></div>
+  <div className="wrapper padded">
+    <motion.div
+      initial={{ y: 20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ delay: 0.2 }}
+      className="center"
+    >
+      <span className="badge">
+        Revolutionizing Time Management
+      </span>
+      <h1 className="title">
+        Smart Scheduling for<br />Modern Businesses
+      </h1>
+      <p className="subtitle">
+        Transform your business operations with SlotZi's intelligent reservation platform.
+        Streamline bookings, reduce no-shows, and delight your customers.
+      </p>
+      <div className="buttons">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="secondary"
+          onClick={handleRegisterClick}
+        >
+          <Users className="icon" />
+          Register Business
+          <ArrowRight className="icon" />
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="secondary"
+          onClick={handleJoinClick}
+        >
+          <Building2 className="icon" />
+          Join Business
+          <ArrowRight className="icon" />
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="tertiary"
+          onClick={handleManageClick}
+        >
+          <HelpCircle className="icon" />
+          Manage Business
+          <ArrowRight className="icon" />
+        </motion.button>
+      </div>
+      <div className="stats">
+        {stats.map((stat, index) => (
+          <motion.div
+            key={index}
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.4 + index * 0.1 }}
+            className="card"
+          >
+            <stat.icon className="staticon" />
+            <h3 className="statvalue">{stat.value}</h3>
+            <p className="statlabel">{stat.label}</p>
+          </motion.div>
+        ))}
+      </div>
+    </motion.div>
+  </div>
+</div>
 
         {/* Features Section */}
         <div className="features">
@@ -274,6 +278,207 @@ const Home = () => {
               >
                 Start Free Trial
                 <ArrowRight className="icon" />
+              </motion.button>
+            </motion.div>
+          </div>
+        </div>
+        
+        {/* Subscription Plans Section */}
+        <div className="subscription">
+          <div className="wrapper">
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              viewport={{ once: true }}
+              className="center"
+            >
+              <span className="badge">
+                Pick Your Plan
+              </span>
+              <h2 className="heading">
+                Simple Pricing for Every Business
+              </h2>
+              <p className="subheading">
+                Choose the plan that works best for your business needs.
+                No hidden fees, cancel anytime.
+              </p>
+            </motion.div>
+
+            <div className="plans">
+              {/* Free Plan */}
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className="plan free"
+              >
+                <div className="planBadge">
+                  <span>Starter</span>
+                </div>
+                <h3 className="planTitle">Free</h3>
+                <div className="planPrice">
+                  <span className="price">$0</span>
+                  <span className="period">/month</span>
+                </div>
+                <p className="planDescription">
+                  Perfect for individuals or small businesses just getting started.
+                </p>
+                <ul className="planFeatures">
+                  <li>
+                    <CheckCircle className="featureIcon" />
+                    <span>Up to 5 bookings per month</span>
+                  </li>
+                  <li>
+                    <CheckCircle className="featureIcon" />
+                    <span>Basic calendar integrations</span>
+                  </li>
+                  <li>
+                    <CheckCircle className="featureIcon" />
+                    <span>Email notifications</span>
+                  </li>
+                  <li>
+                    <CheckCircle className="featureIcon" />
+                    <span>Basic customization options</span>
+                  </li>
+                </ul>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="planButton"
+                  onClick={handleRegisterClick}
+                >
+                  Get Started
+                  <ArrowRight className="icon" />
+                </motion.button>
+              </motion.div>
+
+              {/* Monthly Plan */}
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+                className="plan monthly popular"
+              >
+                <div className="planBadge popular">
+                  <span>Most Popular</span>
+                </div>
+                <h3 className="planTitle">Professional</h3>
+                <div className="planPrice">
+                  <span className="price">Rs.399</span>
+                  <span className="period">/month</span>
+                </div>
+                <p className="planDescription">
+                  For growing businesses that need more advanced features.
+                </p>
+                <ul className="planFeatures">
+                  <li>
+                    <CheckCircle className="featureIcon" />
+                    <span>Unlimited bookings</span>
+                  </li>
+                  <li>
+                    <CheckCircle className="featureIcon" />
+                    <span>Advanced calendar integrations</span>
+                  </li>
+                  <li>
+                    <CheckCircle className="featureIcon" />
+                    <span>SMS notifications</span>
+                  </li>
+                  <li>
+                    <CheckCircle className="featureIcon" />
+                    <span>Custom branding</span>
+                  </li>
+                  <li>
+                    <CheckCircle className="featureIcon" />
+                    <span>Priority support</span>
+                  </li>
+                
+                </ul>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="planButton"
+                  onClick={handleRegisterClick}
+                >
+                  Start Monthly
+                  <ArrowRight className="icon" />
+                </motion.button>
+              </motion.div>
+
+              {/* Yearly Plan */}
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
+                className="plan yearly"
+              >
+                <div className="planBadge">
+                  <span>Best Value</span>
+                </div>
+                <h3 className="planTitle">Enterprise</h3>
+                <div className="planPrice">
+                  <span className="price">Rs.3999</span>
+                  <span className="period">/year</span>
+                </div>
+                <div className="savings">
+                  <span>Save Rs.</span>789
+                </div>
+                <p className="planDescription">
+                  Complete solution for established businesses and organizations.
+                </p>
+                <ul className="planFeatures">
+                  <li>
+                    <CheckCircle className="featureIcon" />
+                    <span>Everything in Professional</span>
+                  </li>
+                  <li>
+                    <CheckCircle className="featureIcon" />
+                    <span>Multi-location support</span>
+                  </li>
+                  <li>
+                    <CheckCircle className="featureIcon" />
+                    <span>Multiple Bookings at a time</span>
+                  </li>
+                  <li>
+                    <CheckCircle className="featureIcon" />
+                    <span>Unlock discounts</span>
+                  </li>
+                  <li>
+                    <CheckCircle className="featureIcon" />
+                    <span>Star points earned</span>
+                  </li>
+                  
+                </ul>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="planButton"
+                  onClick={handleRegisterClick}
+                >
+                  Start Yearly
+                  <ArrowRight className="icon" />
+                </motion.button>
+              </motion.div>
+            </div>
+
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4 }}
+              className="enterpriseOffer"
+            >
+              <h3>Need a Custom Solution?</h3>
+              <p>Contact our sales team for a tailored enterprise package that fits your specific needs.</p>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="enterpriseButton"
+                onClick={handleContactClick}
+              >
+                Contact Sales
               </motion.button>
             </motion.div>
           </div>
@@ -471,13 +676,13 @@ const Home = () => {
                 <div className="social">
                   <h3 className="socialtitle">Follow Us</h3>
                   <div className="socialicons">
-                    <a href="#" className="sociallink">
+                    <a href="https://www.instagram.com/slot_zi?igsh=aDIxa3hjbjlzcHo0&utm_source=qr" className="sociallink">
                       <Facebook className="socialicon" />
                     </a>
-                    <a href="#" className="sociallink">
+                    <a href="https://www.instagram.com/slot_zi?igsh=aDIxa3hjbjlzcHo0&utm_source=qr" className="sociallink">
                       <Twitter className="socialicon" />
                     </a>
-                    <a href="#" className="sociallink">
+                    <a href="https://www.instagram.com/slot_zi?igsh=aDIxa3hjbjlzcHo0&utm_source=qr" className="sociallink">
                       <Instagram className="socialicon" />
                     </a>
                   </div>
@@ -495,13 +700,13 @@ const Home = () => {
                 <h3 className="footertitle">SlotZi</h3>
                 <p className="footertext">The intelligent scheduling platform for modern businesses.</p>
                 <div className="footersocial">
-                  <a href="#" className="footerlink">
+                  <a href="https://www.instagram.com/slot_zi?igsh=aDIxa3hjbjlzcHo0&utm_source=qr" className="footerlink">
                     <Facebook className="footericon" />
                   </a>
-                  <a href="#" className="footerlink">
+                  <a href="https://www.instagram.com/slot_zi?igsh=aDIxa3hjbjlzcHo0&utm_source=qr" className="footerlink">
                     <Twitter className="footericon" />
                   </a>
-                  <a href="#" className="footerlink">
+                  <a href="https://www.instagram.com/slot_zi?igsh=aDIxa3hjbjlzcHo0&utm_source=qr" className="footerlink">
                     <Instagram className="footericon" />
                   </a>
                 </div>
