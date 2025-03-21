@@ -6,6 +6,7 @@ import { Group, Rect, Text, Circle, Line } from "react-konva";
 const AlcoholBar = ({
   shape,
   isSelected,
+  isPreview,
   onSelect,
   onDragEnd,
   onResize,
@@ -17,44 +18,42 @@ const AlcoholBar = ({
   const resizeHandleSize = 8;
   const [rotation, setRotation] = useState(shape.rotation || 0);
 
-  // Handle the end of a drag event
+  // Compute center coordinates
+  const centerX = shape.width / 2;
+  const centerY = shape.height / 2;
+
+  // Handle drag end by updating the top-left position from the centered group position.
   const handleDragEnd = (e) => {
-    onDragEnd(shape.id, e.target.x(), e.target.y());
+    const newX = e.target.x() - centerX;
+    const newY = e.target.y() - centerY;
+    onDragEnd(shape.id, newX, newY);
   };
 
-  // Start rotation handling
+  // Handle rotation by calculating the angle relative to the global center.
   const handleRotateStart = (e) => {
+    if (isPreview) return;
     e.cancelBubble = true;
     const stage = shapeRef.current.getStage();
-    const centerX = shape.width / 2;
-    const centerY = shape.height / 2;
-
+    const globalCenterX = shape.x + centerX;
+    const globalCenterY = shape.y + centerY;
     const initialPos = stage.getPointerPosition();
     const initialAngle = Math.atan2(
-      initialPos.y - (shape.y + centerY),
-      initialPos.x - (shape.x + centerX)
+      initialPos.y - globalCenterY,
+      initialPos.x - globalCenterX
     );
-
     const initialRotation = rotation;
 
-    // Rotation movement handler
     const onMouseMove = () => {
       const pos = stage.getPointerPosition();
-      const newAngle = Math.atan2(
-        pos.y - (shape.y + centerY),
-        pos.x - (shape.x + centerX)
-      );
-
+      const newAngle = Math.atan2(pos.y - globalCenterY, pos.x - globalCenterX);
       let delta = (newAngle - initialAngle) * (180 / Math.PI) * 1.2;
       const newRotation = (initialRotation + delta) % 360;
       setRotation(newRotation);
-
       if (onRotate) {
         onRotate(shape.id, newRotation);
       }
     };
 
-    // Stop rotation on mouse up
     const onMouseUp = () => {
       stage.off("mousemove", onMouseMove);
       stage.off("mouseup", onMouseUp);
@@ -64,20 +63,46 @@ const AlcoholBar = ({
     stage.on("mouseup", onMouseUp);
   };
 
-  // Handle the start of resizing
+  // Utility function to transform a point into local coordinates
+  const transformPoint = (point, cx, cy, rotation) => {
+    const rad = (rotation * Math.PI) / 180;
+    const cos = Math.cos(-rad);
+    const sin = Math.sin(-rad);
+    const dx = point.x - cx;
+    const dy = point.y - cy;
+    return {
+      x: cx + dx * cos - dy * sin,
+      y: cy + dx * sin + dy * cos,
+    };
+  };
+
+  // Handle resizing similar to GreyRectangle, using the centered coordinates.
   const handleResizeStart = (e, handle) => {
+    if (isPreview) return;
     e.cancelBubble = true;
     const stage = shapeRef.current.getStage();
+    const globalCenterX = shape.x + centerX;
+    const globalCenterY = shape.y + centerY;
 
-    const initialPos = stage.getPointerPosition();
+    const initialPos = transformPoint(
+      stage.getPointerPosition(),
+      globalCenterX,
+      globalCenterY,
+      rotation
+    );
+
     const initialWidth = shape.width;
     const initialHeight = shape.height;
     const initialX = shape.x;
     const initialY = shape.y;
 
-    // Resizing movement handler
     const onMouseMove = () => {
-      const pos = stage.getPointerPosition();
+      const pos = transformPoint(
+        stage.getPointerPosition(),
+        globalCenterX,
+        globalCenterY,
+        rotation
+      );
       const dx = pos.x - initialPos.x;
       const dy = pos.y - initialPos.y;
 
@@ -108,11 +133,9 @@ const AlcoholBar = ({
           newHeight = Math.max(initialHeight + dy, 50);
           break;
       }
-
       onResize(shape.id, newX, newY, newWidth, newHeight);
     };
 
-    // Stop resizing on mouse up
     const onMouseUp = () => {
       stage.off("mousemove", onMouseMove);
       stage.off("mouseup", onMouseUp);
@@ -124,92 +147,82 @@ const AlcoholBar = ({
     stage.on("mouseup", onMouseUp);
   };
 
-  // Handle delete action
   const handleDelete = (e) => {
+    if (isPreview) return;
     e.cancelBubble = true;
     onDelete(shape.id);
   };
 
   return (
     <Group
-      x={shape.x}
-      y={shape.y}
-      rotation={rotation}
-      draggable
-      onDragEnd={handleDragEnd}
-      onClick={() => onSelect(shape.id)}
-      onTap={() => onSelect(shape.id)}
+      x={shape.x + centerX}
+      y={shape.y + centerY}
+      draggable={!isPreview}
+      onDragEnd={isPreview ? undefined : handleDragEnd}
+      onClick={!isPreview ? () => onSelect(shape.id) : undefined}
+      onTap={!isPreview ? () => onSelect(shape.id) : undefined}
     >
-      {/* Render the bar shape */}
-      <Rect
-        ref={shapeRef}
-        width={shape.width}
-        height={shape.height}
-        fill="#8B4513" // Dark brown color
-        stroke={isSelected ? "#4299E1" : "#A0AEC0"}
-        strokeWidth={2}
-      />
-
-      {/* Label for the bar */}
-      <Text
-        ref={textRef}
-        x={shape.width / 2 - 40}
-        y={shape.height / 2 - 10}
-        text="Alcohol Bar"
-        fontSize={16}
-        fontStyle="bold"
-        fill="#FFFFFF"
-      />
-
-      {/* Only show the following when selected */}
+      {/* Inner group that applies rotation */}
+      <Group rotation={rotation}>
+        <Rect
+          ref={shapeRef}
+          x={-centerX}
+          y={-centerY}
+          width={shape.width}
+          height={shape.height}
+          fill="#8B4513" // Dark brown color
+          stroke={isSelected ? "#4299E1" : "#A0AEC0"}
+          strokeWidth={2}
+        />
+        <Text
+          ref={textRef}
+          x={-centerX + centerX - 40} // roughly center text; adjust as needed
+          y={-centerY + centerY - 10}
+          text="Alcohol Bar"
+          fontSize={16}
+          fontStyle="bold"
+          fill="#FFFFFF"
+        />
+      </Group>
       {isSelected && (
         <>
           {/* Resize handles */}
           <Circle
-            x={0}
-            y={0}
+            x={-centerX}
+            y={-centerY}
             radius={resizeHandleSize / 2}
             fill="#4299E1"
             onMouseDown={(e) => handleResizeStart(e, "topLeft")}
           />
-
           <Circle
-            x={shape.width}
-            y={0}
+            x={centerX}
+            y={-centerY}
             radius={resizeHandleSize / 2}
             fill="#4299E1"
             onMouseDown={(e) => handleResizeStart(e, "topRight")}
           />
-
           <Circle
-            x={0}
-            y={shape.height}
+            x={-centerX}
+            y={centerY}
             radius={resizeHandleSize / 2}
             fill="#4299E1"
             onMouseDown={(e) => handleResizeStart(e, "bottomLeft")}
           />
-
           <Circle
-            x={shape.width}
-            y={shape.height}
+            x={centerX}
+            y={centerY}
             radius={resizeHandleSize / 2}
             fill="#4299E1"
             onMouseDown={(e) => handleResizeStart(e, "bottomRight")}
           />
-
           {/* Rotation handle */}
-          <Group
-            y={shape.height + 20}
-            x={shape.width / 2}
-            onMouseDown={handleRotateStart}
-          >
+          <Group x={0} y={centerY + 20} onMouseDown={handleRotateStart}>
             <Circle radius={10} fill="#4CAF50" />
             <Line points={[-5, -5, 5, 5]} stroke="white" strokeWidth={2} />
             <Line points={[5, -5, -5, 5]} stroke="white" strokeWidth={2} />
           </Group>
-
           {/* Delete button */}
-          <Group y={-20} x={shape.width / 2}>
+          <Group x={0} y={-centerY - 20}>
             <Circle radius={10} fill="red" onClick={handleDelete} />
             <Line
               points={[-5, -5, 5, 5]}

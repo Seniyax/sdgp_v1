@@ -7,7 +7,7 @@ const {
   deleteFloorPlan,
 } = require("../controllers/floorPlanController");
 
-router.get("/get", getFloorPlan);
+router.post("/get", getFloorPlan);
 router.post("/create", createFloorPlan);
 router.put("/update", updateFloorPlan);
 router.delete("/delete", deleteFloorPlan);

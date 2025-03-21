@@ -1,0 +1,510 @@
+
+.container {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    font-family: 'Montserrat', sans-serif;
+    background-color: #420e54;
+  }
+  
+  /* Cosmic background elements */
+  .cosmic-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+
+  }
+  
+  
+  .twinkling {
+    background: transparent url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/1231630/twinkling.png') repeat;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    animation: twinkle 200s linear infinite;
+  }
+  
+  .clouds {
+    background: transparent url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/1231630/clouds_repeat.png') repeat;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0.4;
+    animation: clouds-move 150s linear infinite;
+  }
+  
+  /* Content styling */
+  .content {
+    width: 90%;
+    max-width: 1000px;
+    padding: 40px;
+    background: rgba(0, 0, 10, 0.7);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 30px rgba(88, 103, 221, 0.3), 
+                0 0 80px rgba(131, 88, 221, 0.2);
+    text-align: center;
+    z-index: 10;
+    border: 1px solid rgba(160, 160, 255, 0.2);
+  }
+  
+  .title {
+    font-size: 3.5rem;
+    margin-bottom: 16px;
+    color: white;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.5), 
+                0 0 25px rgba(100, 100, 255, 0.3);
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+  
+  .subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 40px;
+    color: #b8c6db;
+    font-weight: 300;
+    letter-spacing: 1px;
+  }
+  
+  /* Button container */
+  .buttons-container {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    margin-top: 30px;
+  }
+  
+  /* Button base styles */
+  .btn {
+    position: relative;
+    background: transparent;
+    border: none;
+    width: 240px;
+    height: 60px;
+    font-size: 1.4rem;
+    color: white;
+    cursor: pointer;
+    margin: 10px;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.5s ease;
+  }
+  
+  .btn:focus {
+    outline: none;
+  }
+  
+  .btn-content {
+    position: relative;
+    z-index: 3;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    transition: all 0.3s ease;
+  }
+  
+  .btn-label {
+    position: absolute;
+    bottom: -30px;
+    left: 0;
+    right: 0;
+    font-size: 0.85rem;
+    color: #b8c6db;
+    opacity: 0;
+    transition: all 0.4s ease;
+  }
+  
+  .btn:hover .btn-label {
+    bottom: 10px;
+    opacity: 1;
+  }
+  
+  .btn:hover .btn-content {
+    transform: translateY(-10px);
+  }
+  
+  /* Register button specific styles */
+  .register-btn {
+    background: linear-gradient(135deg, #5e54a4, #342c5c);
+    box-shadow: 0 0 15px rgba(94, 84, 164, 0.5);
+    border: 1px solid rgba(94, 84, 164, 0.3);
+  }
+  
+  .register-btn:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #7b5ee6, #5e54a4);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    z-index: 1;
+  }
+  
+  .register-btn:hover:before {
+    opacity: 1;
+  }
+  
+  .btn-glitch {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, transparent 30%, rgba(255, 255, 255, 0.5), transparent 70%);
+    transform: translateX(-100%);
+    opacity: 0.3;
+    z-index: 2;
+  }
+  
+  .register-btn:hover .btn-glitch {
+    animation: glitch 1.5s infinite;
+  }
+  
+  /* Particle effects */
+  .particle-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+  
+  .particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: white;
+    border-radius: 50%;
+    opacity: 0;
+    animation: particle-rise 2s ease-out forwards;
+  }
+  
+  .particle:nth-child(odd) {
+    background: #a496ff;
+  }
+  
+  /* Join button specific styles */
+  .join-btn {
+    background: linear-gradient(135deg, #5e92a4, #2c485c);
+    box-shadow: 0 0 15px rgba(94, 146, 164, 0.5);
+    border: 1px solid rgba(94, 146, 164, 0.3);
+  }
+  
+  .join-btn:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #5ebee6, #5e92a4);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    z-index: 1;
+  }
+  
+  .join-btn:hover:before {
+    opacity: 1;
+  }
+  
+  .btn-pulse {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
+    transform: scale(0);
+    opacity: 0;
+    z-index: 2;
+  }
+  
+  .join-btn:hover .btn-pulse {
+    animation: pulse 1.8s infinite;
+  }
+  
+  /* Ripple effects */
+  .ripple-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+  
+  .ripple {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    opacity: 0;
+  }
+  
+  .ripple:nth-child(1) {
+    animation: ripple 2s ease-out infinite;
+  }
+  
+  .ripple:nth-child(2) {
+    animation: ripple 2s ease-out 0.6s infinite;
+  }
+  
+  .ripple:nth-child(3) {
+    animation: ripple 2s ease-out 1.2s infinite;
+  }
+  
+  /* Orbit effects */
+  .orbit-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+  
+  .orbit {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    animation: orbit-rotate 4s linear infinite;
+  }
+  
+  .orbit-dot {
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 8px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+  }
+  
+  /* Animations */
+  @keyframes glitch {
+    0% {
+      transform: translateX(-100%);
+    }
+    10%, 90% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  
+  @keyframes pulse {
+    0% {
+      transform: scale(0);
+      opacity: 0.8;
+    }
+    100% {
+      transform: scale(3);
+      opacity: 0;
+    }
+  }
+  
+  /* Replace the problematic particle-rise animation with this version */
+@keyframes particle-rise {
+    0% {
+      transform: translate(var(--x-offset, 0), 20px);
+      opacity: 0;
+    }
+    50% {
+      opacity: 0.8;
+    }
+    100% {
+      transform: translate(var(--x-offset, 0), -100px);
+      opacity: 0;
+    }
+  }
+  
+  @keyframes ripple {
+    0% {
+      width: 0;
+      height: 0;
+      opacity: 0.8;
+    }
+    100% {
+      width: 200px;
+      height: 200px;
+      opacity: 0;
+    }
+  }
+  
+  @keyframes orbit-rotate {
+    0% {
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
+  }
+  
+  @keyframes stars-move {
+    from {
+      background-position: 0 0;
+    }
+    to {
+      background-position: 10000px 0;
+    }
+  }
+  
+  @keyframes twinkle {
+    from {
+      background-position: 0 0;
+    }
+    to {
+      background-position: 10000px 5000px;
+    }
+  }
+  
+  @keyframes clouds-move {
+    from {
+      background-position: 0 0;
+    }
+    to {
+      background-position: 10000px 0;
+    }
+  }
+  
+  /* Media queries for responsive design */
+  @media screen and (max-width: 768px) {
+    .content {
+      padding: 30px 20px;
+      width: 85%;
+    }
+  
+    .title {
+      font-size: 2.5rem;
+    }
+  
+    .subtitle {
+      font-size: 1.2rem;
+      margin-bottom: 30px;
+    }
+  
+    .buttons-container {
+      gap: 20px;
+    }
+  
+    .btn {
+      width: 200px;
+      height: 55px;
+      font-size: 1.2rem;
+    }
+  }
+  
+  @media screen and (max-width: 480px) {
+    .content {
+      padding: 25px 15px;
+      width: 90%;
+    }
+  
+    .title {
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+  
+    .subtitle {
+      font-size: 1rem;
+      margin-bottom: 25px;
+    }
+  
+    .buttons-container {
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+  
+    .btn {
+      width: 85%;
+      max-width: 220px;
+      margin: 5px 0;
+    }
+  
+    .btn:hover .btn-content {
+      transform: translateY(-8px);
+    }
+  }
+  
+  /* For extra small screens */
+  @media screen and (max-width: 320px) {
+    .title {
+      font-size: 1.8rem;
+    }
+  
+    .subtitle {
+      font-size: 0.9rem;
+    }
+  
+    .btn {
+      font-size: 1.1rem;
+      height: 50px;
+    }
+  }
+  
+  /* Accessibility improvements */
+  @media (prefers-reduced-motion: reduce) {
+    .stars, .twinkling, .clouds, .btn-glitch, .btn-pulse, 
+    .particle, .ripple, .orbit {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+  /* Then update the particle class to use custom properties */
+  .particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: white;
+    border-radius: 50%;
+    opacity: 0;
+    animation: particle-rise 2s ease-out forwards;
+  }
+  
+  .particle:nth-child(1) { --x-offset: -40px; }
+  .particle:nth-child(2) { --x-offset: -30px; }
+  .particle:nth-child(3) { --x-offset: -20px; }
+  .particle:nth-child(4) { --x-offset: -10px; }
+  .particle:nth-child(5) { --x-offset: 0px; }
+  .particle:nth-child(6) { --x-offset: 10px; }
+  .particle:nth-child(7) { --x-offset: 20px; }
+  .particle:nth-child(8) { --x-offset: 30px; }
+  .particle:nth-child(9) { --x-offset: 40px; }
+  .particle:nth-child(10) { --x-offset: -45px; }
+  .particle:nth-child(11) { --x-offset: -25px; }
+  .particle:nth-child(12) { --x-offset: -5px; }
+  .particle:nth-child(13) { --x-offset: 15px; }
+  .particle:nth-child(14) { --x-offset: 35px; }
+  .particle:nth-child(15) { --x-offset: 45px; }
+  
+  .particle:nth-child(odd) {
+    background: #a496ff;
+  }

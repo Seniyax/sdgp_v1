@@ -1,11 +1,12 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
 import React, { useRef, useState } from "react";
-import { Circle, Group, Line, Rect, Text } from "react-konva";
+import { Group, Rect, Text, Circle, Line } from "react-konva";
 
 const EmergencyExit = ({
   shape,
   isSelected,
+  isPreview,
   onSelect,
   onDragEnd,
   onResize,
@@ -38,6 +39,7 @@ const EmergencyExit = ({
 
   // Handle rotation start
   const handleRotateStart = (e) => {
+    if (isPreview) return;
     e.cancelBubble = true;
     const stage = shapeRef.current.getStage();
     const centerX = shape.width / 2;
@@ -49,7 +51,6 @@ const EmergencyExit = ({
     );
     const initialRotation = rotation;
 
-    // Mouse move event to calculate rotation
     const onMouseMove = () => {
       const pos = stage.getPointerPosition();
       const newAngle = Math.atan2(
@@ -59,14 +60,11 @@ const EmergencyExit = ({
       let delta = (newAngle - initialAngle) * (180 / Math.PI) * 1.2;
       const newRotation = (initialRotation + delta) % 360;
       setRotation(newRotation);
-
-      // Notify parent about rotation change
       if (onRotate) {
         onRotate(shape.id, newRotation);
       }
     };
 
-    // Mouse up to stop rotating
     const onMouseUp = () => {
       stage.off("mousemove", onMouseMove);
       stage.off("mouseup", onMouseUp);
@@ -78,6 +76,7 @@ const EmergencyExit = ({
 
   // Handle resizing start
   const handleResizeStart = (e, handle) => {
+    if (isPreview) return;
     e.cancelBubble = true;
     const stage = shapeRef.current.getStage();
     const centerX = shape.x + shape.width / 2;
@@ -96,7 +95,6 @@ const EmergencyExit = ({
     const initialX = shape.x;
     const initialY = shape.y;
 
-    // Mouse move event to calculate resizing
     const onMouseMove = () => {
       const pos = transformPoint(
         stage.getPointerPosition(),
@@ -139,7 +137,6 @@ const EmergencyExit = ({
       onResize(shape.id, newX, newY, newWidth, newHeight);
     };
 
-    // Mouse up to stop resizing
     const onMouseUp = () => {
       stage.off("mousemove", onMouseMove);
       stage.off("mouseup", onMouseUp);
@@ -153,6 +150,7 @@ const EmergencyExit = ({
 
   // Handle delete action
   const handleDelete = (e) => {
+    if (isPreview) return;
     e.cancelBubble = true;
     onDelete(shape.id);
   };
@@ -161,10 +159,12 @@ const EmergencyExit = ({
     <Group
       x={shape.x + shape.width / 2}
       y={shape.y + shape.height / 2}
-      draggable
-      onDragEnd={handleDragEnd}
+      draggable={!isPreview}
+      onDragEnd={isPreview ? undefined : handleDragEnd}
+      onClick={!isPreview ? () => onSelect(shape.id) : undefined}
+      onTap={!isPreview ? () => onSelect(shape.id) : undefined}
     >
-      {/* Rotating group containing the rectangle and resize handles */}
+      {/* Rotating group containing the shape and resize handles */}
       <Group rotation={rotation}>
         <Rect
           ref={shapeRef}
@@ -175,8 +175,18 @@ const EmergencyExit = ({
           fill="#FF0000" // Red color for emergency exit
           stroke={isSelected ? "#4299E1" : "transparent"}
           strokeWidth={2}
-          onClick={() => onSelect(shape.id)}
-          onTap={() => onSelect(shape.id)}
+          onClick={!isPreview ? () => onSelect(shape.id) : undefined}
+          onTap={!isPreview ? () => onSelect(shape.id) : undefined}
+        />
+
+        <Text
+          x={-shape.width / 2 + 10}
+          y={-shape.height / 2 + 15}
+          width={shape.width - 20}
+          text="Emergancy Exit"
+          fontSize={14}
+          fill="white"
+          align="center"
         />
 
         {/* Resize handles shown when the shape is selected */}
@@ -188,7 +198,9 @@ const EmergencyExit = ({
               width={resizeHandleSize}
               height={resizeHandleSize}
               fill="#4299E1"
-              onMouseDown={(e) => handleResizeStart(e, "topLeft")}
+              onMouseDown={
+                isPreview ? undefined : (e) => handleResizeStart(e, "topLeft")
+              }
             />
             <Rect
               x={shape.width / 2 - resizeHandleSize / 2}
@@ -196,7 +208,9 @@ const EmergencyExit = ({
               width={resizeHandleSize}
               height={resizeHandleSize}
               fill="#4299E1"
-              onMouseDown={(e) => handleResizeStart(e, "topRight")}
+              onMouseDown={
+                isPreview ? undefined : (e) => handleResizeStart(e, "topRight")
+              }
             />
             <Rect
               x={-shape.width / 2 - resizeHandleSize / 2}
@@ -204,7 +218,11 @@ const EmergencyExit = ({
               width={resizeHandleSize}
               height={resizeHandleSize}
               fill="#4299E1"
-              onMouseDown={(e) => handleResizeStart(e, "bottomLeft")}
+              onMouseDown={
+                isPreview
+                  ? undefined
+                  : (e) => handleResizeStart(e, "bottomLeft")
+              }
             />
             <Rect
               x={shape.width / 2 - resizeHandleSize / 2}
@@ -212,27 +230,18 @@ const EmergencyExit = ({
               width={resizeHandleSize}
               height={resizeHandleSize}
               fill="#4299E1"
-              onMouseDown={(e) => handleResizeStart(e, "bottomRight")}
+              onMouseDown={
+                isPreview
+                  ? undefined
+                  : (e) => handleResizeStart(e, "bottomRight")
+              }
             />
           </>
         )}
-
-        {/* Text label for emergency exit */}
-        <Text
-          x={-shape.width / 2}
-          y={-shape.height / 2}
-          width={shape.width}
-          height={shape.height}
-          text="Emergency Exit"
-          fontSize={Math.min(12, shape.width / 10)}
-          fill="white"
-          align="center"
-          verticalAlign="middle"
-        />
       </Group>
 
       {/* Non-rotating controls */}
-      {isSelected && (
+      {isSelected && !isPreview && (
         <>
           {/* Rotate button */}
           <Group

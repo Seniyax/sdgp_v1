@@ -348,6 +348,20 @@ function RectangleTable({
           shadowOffset={{ x: 0, y: 2 }}
           shadowOpacity={0.3}
         />
+
+        <Text
+          text={shape.tableNumber ? shape.tableNumber.toString() : ""}
+          fontSize={24} // adjust as needed
+          fill="white" // choose a contrasting color
+          x={-tableWidth / 2} // ensures centering horizontally
+          y={-tableHeight / 2} // ensures centering vertically
+          width={tableWidth}
+          height={tableHeight}
+          align="center"
+          verticalAlign="middle"
+          fontStyle="bold"
+        />
+
         {renderChairs("top", topSlots)}
         {renderChairs("right", rightSlots)}
         {renderChairs("bottom", bottomSlots)}

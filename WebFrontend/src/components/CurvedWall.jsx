@@ -6,27 +6,35 @@ import { Group, Path, Circle, Line } from "react-konva";
 const CurvedWall = ({
   shape,
   isSelected,
+  isPreview,
   onSelect,
   onDragEnd,
   onResize,
   onDelete,
   onRotate,
+  onThicknessResize, // new callback prop for adjusting thickness
 }) => {
   const shapeRef = useRef();
   const resizeHandleSize = 8;
   const [rotation, setRotation] = useState(shape.rotation || 0);
 
-  // Generate a simple curved path
-  const generatePath = () => {
-    return `M0,0 Q${shape.width / 2},${shape.height} ${shape.width},0`;
+  const generateCenteredPath = () => {
+    const w = shape.width;
+    const h = shape.height;
+    return `M${-w / 2},${-h / 2} Q0,${h / 2} ${w / 2},${-h / 2}`;
   };
 
+  // Convert the drag end center back to top-left
   const handleDragEnd = (e) => {
-    onDragEnd(shape.id, e.target.x(), e.target.y());
+    const newCenterX = e.target.x();
+    const newCenterY = e.target.y();
+    const newX = newCenterX - shape.width / 2;
+    const newY = newCenterY - shape.height / 2;
+    onDragEnd(shape.id, newX, newY);
   };
 
-  // Rotate the shape smoothly
   const handleRotateStart = (e) => {
+    if (isPreview) return;
     e.cancelBubble = true;
     const stage = shapeRef.current.getStage();
     const centerX = shape.width / 2;
@@ -36,7 +44,6 @@ const CurvedWall = ({
       initialPos.y - (shape.y + centerY),
       initialPos.x - (shape.x + centerX)
     );
-
     const initialRotation = rotation;
 
     const onMouseMove = () => {
@@ -45,11 +52,9 @@ const CurvedWall = ({
         pos.y - (shape.y + centerY),
         pos.x - (shape.x + centerX)
       );
-
       let delta = (newAngle - initialAngle) * (180 / Math.PI) * 1.2;
       const newRotation = (initialRotation + delta) % 360;
       setRotation(newRotation);
-
       if (onRotate) {
         onRotate(shape.id, newRotation);
       }
@@ -64,26 +69,27 @@ const CurvedWall = ({
     stage.on("mouseup", onMouseUp);
   };
 
-  // Resize the curved wall
   const handleResizeStart = (e, handle) => {
+    if (isPreview) return;
     e.cancelBubble = true;
     const stage = shapeRef.current.getStage();
     const initialPos = stage.getPointerPosition();
     const initialWidth = shape.width;
     const initialHeight = shape.height;
+    const initialX = shape.x;
+    const initialY = shape.y;
 
     const onMouseMove = () => {
       const pos = stage.getPointerPosition();
       const dx = pos.x - initialPos.x;
       const dy = pos.y - initialPos.y;
-
       let newWidth = initialWidth;
       let newHeight = initialHeight;
-
+      let newX = initialX;
+      let newY = initialY;
       if (handle === "right") newWidth = Math.max(initialWidth + dx, 50);
       if (handle === "bottom") newHeight = Math.max(initialHeight + dy, 20);
-
-      onResize(shape.id, shape.x, shape.y, newWidth, newHeight);
+      onResize(shape.id, initialX, initialY, newWidth, newHeight);
     };
 
     const onMouseUp = () => {
@@ -97,52 +103,88 @@ const CurvedWall = ({
     stage.on("mouseup", onMouseUp);
   };
 
+  const handleThicknessResizeStart = (e) => {
+    if (isPreview) return;
+    e.cancelBubble = true;
+    const stage = shapeRef.current.getStage();
+    const initialPos = stage.getPointerPosition();
+    const initialThickness = shape.thickness || 15;
+
+    const onMouseMove = () => {
+      const pos = stage.getPointerPosition();
+      const dx = pos.x - initialPos.x;
+      const newThickness = Math.max(initialThickness - dx, 1);
+      if (onThicknessResize) {
+        onThicknessResize(shape.id, newThickness);
+      }
+    };
+
+    const onMouseUp = () => {
+      stage.off("mousemove", onMouseMove);
+      stage.off("mouseup", onMouseUp);
+      document.body.style.cursor = "default";
+    };
+
+    document.body.style.cursor = "ew-resize";
+    stage.on("mousemove", onMouseMove);
+    stage.on("mouseup", onMouseUp);
+  };
+
   const handleDelete = (e) => {
+    if (isPreview) return;
     e.cancelBubble = true;
     onDelete(shape.id);
   };
 
   return (
     <Group
-      x={shape.x}
-      y={shape.y}
-      rotation={rotation}
-      draggable
-      onDragEnd={handleDragEnd}
-      onClick={() => onSelect(shape.id)}
-      onTap={() => onSelect(shape.id)}
+      x={shape.x + shape.width / 2}
+      y={shape.y + shape.height / 2}
+      draggable={!isPreview}
+      onDragEnd={isPreview ? undefined : handleDragEnd}
+      onClick={!isPreview ? () => onSelect(shape.id) : undefined}
+      onTap={!isPreview ? () => onSelect(shape.id) : undefined}
     >
-      {/* Curved wall */}
-      <Path
-        ref={shapeRef}
-        data={generatePath()}
-        stroke="#808080"
-        strokeWidth={15}
-      />
+      {/* Rotating group that holds the curved wall path */}
+      <Group rotation={rotation}>
+        <Path
+          ref={shapeRef}
+          data={generateCenteredPath()}
+          stroke="#CBD5E0"
+          strokeWidth={shape.thickness || 15}
+        />
+      </Group>
 
-      {isSelected && (
+      {isSelected && !isPreview && (
         <>
-          {/* Resize handles */}
+          {/* Resize handles for width and height */}
           <Circle
-            x={shape.width}
-            y={0}
+            x={shape.width / 2}
+            y={-shape.height / 2}
             radius={resizeHandleSize / 2}
             fill="#4299E1"
             onMouseDown={(e) => handleResizeStart(e, "right")}
           />
-
           <Circle
-            x={shape.width / 2}
-            y={shape.height}
+            x={0}
+            y={shape.height / 2}
             radius={resizeHandleSize / 2}
             fill="#4299E1"
             onMouseDown={(e) => handleResizeStart(e, "bottom")}
           />
+          {/* New thickness resize handle */}
+          <Circle
+            x={-shape.width / 2 - 20}
+            y={0}
+            radius={resizeHandleSize / 2}
+            fill="#FFA500"
+            onMouseDown={handleThicknessResizeStart}
+          />
 
           {/* Rotate button */}
           <Group
-            x={shape.width / 2}
-            y={shape.height + 20}
+            x={0}
+            y={shape.height / 2 + 20}
             onMouseDown={handleRotateStart}
           >
             <Circle radius={10} fill="#4CAF50" />
@@ -151,7 +193,7 @@ const CurvedWall = ({
           </Group>
 
           {/* Delete button */}
-          <Group x={shape.width / 2} y={-20} onClick={handleDelete}>
+          <Group x={0} y={-shape.height / 2 - 20} onClick={handleDelete}>
             <Circle radius={10} fill="red" />
             <Line points={[-5, -5, 5, 5]} stroke="white" strokeWidth={2} />
             <Line points={[-5, 5, 5, -5]} stroke="white" strokeWidth={2} />

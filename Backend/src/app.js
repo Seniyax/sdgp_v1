@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const passport = require("passport");
 require("./config/passport");
+
+// Import routes
 const categoryRoutes = require("./routes/categoryRoutes");
 const reservationRoutes = require("./routes/reservationRoutes");
 const businessRoutes = require("./routes/businessRoutes");
@@ -14,12 +16,18 @@ const floorPlanRoutes = require("./routes/floorPlanRoutes");
 const app = express();
 
 // Middleware
-app.use(cors()); // Enable CORS for frontend requests
-app.use(express.json()); // Parse JSON requests
-app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:8081"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Passport Initialization
-app.use(passport.initialize()); // Passport initialization should be here
+app.use(passport.initialize());
 
 // Health check endpoint
 app.get("/health", (req, res) => {
@@ -57,4 +65,4 @@ app.use((req, res) => {
   });
 });
 
-module.exports = app; // Export the configured app
+module.exports = app;

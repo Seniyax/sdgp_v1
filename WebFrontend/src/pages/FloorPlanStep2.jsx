@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import React, { useState, useRef, useCallback } from "react";
 import { Stage, Layer, Line } from "react-konva";
+import "../style/FloorPlan.css";
 import GreyRectangle from "../components/GreyRectangle";
 import GreyCircle from "../components/GreyCircle";
 import EmergancyExit from "../components/EmergancyExit";
@@ -47,15 +48,9 @@ function FloorplanStep2({
   onNext,
   initialShapes = [],
   onShapesUpdate,
-  width = 100,
-  height = 100,
+  canvasWidth,
+  canvasHeight,
 }) {
-  // Calculate canvas size based on aspect ratio
-  const SIZE = 1000;
-  const aspectRatio = width / height;
-  const canvasWidth = aspectRatio >= 1 ? SIZE : SIZE * aspectRatio;
-  const canvasHeight = aspectRatio >= 1 ? SIZE / aspectRatio : SIZE;
-
   const [selectedId, setSelectedId] = useState(null);
   const [selectedShapeType, setSelectedShapeType] = useState(null);
   const stageRef = useRef();
@@ -75,11 +70,28 @@ function FloorplanStep2({
     onShapesUpdate(updatedShapes);
   };
 
-  // Handle shape resizing
+  // Updated handleResize function in FloorPlanStep2.jsx
   const handleResize = (id, newX, newY, newWidth, newHeight, newRadius) => {
     const updatedShapes = shapes.map((shape) => {
       if (shape.id === id) {
-        if (shape.type === "rectangle") {
+        // Treat these types like a rectangle for resizing
+        if (
+          shape.type === "rectangle" ||
+          shape.type === "emergency_exit" ||
+          shape.type === "regular_door" ||
+          shape.type === "windows" ||
+          shape.type === "curved_walls" ||
+          shape.type === "staircase" ||
+          shape.type === "juice_bar" ||
+          shape.type === "alcohol_bar" ||
+          shape.type === "buffet_station" ||
+          shape.type === "reception_desk" ||
+          shape.type === "pos_station" ||
+          shape.type === "visible_kitchen" ||
+          shape.type === "restrooms" ||
+          shape.type === "outdoor_indicator" ||
+          shape.type === "indoor_indicator"
+        ) {
           return {
             ...shape,
             x: newX,
@@ -95,6 +107,19 @@ function FloorplanStep2({
             radius: newRadius,
           };
         }
+      }
+      return shape;
+    });
+    onShapesUpdate(updatedShapes);
+  };
+
+  const handleThicknessResize = (id, newThickness) => {
+    const updatedShapes = shapes.map((shape) => {
+      if (shape.id === id && shape.type === "curved_walls") {
+        return {
+          ...shape,
+          thickness: newThickness,
+        };
       }
       return shape;
     });
@@ -451,6 +476,7 @@ function FloorplanStep2({
             onResize={handleResize}
             onDelete={handleDelete}
             onRotate={handleRotate}
+            onThicknessResize={handleThicknessResize}
           />
         );
       case "staircase":
@@ -595,7 +621,7 @@ function FloorplanStep2({
         height: "100vh",
         width: "100%",
         fontFamily: "'Inter', 'Segoe UI', Roboto, sans-serif",
-        backgroundColor: "#F7FAFC",
+        backgroundColor: "transparent",
       }}
     >
       {/* Left Toolbar */}
@@ -609,7 +635,8 @@ function FloorplanStep2({
           zIndex: 10,
           display: "flex",
           flexDirection: "column",
-          overflowY: "auto",
+          height: "100vh",
+          borderRadius: "10px",
         }}
       >
         <div style={{ padding: "16px", borderBottom: "1px solid #E2E8F0" }}>
@@ -625,131 +652,200 @@ function FloorplanStep2({
           </h3>
         </div>
 
-        {/* Selection Tool */}
-        <ToolbarItem
-          icon="🔍"
-          text="Selection Tool"
-          isSelected={selectedShapeType === null}
-          onClick={() => setSelectedShapeType(null)}
-        />
+        {/* Scrollable toolbar items */}
+        <div style={{ flex: 1, overflowY: "auto" }}>
+          {/* Basic Tools */}
+          <div>
+            <h4
+              style={{
+                fontSize: "14px",
+                padding: "8px 16px",
+                margin: 0,
+                color: "#2D3748",
+              }}
+            >
+              Basic Tools
+            </h4>
+            <ToolbarItem
+              icon="🔍"
+              text="Selection Tool"
+              isSelected={selectedShapeType === null}
+              onClick={() => setSelectedShapeType(null)}
+            />
+          </div>
 
-        <ToolbarItem
-          icon="⬛"
-          text="Rectangle"
-          isSelected={selectedShapeType === "rectangle"}
-          onClick={() => setSelectedShapeType("rectangle")}
-        />
+          {/* Walls & Doors */}
+          <div>
+            <h4
+              style={{
+                fontSize: "14px",
+                padding: "8px 16px",
+                margin: 0,
+                color: "#2D3748",
+              }}
+            >
+              Walls & Doors
+            </h4>
+            <ToolbarItem
+              icon="⬛"
+              text="Straight Wall"
+              isSelected={selectedShapeType === "rectangle"}
+              onClick={() => setSelectedShapeType("rectangle")}
+            />
+            <ToolbarItem
+              icon="⭕"
+              text="Circular Wall"
+              isSelected={selectedShapeType === "circle"}
+              onClick={() => setSelectedShapeType("circle")}
+            />
+            <ToolbarItem
+              icon="🚪"
+              text="Emergency Exit"
+              isSelected={selectedShapeType === "emergency_exit"}
+              onClick={() => setSelectedShapeType("emergency_exit")}
+            />
+            <ToolbarItem
+              icon="🚪"
+              text="Regular Doors"
+              isSelected={selectedShapeType === "regular_door"}
+              onClick={() => setSelectedShapeType("regular_door")}
+            />
+            <ToolbarItem
+              icon="🪟"
+              text="Windows"
+              isSelected={selectedShapeType === "windows"}
+              onClick={() => setSelectedShapeType("windows")}
+            />
+            <ToolbarItem
+              icon="🧱"
+              text="Curved Walls"
+              isSelected={selectedShapeType === "curved_walls"}
+              onClick={() => setSelectedShapeType("curved_walls")}
+            />
+          </div>
 
-        <ToolbarItem
-          icon="⭕"
-          text="Circle"
-          isSelected={selectedShapeType === "circle"}
-          onClick={() => setSelectedShapeType("circle")}
-        />
+          {/* Stairs & Areas */}
+          <div>
+            <h4
+              style={{
+                fontSize: "14px",
+                padding: "8px 16px",
+                margin: 0,
+                color: "#2D3748",
+              }}
+            >
+              Stairs & Areas
+            </h4>
+            <ToolbarItem
+              icon="🪜"
+              text="Staircase"
+              isSelected={selectedShapeType === "staircase"}
+              onClick={() => setSelectedShapeType("staircase")}
+            />
+          </div>
 
-        <ToolbarItem
-          icon="🚪"
-          text="Emergency Exit"
-          isSelected={selectedShapeType === "emergency_exit"}
-          onClick={() => setSelectedShapeType("emergency_exit")}
-        />
+          {/* Food & Beverage */}
+          <div>
+            <h4
+              style={{
+                fontSize: "14px",
+                padding: "8px 16px",
+                margin: 0,
+                color: "#2D3748",
+              }}
+            >
+              Food & Beverage
+            </h4>
+            <ToolbarItem
+              icon="🧃"
+              text="Juice Bar"
+              isSelected={selectedShapeType === "juice_bar"}
+              onClick={() => setSelectedShapeType("juice_bar")}
+            />
+            <ToolbarItem
+              icon="🍸"
+              text="Alcohol Bar"
+              isSelected={selectedShapeType === "alcohol_bar"}
+              onClick={() => setSelectedShapeType("alcohol_bar")}
+            />
+            <ToolbarItem
+              icon="🍽️"
+              text="Buffet Station"
+              isSelected={selectedShapeType === "buffet_station"}
+              onClick={() => setSelectedShapeType("buffet_station")}
+            />
+            <ToolbarItem
+              icon="🛎️"
+              text="Reception Desk"
+              isSelected={selectedShapeType === "reception_desk"}
+              onClick={() => setSelectedShapeType("reception_desk")}
+            />
+            <ToolbarItem
+              icon="💲"
+              text="POS Station"
+              isSelected={selectedShapeType === "pos_station"}
+              onClick={() => setSelectedShapeType("pos_station")}
+            />
+            <ToolbarItem
+              icon="👨‍🍳"
+              text="Visible Kitchen"
+              isSelected={selectedShapeType === "visible_kitchen"}
+              onClick={() => setSelectedShapeType("visible_kitchen")}
+            />
+          </div>
 
-        <ToolbarItem
-          icon="🚪"
-          text="Regular Doors"
-          isSelected={selectedShapeType === "regular_door"}
-          onClick={() => setSelectedShapeType("regular_door")}
-        />
+          {/* Facilities */}
+          <div>
+            <h4
+              style={{
+                fontSize: "14px",
+                padding: "8px 16px",
+                margin: 0,
+                color: "#2D3748",
+              }}
+            >
+              Facilities
+            </h4>
+            <ToolbarItem
+              icon="🚻"
+              text="Restrooms"
+              isSelected={selectedShapeType === "restrooms"}
+              onClick={() => setSelectedShapeType("restrooms")}
+            />
+          </div>
 
-        <ToolbarItem
-          icon="🪟"
-          text="Windows"
-          isSelected={selectedShapeType === "windows"}
-          onClick={() => setSelectedShapeType("windows")}
-        />
+          {/* Indicators */}
+          <div>
+            <h4
+              style={{
+                fontSize: "14px",
+                padding: "8px 16px",
+                margin: 0,
+                color: "#2D3748",
+              }}
+            >
+              Indicators
+            </h4>
+            <ToolbarItem
+              icon="🌳"
+              text="Outdoor Indicator"
+              isSelected={selectedShapeType === "outdoor_indicator"}
+              onClick={() => setSelectedShapeType("outdoor_indicator")}
+            />
+            <ToolbarItem
+              icon="🏠"
+              text="Indoor Indicator"
+              isSelected={selectedShapeType === "indoor_indicator"}
+              onClick={() => setSelectedShapeType("indoor_indicator")}
+            />
+          </div>
+        </div>
 
-        <ToolbarItem
-          icon="🧱"
-          text="Curved Walls"
-          isSelected={selectedShapeType === "curved_walls"}
-          onClick={() => setSelectedShapeType("curved_walls")}
-        />
-
-        <ToolbarItem
-          icon="🪜"
-          text="Staircase"
-          isSelected={selectedShapeType === "staircase"}
-          onClick={() => setSelectedShapeType("staircase")}
-        />
-
-        <ToolbarItem
-          icon="🧃"
-          text="Juice Bar"
-          isSelected={selectedShapeType === "juice_bar"}
-          onClick={() => setSelectedShapeType("juice_bar")}
-        />
-
-        <ToolbarItem
-          icon="🍸"
-          text="Alcohol Bar"
-          isSelected={selectedShapeType === "alcohol_bar"}
-          onClick={() => setSelectedShapeType("alcohol_bar")}
-        />
-
-        <ToolbarItem
-          icon="🍽️"
-          text="Buffet Station"
-          isSelected={selectedShapeType === "buffet_station"}
-          onClick={() => setSelectedShapeType("buffet_station")}
-        />
-
-        <ToolbarItem
-          icon="🛎️"
-          text="Reception Desk"
-          isSelected={selectedShapeType === "reception_desk"}
-          onClick={() => setSelectedShapeType("reception_desk")}
-        />
-
-        <ToolbarItem
-          icon="💲"
-          text="POS Station"
-          isSelected={selectedShapeType === "pos_station"}
-          onClick={() => setSelectedShapeType("pos_station")}
-        />
-
-        <ToolbarItem
-          icon="👨‍🍳"
-          text="Visible Kitchen"
-          isSelected={selectedShapeType === "visible_kitchen"}
-          onClick={() => setSelectedShapeType("visible_kitchen")}
-        />
-
-        <ToolbarItem
-          icon="🚻"
-          text="Restrooms"
-          isSelected={selectedShapeType === "restrooms"}
-          onClick={() => setSelectedShapeType("restrooms")}
-        />
-
-        <ToolbarItem
-          icon="🌳"
-          text="Outdoor Indicator"
-          isSelected={selectedShapeType === "outdoor_indicator"}
-          onClick={() => setSelectedShapeType("outdoor_indicator")}
-        />
-
-        <ToolbarItem
-          icon="🏠"
-          text="Indoor Indicator"
-          isSelected={selectedShapeType === "indoor_indicator"}
-          onClick={() => setSelectedShapeType("indoor_indicator")}
-        />
-
+        {/* Fixed bottom section */}
         <div
           style={{
             padding: "16px",
             borderTop: "1px solid #E2E8F0",
-            marginTop: "auto",
           }}
         >
           <p
@@ -789,7 +885,7 @@ function FloorplanStep2({
       <div
         style={{
           flex: 1,
-          background: "white",
+          background: "transparent",
           padding: "20px",
           boxShadow: "inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)",
           display: "flex",
@@ -804,6 +900,7 @@ function FloorplanStep2({
             justifyContent: "center",
             alignItems: "center",
             overflow: "auto",
+            borderRadius: "10px",
           }}
         >
           <div
@@ -895,9 +992,6 @@ function FloorplanStep2({
           <button
             onClick={() => onNext && onNext(shapes)}
             style={{
-              backgroundColor: "#4299E1",
-              color: "white",
-              border: "none",
               borderRadius: "4px",
               padding: "8px 16px",
               fontSize: "14px",
@@ -906,6 +1000,7 @@ function FloorplanStep2({
               display: "flex",
               alignItems: "center",
             }}
+            className="btn btn-violet-light"
           >
             Next
             <span style={{ marginLeft: "8px" }}>→</span>

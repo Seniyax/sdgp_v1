@@ -11,6 +11,7 @@ const GreyRectangle = ({
   onResize,
   onDelete,
   onRotate,
+  isPreview,
 }) => {
   const shapeRef = useRef();
   const resizeHandleSize = 8;
@@ -38,6 +39,7 @@ const GreyRectangle = ({
 
   // Handle rotation of the rectangle
   const handleRotateStart = (e) => {
+    if (isPreview) return;
     e.cancelBubble = true;
     const stage = shapeRef.current.getStage();
     const centerX = shape.width / 2;
@@ -79,6 +81,7 @@ const GreyRectangle = ({
 
   // Handle resizing of the rectangle
   const handleResizeStart = (e, handle) => {
+    if (isPreview) return;
     e.cancelBubble = true;
     const stage = shapeRef.current.getStage();
     const centerX = shape.x + shape.width / 2;
@@ -154,6 +157,7 @@ const GreyRectangle = ({
 
   // Handle deletion of the rectangle
   const handleDelete = (e) => {
+    if (isPreview) return;
     e.cancelBubble = true;
     onDelete(shape.id);
   };
@@ -162,8 +166,8 @@ const GreyRectangle = ({
     <Group
       x={shape.x + shape.width / 2}
       y={shape.y + shape.height / 2}
-      draggable
-      onDragEnd={handleDragEnd}
+      draggable={!isPreview}
+      onDragEnd={isPreview ? undefined : handleDragEnd}
     >
       {/* Rotating group containing the rectangle and resize handles */}
       <Group rotation={rotation}>
@@ -176,11 +180,11 @@ const GreyRectangle = ({
           fill="#CBD5E0"
           stroke={isSelected ? "#4299E1" : "transparent"}
           strokeWidth={2}
-          onClick={() => onSelect(shape.id)}
-          onTap={() => onSelect(shape.id)}
+          onClick={!isPreview ? () => onSelect(shape.id) : undefined}
+          onTap={!isPreview ? () => onSelect(shape.id) : undefined}
         />
 
-        {isSelected && (
+        {!isPreview && isSelected && (
           <>
             {/* Resize handles */}
             <Rect
@@ -223,7 +227,7 @@ const GreyRectangle = ({
       </Group>
 
       {/* Non-rotating controls */}
-      {isSelected && (
+      {!isPreview && isSelected && (
         <>
           {/* Rotate button */}
           <Group

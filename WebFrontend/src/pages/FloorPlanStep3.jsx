@@ -1,10 +1,27 @@
 /* eslint-disable react/prop-types */
+/* eslint-disable no-unused-vars */
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Stage, Layer, Line, Group, Rect, Circle } from "react-konva";
+import { Stage, Layer, Line } from "react-konva";
 import SquareTable from "../components/SquareTable";
 import CircularTable from "../components/CircularTable";
 import OvalTable from "../components/OvalTable";
 import RectangleTable from "../components/RectangleTable";
+import GreyRectangle from "../components/GreyRectangle";
+import GreyCircle from "../components/GreyCircle";
+import EmergancyExit from "../components/EmergancyExit";
+import RegularDoor from "../components/RegularDoor";
+import Windows from "../components/Window";
+import CurvedWalls from "../components/CurvedWall";
+import Staircase from "../components/Staircase";
+import JuiceBar from "../components/JuiceBar";
+import AlcoholBar from "../components/AlcoholBar";
+import BuffetStation from "../components/BuffetStation";
+import ReceptionDesk from "../components/HostDesk";
+import POSStation from "../components/POSStation";
+import VisibleKitchen from "../components/VisibleKitchen";
+import Restrooms from "../components/Restrooms";
+import OutdoorIndicator from "../components/OutdoorIndicator";
+import IndoorIndicator from "../components/IndoorIndicator";
 
 // Toolbar item component with number input for tables
 function ToolbarItem({
@@ -30,11 +47,10 @@ function ToolbarItem({
         transition: "all 0.2s ease",
         fontSize: "14px",
         fontWeight: isSelected ? "600" : "normal",
-        color: isSelected ? "#2C5282" : "#4A5568",
+        color: isSelected ? "#2D5282" : "#4A5568",
       }}
     >
       <span>{text}</span>
-
       {isTable && (
         <div
           onClick={(e) => e.stopPropagation()}
@@ -80,15 +96,10 @@ function FloorPlanStep3({
   floorShapes = [],
   initialTables = [],
   onTablesUpdate,
-  width,
-  height,
+  canvasWidth,
+  canvasHeight,
+  currentFloorName,
 }) {
-  // Calculate canvas size based on aspect ratio
-  const aspectRatio = width / height;
-  const SIZE = 1000;
-  const canvasWidth = aspectRatio >= 1 ? SIZE : SIZE * aspectRatio;
-  const canvasHeight = aspectRatio >= 1 ? SIZE / aspectRatio : SIZE;
-
   const [shapes, setShapes] = useState(initialTables);
   const [selectedId, setSelectedId] = useState(null);
   const [selectedShapeType, setSelectedShapeType] = useState("squareTable");
@@ -202,6 +213,8 @@ function FloorPlanStep3({
           y: y - 100,
           size: 200,
           seatCount: currentSeatCount,
+          tableNumber: 0,
+          floor: currentFloorName,
         };
         break;
       case "circularTable":
@@ -212,6 +225,8 @@ function FloorPlanStep3({
           y: y - 100,
           size: 200,
           seatCount: currentSeatCount,
+          tableNumber: 0,
+          floor: currentFloorName,
         };
         break;
       case "rectangleTable":
@@ -223,6 +238,8 @@ function FloorPlanStep3({
           width: 200,
           height: 150,
           seatCount: currentSeatCount,
+          tableNumber: 0,
+          floor: currentFloorName,
         };
         break;
       case "ovalTable":
@@ -234,6 +251,8 @@ function FloorPlanStep3({
           width: 200,
           height: 150,
           seatCount: currentSeatCount,
+          tableNumber: 0,
+          floor: currentFloorName,
         };
         break;
       default:
@@ -244,48 +263,34 @@ function FloorPlanStep3({
     setSelectedId(newShape.id);
   };
 
-  // Handle mouse clicks on the stage
-  const handleStageMouseDown = (e) => {
-    const clickedOnEmpty = e.target === e.target.getStage();
-    const clickedOnGreyShape = floorShapes.some((shape) => {
-      if (shape.type === "rectangle") {
-        return (
-          e.target.getStage().getPointerPosition().x >= shape.x &&
-          e.target.getStage().getPointerPosition().x <= shape.x + shape.width &&
-          e.target.getStage().getPointerPosition().y >= shape.y &&
-          e.target.getStage().getPointerPosition().y <= shape.y + shape.height
-        );
-      } else if (shape.type === "circle") {
-        const dx =
-          e.target.getStage().getPointerPosition().x - (shape.x + shape.radius);
-        const dy =
-          e.target.getStage().getPointerPosition().y - (shape.y + shape.radius);
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        return distance <= shape.radius;
-      }
-      return false;
-    });
-
-    if (clickedOnEmpty && selectedShapeType) {
-      const stage = stageRef.current;
-      const pos = stage.getPointerPosition();
-      addShape(pos.x, pos.y);
-    } else if (clickedOnEmpty && !clickedOnGreyShape) {
-      setSelectedId(null);
-    } else if (!clickedOnGreyShape) {
-      setSelectedShapeType(null);
-    }
-  };
+  // List of floor shape types that use rectangular collision detection
+  const rectangleTypes = [
+    "rectangle",
+    "emergency_exit",
+    "regular_door",
+    "windows",
+    "curved_walls",
+    "staircase",
+    "juice_bar",
+    "alcohol_bar",
+    "buffet_station",
+    "reception_desk",
+    "pos_station",
+    "visible_kitchen",
+    "restrooms",
+    "outdoor_indicator",
+    "indoor_indicator",
+  ];
 
   // Check if position overlaps with fixed shapes
   const isPositionOccupied = (x, y) => {
     return floorShapes.some((shape) => {
-      if (shape.type === "rectangle") {
+      if (rectangleTypes.includes(shape.type)) {
         return (
           x >= shape.x &&
-          x <= shape.x + shape.width &&
+          x <= shape.x + (shape.width || 0) &&
           y >= shape.y &&
-          y <= shape.y + shape.height
+          y <= shape.y + (shape.height || 0)
         );
       } else if (shape.type === "circle") {
         const dx = x - (shape.x + shape.radius);
@@ -295,6 +300,40 @@ function FloorPlanStep3({
       }
       return false;
     });
+  };
+
+  // Handle mouse clicks on the stage
+  const handleStageMouseDown = (e) => {
+    const pointerPos = e.target.getStage().getPointerPosition();
+
+    const clickedOnGreyShape = floorShapes.some((shape) => {
+      if (rectangleTypes.includes(shape.type)) {
+        return (
+          pointerPos.x >= shape.x &&
+          pointerPos.x <= shape.x + (shape.width || 0) &&
+          pointerPos.y >= shape.y &&
+          pointerPos.y <= shape.y + (shape.height || 0)
+        );
+      } else if (shape.type === "circle") {
+        const dx = pointerPos.x - (shape.x + shape.radius);
+        const dy = pointerPos.y - (shape.y + shape.radius);
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        return distance <= shape.radius;
+      }
+      return false;
+    });
+
+    if (
+      e.target === e.target.getStage() &&
+      !clickedOnGreyShape &&
+      selectedShapeType
+    ) {
+      addShape(pointerPos.x, pointerPos.y);
+    } else if (e.target === e.target.getStage() && !clickedOnGreyShape) {
+      setSelectedId(null);
+    } else if (!clickedOnGreyShape) {
+      setSelectedShapeType(null);
+    }
   };
 
   // Update seat count for table types
@@ -347,6 +386,7 @@ function FloorPlanStep3({
                 id: Date.now(),
                 x: clipboard.x + 20,
                 y: clipboard.y + 20,
+                tableNumber: 0,
               };
               updateShapes([...shapes, pastedShape]);
               setSelectedId(pastedShape.id);
@@ -359,7 +399,7 @@ function FloorPlanStep3({
   );
 
   // Setup keyboard event listener
-  React.useEffect(() => {
+  useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedId, shapes, clipboard, handleKeyDown]);
@@ -385,7 +425,7 @@ function FloorPlanStep3({
         height: "100vh",
         width: "100%",
         fontFamily: "'Inter', 'Segoe UI', Roboto, sans-serif",
-        backgroundColor: "#F7FAFC",
+        backgroundColor: "transparent",
       }}
     >
       {/* Left Toolbar */}
@@ -399,6 +439,7 @@ function FloorPlanStep3({
           zIndex: 10,
           display: "flex",
           flexDirection: "column",
+          borderRadius: "10px",
         }}
       >
         <div style={{ padding: "16px", borderBottom: "1px solid #E2E8F0" }}>
@@ -509,7 +550,7 @@ function FloorPlanStep3({
       <div
         style={{
           flex: 1,
-          background: "white",
+          background: "transparent",
           padding: "20px",
           boxShadow: "inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)",
           display: "flex",
@@ -524,6 +565,7 @@ function FloorPlanStep3({
             justifyContent: "center",
             alignItems: "center",
             overflow: "auto",
+            borderRadius: "10px",
           }}
         >
           <div
@@ -572,41 +614,101 @@ function FloorPlanStep3({
                   />
                 ))}
 
-                {/* Fixed shapes from previous step */}
-                {floorShapes.map((shape) => (
-                  <Group
-                    key={`fixed-${shape.id}`}
-                    rotation={shape.rotation || 0}
-                    x={
-                      shape.type === "rectangle"
-                        ? shape.x + shape.width / 2
-                        : shape.x + shape.radius
-                    }
-                    y={
-                      shape.type === "rectangle"
-                        ? shape.y + shape.height / 2
-                        : shape.y + shape.radius
-                    }
-                  >
-                    {shape.type === "rectangle" && (
-                      <Rect
-                        x={-shape.width / 2}
-                        y={-shape.height / 2}
-                        width={shape.width}
-                        height={shape.height}
-                        fill="#E2E8F0"
+                {/* Render preview floor shapes directly without extra wrapper */}
+                {floorShapes.map((shape) => {
+                  const commonProps = {
+                    shape: shape,
+                    isPreview: true,
+                  };
+
+                  if (shape.type === "rectangle") {
+                    return (
+                      <GreyRectangle
+                        key={`fixed-${shape.id}`}
+                        {...commonProps}
                       />
-                    )}
-                    {shape.type === "circle" && (
-                      <Circle
-                        x={-shape.radius}
-                        y={-shape.radius}
-                        radius={shape.radius}
-                        fill="#E2E8F0"
+                    );
+                  } else if (shape.type === "circle") {
+                    return (
+                      <GreyCircle key={`fixed-${shape.id}`} {...commonProps} />
+                    );
+                  } else if (shape.type === "emergency_exit") {
+                    return (
+                      <EmergancyExit
+                        key={`fixed-${shape.id}`}
+                        {...commonProps}
                       />
-                    )}
-                  </Group>
-                ))}
+                    );
+                  } else if (shape.type === "regular_door") {
+                    return (
+                      <RegularDoor key={`fixed-${shape.id}`} {...commonProps} />
+                    );
+                  } else if (shape.type === "windows") {
+                    return (
+                      <Windows key={`fixed-${shape.id}`} {...commonProps} />
+                    );
+                  } else if (shape.type === "curved_walls") {
+                    return (
+                      <CurvedWalls key={`fixed-${shape.id}`} {...commonProps} />
+                    );
+                  } else if (shape.type === "staircase") {
+                    return (
+                      <Staircase key={`fixed-${shape.id}`} {...commonProps} />
+                    );
+                  } else if (shape.type === "juice_bar") {
+                    return (
+                      <JuiceBar key={`fixed-${shape.id}`} {...commonProps} />
+                    );
+                  } else if (shape.type === "alcohol_bar") {
+                    return (
+                      <AlcoholBar key={`fixed-${shape.id}`} {...commonProps} />
+                    );
+                  } else if (shape.type === "buffet_station") {
+                    return (
+                      <BuffetStation
+                        key={`fixed-${shape.id}`}
+                        {...commonProps}
+                      />
+                    );
+                  } else if (shape.type === "reception_desk") {
+                    return (
+                      <ReceptionDesk
+                        key={`fixed-${shape.id}`}
+                        {...commonProps}
+                      />
+                    );
+                  } else if (shape.type === "pos_station") {
+                    return (
+                      <POSStation key={`fixed-${shape.id}`} {...commonProps} />
+                    );
+                  } else if (shape.type === "visible_kitchen") {
+                    return (
+                      <VisibleKitchen
+                        key={`fixed-${shape.id}`}
+                        {...commonProps}
+                      />
+                    );
+                  } else if (shape.type === "restrooms") {
+                    return (
+                      <Restrooms key={`fixed-${shape.id}`} {...commonProps} />
+                    );
+                  } else if (shape.type === "outdoor_indicator") {
+                    return (
+                      <OutdoorIndicator
+                        key={`fixed-${shape.id}`}
+                        {...commonProps}
+                      />
+                    );
+                  } else if (shape.type === "indoor_indicator") {
+                    return (
+                      <IndoorIndicator
+                        key={`fixed-${shape.id}`}
+                        {...commonProps}
+                      />
+                    );
+                  }
+                  return null;
+                })}
 
                 {/* Interactive table shapes */}
                 {shapes.map((shape) => {
@@ -739,9 +841,6 @@ function FloorPlanStep3({
           <button
             onClick={handleNextStep}
             style={{
-              backgroundColor: "#4299E1",
-              color: "white",
-              border: "none",
               borderRadius: "4px",
               padding: "8px 16px",
               fontSize: "14px",
@@ -750,6 +849,7 @@ function FloorPlanStep3({
               display: "flex",
               alignItems: "center",
             }}
+            className="btn btn-violet-light"
           >
             Save
             <span style={{ marginLeft: "8px" }}>→</span>
