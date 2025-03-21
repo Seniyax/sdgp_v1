@@ -12,15 +12,12 @@ const io = socketIo(server, {
   },
 });
 
+// Import and initialize the reservation socket events
+const reservationSocket = require("./utility/reservationSocket");
+reservationSocket(io);
+
 // Make the socket instance available to your routes/controllers
 app.locals.io = io;
-
-io.on("connection", (socket) => {
-  console.log("Socket connected:", socket.id);
-  socket.on("disconnect", () => {
-    console.log("Socket disconnected:", socket.id);
-  });
-});
 
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

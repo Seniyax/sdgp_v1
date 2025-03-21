@@ -1,20 +1,27 @@
+// reservation.js
 const supabase = require("../config/supabaseClient");
 
-async function getCustomerIdByUsername(customerUsername) {
+async function getCustomerByUsername(customerUsername) {
   const { data, error } = await supabase
     .from("customer")
-    .select("id")
+    .select("id, full_name")
     .eq("username", customerUsername)
     .single();
 
   if (error) throw error;
-  return data.id;
+  return data;
 }
 
 async function getReservationsByBusiness(businessId) {
   const { data, error } = await supabase
     .from("reservation")
-    .select("*")
+    .select(
+      `
+      *,
+      customer:customer(username, email, full_name),
+      table:table(table_number, seats, floor_plan:floor_plan(floor_name))
+    `
+    )
     .eq("business_id", businessId)
     .order("id", { ascending: true });
 
@@ -34,13 +41,22 @@ async function createReservationModel(data) {
     throw new Error("Table not found for the provided table number.");
   }
 
+  const onlineCustomer = data.customerUsername
+    ? await getCustomerByUsername(data.customerUsername)
+    : null;
+
   const insertData = {
     business_id: data.businessId,
     table_id: tableRecord.id,
-    customer_id: await getCustomerIdByUsername(data.customerUsername),
+    customer_id: onlineCustomer ? onlineCustomer.id : null,
     people_count: data.groupSize,
     start_time: data.startTime,
     end_time: data.endTime,
+    end_date: data.endDate,
+    status: data.status,
+    customer_name:
+      data.customerName || (onlineCustomer ? onlineCustomer.full_name : null),
+    customer_number: data.customerNumber || null,
   };
 
   const { data: insertedData, error } = await supabase
@@ -49,7 +65,9 @@ async function createReservationModel(data) {
     .select();
 
   if (error) throw error;
-  return insertedData[0];
+  const reservation = insertedData[0];
+  reservation.table_number = data.tableNumber;
+  return reservation;
 }
 
 async function updateReservationModel(reservationId, data) {
@@ -57,10 +75,16 @@ async function updateReservationModel(reservationId, data) {
     .from("reservation")
     .update(data)
     .eq("id", reservationId)
-    .select();
+    .select(
+      `
+    *,
+    table:table(table_number)
+  `
+    )
+    .single(); // Use .single() since we are updating a single record
 
   if (error) throw error;
-  return updatedData[0];
+  return updatedData;
 }
 
 async function deleteReservationModel(reservationId) {

@@ -37,32 +37,34 @@ exports.createReservation = async (req, res) => {
     group_size,
     slot_type,
     start_time,
+    end_date, // NEW: date coming in from frontend
+    customer_name,
+    customer_number,
+    status,
   } = req.body;
   if (
     !business_id ||
     !table_number ||
-    !customer_username ||
     !group_size ||
     !slot_type ||
-    !start_time
+    !start_time ||
+    !end_date // Ensure we have the date too
   ) {
     return res.status(400).json({
       success: false,
       message:
-        "business_id, table_number, customer_username, group_size, slot_type and start_time are required",
+        "business_id, table_number, group_size, slot_type, start_time, and end_date are required",
     });
   }
-  const today = new Date()
-    .toLocaleString("en-CA", { timeZone: "Asia/Colombo" })
-    .split(",")[0];
 
+  // Now use the provided end_date for the ML prediction.
   try {
     const mlResponse = await axios.post(
       "http://localhost:3000/api/ml/predict",
       {
         group_size: group_size.toString(),
-        slot_type: "casual",
-        date: today,
+        slot_type: slot_type, // use the provided slot_type
+        date: end_date, // pass the end_date received from frontend
         time: start_time,
       }
     );
@@ -75,16 +77,21 @@ exports.createReservation = async (req, res) => {
     const reservationData = {
       businessId: business_id,
       tableNumber: table_number,
-      customerUsername: customer_username,
+      customerUsername: customer_username ? customer_username : null,
       groupSize: group_size,
       startTime: start_time,
       endTime: predictedTime,
+      slotType: slot_type,
+      customerName: customer_name ? customer_name : null,
+      customerNumber: customer_number ? customer_number : null,
+      endDate: end_date, // NEW: include the date for DB insertion
+      status: status,
     };
 
     const reservation = await createReservationModel(reservationData);
 
     if (req.app.locals.io) {
-      req.app.locals.io.emit("reservationCreated", reservation);
+      req.app.locals.io.emit("reservationAdded", reservation);
     }
     return res.status(201).json({
       success: true,
@@ -100,11 +107,11 @@ exports.createReservation = async (req, res) => {
 };
 
 exports.updateReservation = async (req, res) => {
-  const { reservation_id, update_data } = req.body;
-  if (!reservation_id || !customer_username) {
+  const { reservation_id, update_data, customer_username } = req.body;
+  if (!reservation_id) {
     return res.status(400).json({
       success: false,
-      message: "reservation_id and customer_username are required",
+      message: "reservation_id is required",
     });
   }
   try {
