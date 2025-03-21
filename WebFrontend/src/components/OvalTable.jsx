@@ -291,15 +291,6 @@ function OvalTable({
                 stroke="#333"
                 strokeWidth={1}
               />
-              <Text
-                x={-chairSize / 2}
-                y={-chairSize / 2}
-                text={index + 1}
-                fontSize={10}
-                fill="#fff"
-                align="center"
-                verticalAlign="middle"
-              />
             </Group>
           );
         })}

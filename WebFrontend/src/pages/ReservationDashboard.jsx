@@ -1,27 +1,215 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { AnimatePresence, color, motion } from "framer-motion";
+import FloorPlanLayout from "./FloorPlanLayout"; // using your layout with theme and animated balls
 import ViewFloorPlan from "./ViewFloorPlan";
 import useReservationStore from "../store/reservationStore";
 import useReservationsSocket from "../hooks/useReservationsSocket";
+import AddReservation from "./AddReservation";
 
 const ReservationDashboard = () => {
-  // --- Reservations state and socket ---
   const {
     reservations,
     setReservations,
-    addReservation,
     updateReservation,
     deleteReservation,
   } = useReservationStore();
-  const [newReservation, setNewReservation] = useState({
-    tableNumber: "",
-    customerName: "",
+
+  // Floor plan state and authentication
+  const [floorPlan, setFloorPlan] = useState(null);
+  const [floorError, setFloorError] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [selectedFloorIndex, setSelectedFloorIndex] = useState(0);
+
+  // "Add Reservation" mode state and table selections
+  const [addingReservation, setAddingReservation] = useState(false);
+  const [selectedTables, setSelectedTables] = useState([]);
+
+  const addFormRef = useRef(null);
+
+  // New state for time mode: "manual" or "auto"
+  const [timeMode, setTimeMode] = useState("auto");
+
+  // Date/time state (using allowed hours logic)
+  const allowedStartHour = 9;
+  const allowedEndHour = 22;
+  const computeDefaultDate = () => {
+    const now = new Date();
+    const defaultDate = new Date(now);
+    defaultDate.setHours(now.getHours() + 1);
+    if (
+      defaultDate.getHours() < allowedStartHour ||
+      defaultDate.getHours() >= allowedEndHour
+    ) {
+      defaultDate.setDate(defaultDate.getDate() + 1);
+      defaultDate.setHours(12, 0, 0, 0);
+    }
+    return defaultDate;
+  };
+  const [selectedDate, setSelectedDate] = useState(computeDefaultDate());
+
+  useEffect(() => {
+    let interval;
+    if (timeMode === "auto") {
+      const now = new Date();
+      now.setMinutes(now.getMinutes() + 10);
+      setSelectedDate(now);
+      interval = setInterval(() => {
+        const newDate = new Date();
+        newDate.setMinutes(newDate.getMinutes() + 10);
+        setSelectedDate(newDate);
+      }, 10 * 60 * 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [timeMode]);
+
+  const handleDateChange = (e) => {
+    if (timeMode !== "manual") return;
+    const newDateStr = e.target.value;
+    const newDate = new Date(selectedDate);
+    const [year, month, day] = newDateStr.split("-").map(Number);
+    newDate.setFullYear(year, month - 1, day);
+    setSelectedDate(newDate);
+  };
+
+  const handleTimeChange = (e) => {
+    if (timeMode !== "manual") return;
+    const newTimeStr = e.target.value;
+    const [hour, minute] = newTimeStr.split(":").map(Number);
+    if (hour < allowedStartHour || hour >= allowedEndHour) {
+      alert(
+        `Please choose a time between ${allowedStartHour}:00 and ${allowedEndHour}:00.`
+      );
+      return;
+    }
+    const newDate = new Date(selectedDate);
+    newDate.setHours(hour, minute, 0, 0);
+    setSelectedDate(newDate);
+  };
+
+  const toggleTimeMode = () => {
+    setTimeMode((prev) => (prev === "manual" ? "auto" : "manual"));
+  };
+
+  const scrollToForm = () => {
+    if (addFormRef.current) {
+      addFormRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const handleShowAddForm = () => {
+    setAddingReservation(true);
+    setSelectedTables([]);
+    setTimeout(scrollToForm, 300);
+  };
+
+  const handleCancelAddReservation = () => {
+    setAddingReservation(false);
+    setSelectedTables([]);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleTableSelect = (table) => {
+    if (
+      reservedTableNumbers &&
+      reservedTableNumbers.includes(table.tableNumber)
+    ) {
+      return;
+    }
+    const exists = selectedTables.find(
+      (t) => t.id === table.id || t.tableNumber === table.tableNumber
+    );
+    if (exists) {
+      setSelectedTables((prev) => prev.filter((t) => t.id !== table.id));
+    } else {
+      setSelectedTables((prev) => [...prev, table]);
+    }
+  };
+
+  // Filter active reservations
+  const activeReservations = reservations.filter(
+    (res) => res.status === "Active"
+  );
+
+  // Define the selected period as [selectedDate - 10 minutes, selectedDate]
+  const selectedPeriodEnd = new Date(selectedDate.getTime() + 10 * 60 * 1000);
+  const selectedPeriodStart = new Date(selectedDate.getTime() - 10 * 60 * 1000);
+
+  // Only include reservations with matching end_date and any overlap in time.
+  const filteredReservations = activeReservations.filter((res) => {
+    if (res.end_date !== selectedDate.toISOString().split("T")[0]) return false;
+    const reservationStart = new Date(`${res.end_date}T${res.start_time}`);
+    const reservationEnd = new Date(`${res.end_date}T${res.end_time}`);
+    return (
+      reservationStart < selectedPeriodEnd &&
+      reservationEnd > selectedPeriodStart
+    );
   });
 
-  // Initialize WebSocket connection for real-time reservation updates.
-  useReservationsSocket();
+  // Extract reserved table numbers from filtered reservations
+  const reservedTableNumbers = Array.from(
+    new Set(
+      filteredReservations
+        .sort((a, b) => new Date(a.start_time) - new Date(b.start_time)) // Sort by start_time
+        .map((res) => res.table.table_number)
+    )
+  );
 
+  const socket = useReservationsSocket();
+
+  const handleCancel = (id) => {
+    if (!socket) {
+      console.error("Socket is not initialized.");
+      return;
+    }
+    socket.emit("deleteReservation", { reservation_id: id }, (response) => {
+      if (response.success) {
+        deleteReservation(id);
+        console.log("Reservation cancelled via socket:", response.message);
+      } else {
+        console.error(
+          "Failed to cancel reservation via socket:",
+          response.message
+        );
+      }
+    });
+  };
+
+  const handleDone = (id) => {
+    socket.emit(
+      "updateReservation",
+      {
+        reservation_id: id,
+        update_data: { status: "Completed" },
+      },
+      (response) => {
+        if (response.success) {
+          updateReservation(response.reservation);
+          console.log("Reservation updated via socket:", response.message);
+        } else {
+          console.error(
+            "Failed to update reservation via socket:",
+            response.message
+          );
+        }
+      }
+    );
+  };
+
+  // Compute canvas dimensions based on the selected floor.
+  const canvasWidth =
+    floorPlan && floorPlan.floors && floorPlan.floors[selectedFloorIndex]
+      ? floorPlan.floors[selectedFloorIndex].canvas_width || 800
+      : 800;
+  const canvasHeight =
+    floorPlan && floorPlan.floors && floorPlan.floors[selectedFloorIndex]
+      ? floorPlan.floors[selectedFloorIndex].canvas_height || 600
+      : 600;
+
+  // Fetch reservations via REST API for initial load
   useEffect(() => {
     const fetchReservations = async () => {
       try {
@@ -38,57 +226,14 @@ const ReservationDashboard = () => {
     fetchReservations();
   }, [setReservations]);
 
-  const handleAddReservation = async () => {
-    try {
-      const response = await axios.post(
-        "/api/reservation/create",
-        newReservation
-      );
-      addReservation(response.data);
-      setNewReservation({ tableNumber: "", customerName: "" });
-    } catch (error) {
-      console.error("Error adding reservation:", error);
-    }
-  };
-
-  const handleUpdateReservation = async (id) => {
-    const updatedName = prompt("Enter new customer name:");
-    if (!updatedName) return;
-    try {
-      const response = await axios.put("/api/reservation/update", {
-        id, // include id if necessary
-        customerName: updatedName,
-      });
-      updateReservation(response.data);
-    } catch (error) {
-      console.error("Error updating reservation:", error);
-    }
-  };
-
-  const handleDeleteReservation = async (id) => {
-    try {
-      await axios.delete(`/api/reservation/delete/${id}`);
-      deleteReservation(id);
-    } catch (error) {
-      console.error("Error deleting reservation:", error);
-    }
-  };
-
-  // --- Floor plan state and fetching ---
-  const [floorPlan, setFloorPlan] = useState(null);
-  const [floorError, setFloorError] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // Replace with real auth logic if needed
-  const [selectedFloorIndex, setSelectedFloorIndex] = useState(0);
-
+  // Fetch floor plan data
   useEffect(() => {
-    // Simulate authentication check (replace with your actual auth logic)
     const userIsAuthenticated = true;
     setIsAuthenticated(userIsAuthenticated);
     if (!userIsAuthenticated) return;
-
     const fetchFloorPlan = async () => {
       try {
-        const response = await axios.post(`api/floor-plan/get`, {
+        const response = await axios.post("api/floor-plan/get", {
           business_id: 20,
         });
         if (response.data.success) {
@@ -103,139 +248,313 @@ const ReservationDashboard = () => {
         setFloorError(err.response?.data?.message || err.message);
       }
     };
-
     fetchFloorPlan();
   }, []);
 
+  const sectionVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.4 } },
+    exit: { opacity: 0, transition: { duration: 0.3 } },
+  };
+
   return (
-    <div className="container py-4">
-      <h1 className="mb-4">Reservation Dashboard</h1>
+    <FloorPlanLayout>
+      <div className="container py-4">
+        <div style={{ width: canvasWidth, margin: "0 auto" }}>
+          <motion.h1
+            className="mb-4"
+            variants={sectionVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            style={{ color: "white" }}
+          >
+            Reservation Dashboard
+          </motion.h1>
+          <motion.h2
+            className="mb-3"
+            variants={sectionVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            style={{ color: "white" }}
+          >
+            Floor Map
+          </motion.h2>
 
-      {/* Reservations Section */}
-      <section className="mb-5">
-        <h2 className="mb-3">Manage Reservations</h2>
-        <div className="card mb-4">
-          <div className="card-body">
-            <h3 className="card-title">Add Reservation</h3>
-            <div className="row g-3">
-              <div className="col-md-4">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Table Number"
-                  value={newReservation.tableNumber}
-                  onChange={(e) =>
-                    setNewReservation({
-                      ...newReservation,
-                      tableNumber: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div className="col-md-4">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Customer Name"
-                  value={newReservation.customerName}
-                  onChange={(e) =>
-                    setNewReservation({
-                      ...newReservation,
-                      customerName: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div className="col-md-4">
-                <button
-                  className="btn btn-primary w-100"
-                  onClick={handleAddReservation}
-                >
-                  Add Reservation
-                </button>
-              </div>
+          {/* Date & Time selectors with toggle */}
+          <motion.div
+            className="row mb-3"
+            variants={sectionVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <div className="col">
+              <label
+                htmlFor="date-input"
+                className="form-label"
+                style={{ color: "white" }}
+              >
+                Date:
+              </label>
+              <input
+                id="date-input"
+                type="date"
+                className="form-control"
+                value={selectedDate.toISOString().split("T")[0]}
+                onChange={handleDateChange}
+                disabled={timeMode === "auto"}
+              />
             </div>
-          </div>
-        </div>
+            <div className="col">
+              <label
+                htmlFor="time-input"
+                className="form-label"
+                style={{ color: "white" }}
+              >
+                Time:
+              </label>
+              <input
+                id="time-input"
+                type="time"
+                className="form-control"
+                value={selectedDate.toTimeString().slice(0, 5)}
+                onChange={handleTimeChange}
+                disabled={timeMode === "auto"}
+              />
+            </div>
+            <div className="col d-flex align-items-end">
+              <button className="btn btn-violet-light" onClick={toggleTimeMode}>
+                {timeMode === "manual" ? "Switch to Auto" : "Switch to Manual"}
+              </button>
+            </div>
+          </motion.div>
 
-        <h3>Existing Reservations</h3>
-        <ul className="list-group">
-          {reservations.map((res) => (
-            <li
-              key={res.id}
-              className="list-group-item d-flex justify-content-between align-items-center"
-            >
-              <span>
-                Table {res.tableNumber} – {res.customerName}
-              </span>
-              <span>
-                <button
-                  className="btn btn-sm btn-secondary me-2"
-                  onClick={() => handleUpdateReservation(res.id)}
-                >
-                  Update
-                </button>
-                <button
-                  className="btn btn-sm btn-danger"
-                  onClick={() => handleDeleteReservation(res.id)}
-                >
-                  Delete
-                </button>
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {/* Floor Plan Section */}
-      <section>
-        <h2 className="mb-3">Floor Map</h2>
-        {!isAuthenticated && (
-          <p className="text-muted">Please log in to view your floor plan.</p>
-        )}
-        {floorError && <div className="alert alert-danger">{floorError}</div>}
-        {!floorPlan ? (
-          <p>Loading floor plan...</p>
-        ) : (
-          <div>
-            {/* Floor selector if multiple floors exist */}
-            <div className="btn-group mb-3">
-              {floorPlan.floors && floorPlan.floors.length > 0 ? (
-                floorPlan.floors.map((floor, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedFloorIndex(index)}
-                    className={`btn ${
-                      selectedFloorIndex === index
-                        ? "btn-primary"
-                        : "btn-outline-secondary"
-                    }`}
-                  >
-                    {floor.floor_name}
-                  </button>
-                ))
+          {/* Floor Selector */}
+          <motion.div
+            className="row mb-3"
+            variants={sectionVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <div className="col">
+              {floorPlan && floorPlan.floors && floorPlan.floors.length > 0 ? (
+                <div className="btn-group">
+                  {floorPlan.floors.map((floor, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedFloorIndex(index)}
+                      className={`btn ${
+                        selectedFloorIndex === index
+                          ? "btn-violet"
+                          : "btn-outline-secondary"
+                      }`}
+                    >
+                      {floor.floor_name}
+                    </button>
+                  ))}
+                </div>
               ) : (
                 <p>No floors available.</p>
               )}
             </div>
-            {floorPlan.floors && floorPlan.floors[selectedFloorIndex] && (
-              <ViewFloorPlan
-                canvasWidth={floorPlan.floors[selectedFloorIndex].canvas_width}
-                canvasHeight={
-                  floorPlan.floors[selectedFloorIndex].canvas_height
-                }
-                floor={floorPlan.floors[selectedFloorIndex]}
-                tables={floorPlan.tables.filter(
-                  (table) =>
-                    table.floor_plan_id ===
-                    floorPlan.floors[selectedFloorIndex].id
-                )}
-              />
+          </motion.div>
+        </div>
+
+        {/* Main Content */}
+        <div className="row">
+          {/* Left Column: Floor Plan and Reservation Form */}
+          <div className="col-12">
+            {!isAuthenticated && (
+              <motion.p
+                className="text-muted"
+                variants={sectionVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                Please log in to view your floor plan.
+              </motion.p>
+            )}
+            {floorError && (
+              <motion.div
+                className="alert alert-danger"
+                variants={sectionVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                {floorError}
+              </motion.div>
+            )}
+            {!floorPlan ? (
+              <motion.p
+                variants={sectionVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                Loading floor plan...
+              </motion.p>
+            ) : (
+              // Container with fixed dimensions to prevent layout shifts
+              <div
+                style={{
+                  position: "relative",
+                  width: canvasWidth,
+                  height: canvasHeight,
+                  margin: "0 auto",
+                }}
+              >
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={selectedFloorIndex}
+                    variants={sectionVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    // Absolute positioning to ensure the exiting floor plan doesn't occupy space
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                    }}
+                  >
+                    {floorPlan.floors &&
+                      floorPlan.floors[selectedFloorIndex] &&
+                      (() => {
+                        const selectedFloor =
+                          floorPlan.floors[selectedFloorIndex];
+                        return (
+                          <ViewFloorPlan
+                            canvasWidth={canvasWidth}
+                            canvasHeight={canvasHeight}
+                            floor={selectedFloor}
+                            tables={floorPlan.tables.filter(
+                              (table) =>
+                                table.floor_plan_id === selectedFloor.id
+                            )}
+                            reservations={reservations}
+                            selectedDate={selectedDate}
+                            addingReservation={addingReservation}
+                            onTableSelect={handleTableSelect}
+                            selectedTables={selectedTables}
+                            reservedTables={reservedTableNumbers} // new prop!
+                          />
+                        );
+                      })()}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
             )}
           </div>
-        )}
-      </section>
-    </div>
+
+          {/* Right Column: Reservations List & Add Reservation */}
+          <div className="col-12">
+            <div className="row mt-4">
+              <div className="col-5 offset-2">
+                <AnimatePresence>
+                  {!addingReservation && (
+                    <motion.div
+                      key="add-reservation-btn"
+                      variants={sectionVariants}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      className="col-6 offset-6 mb-3"
+                    >
+                      <button
+                        className="btn btn-violet w-100"
+                        onClick={handleShowAddForm}
+                      >
+                        Add Reservation
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+              <div className="col-8 mt-4">
+                <AnimatePresence>
+                  {addingReservation && (
+                    <motion.div
+                      key="add-reservation-form"
+                      variants={sectionVariants}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      ref={addFormRef}
+                    >
+                      <AddReservation
+                        onCancel={handleCancelAddReservation}
+                        selectedTables={selectedTables}
+                        onTableSelect={handleTableSelect}
+                        socket={socket}
+                        defaultStartTime={selectedDate
+                          .toTimeString()
+                          .slice(0, 8)}
+                        defaultEndDate={
+                          selectedDate.toISOString().split("T")[0]
+                        }
+                        onClearSelection={() => setSelectedTables([])}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+              <div className="col-4 mt-4">
+                <AnimatePresence>
+                  <motion.section
+                    key="reservation-list"
+                    variants={sectionVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                  >
+                    <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+                      <ul className="list-group">
+                        {filteredReservations.map((res) => {
+                          const tableNumber = res.table.table_number;
+                          const customerName = res.customer.full_name;
+                          const floor = res.table.floor_plan.floor_name;
+                          return (
+                            <li
+                              key={res.id}
+                              className="list-group-item d-flex justify-content-between align-items-center mt-1"
+                            >
+                              <div>
+                                Table {tableNumber} | {floor} – {customerName}
+                              </div>
+                              <div>
+                                <button
+                                  className="btn btn-violet-light btn-sm me-1"
+                                  onClick={() => handleCancel(res.id)}
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  className="btn btn-violet-light btn-sm"
+                                  onClick={() => handleDone(res.id)}
+                                >
+                                  Done
+                                </button>
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  </motion.section>
+                </AnimatePresence>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </FloorPlanLayout>
   );
 };
 

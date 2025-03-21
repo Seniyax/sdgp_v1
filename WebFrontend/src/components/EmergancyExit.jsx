@@ -179,6 +179,16 @@ const EmergencyExit = ({
           onTap={!isPreview ? () => onSelect(shape.id) : undefined}
         />
 
+        <Text
+          x={-shape.width / 2 + 10}
+          y={-shape.height / 2 + 15}
+          width={shape.width - 20}
+          text="Emergancy Exit"
+          fontSize={14}
+          fill="white"
+          align="center"
+        />
+
         {/* Resize handles shown when the shape is selected */}
         {isSelected && (
           <>

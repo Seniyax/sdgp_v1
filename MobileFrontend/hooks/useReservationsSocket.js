@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
 import useReservationStore from "../store/reservationStore";
+import { API_BASE_URL } from "@env";
 
-const SOCKET_SERVER_URL = import.meta.env.VITE_SERVER_URL;
+const SOCKET_SERVER_URL = API_BASE_URL;
 
 const useReservationsSocket = () => {
+  const [socket, setSocket] = useState(null);
   const {
     setReservations,
     addReservation,
@@ -12,11 +14,8 @@ const useReservationsSocket = () => {
     deleteReservation,
   } = useReservationStore();
 
-  const [socket, setSocket] = useState(null);
-
   useEffect(() => {
     const newSocket = io(SOCKET_SERVER_URL);
-    setSocket(newSocket);
 
     newSocket.on("connect", () => {
       console.log("Connected to reservations socket");
@@ -24,7 +23,7 @@ const useReservationsSocket = () => {
     });
 
     newSocket.on("reservationsData", (data) => {
-      if (data.success) {
+      if (data.reservations) {
         setReservations(data.reservations);
       }
     });
@@ -40,6 +39,8 @@ const useReservationsSocket = () => {
     newSocket.on("reservationDeleted", (reservationId) => {
       deleteReservation(reservationId);
     });
+
+    setSocket(newSocket);
 
     return () => {
       newSocket.disconnect();

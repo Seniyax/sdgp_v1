@@ -196,7 +196,7 @@ const HostDesk = ({
             width={shape.width}
             height={shape.height}
             fill="white"
-            stroke={isSelected ? "#4299E1" : "transparent"}
+            stroke={isSelected ? "#4299E1" : "grey"}
             strokeWidth={2}
             onClick={!isPreview ? () => onSelect(shape.id) : undefined}
             onTap={!isPreview ? () => onSelect(shape.id) : undefined}

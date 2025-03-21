@@ -25,6 +25,7 @@ const AppContent = () => {
     "/passwordconfirmation",
     "/businessform",
     "/floorplan",
+    "/reservationDashboard",
   ];
 
   return (
