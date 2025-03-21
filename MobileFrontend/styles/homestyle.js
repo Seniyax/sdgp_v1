@@ -233,6 +233,32 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: 'Poppins-Regular',
   },
+  notificationButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: hp('1.5%'),
+    paddingHorizontal: wp('4%'),
+    backgroundColor: '#F3E4FF',
+    borderRadius: wp('5%'),
+    position: 'relative',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: hp('-0.3%'),
+    right: wp('0.5%'),
+    backgroundColor: '#420f54',
+    borderRadius: wp('2%'),
+    minWidth: wp('4%'),
+    height: wp('4%'),
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: wp('1%'),
+  },
+  notificationBadgeText: {
+    color: '#FFFFFF',
+    fontSize: wp('2.5%'),
+    fontFamily: 'Poppins-Bold',
+  },
 });
 
 export default styles;

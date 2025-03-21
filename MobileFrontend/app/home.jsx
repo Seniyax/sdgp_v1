@@ -7,7 +7,9 @@ import {
   TextInput, 
   ActivityIndicator,
   Image,
-  SafeAreaView
+  SafeAreaView,
+  Animated,
+  Easing
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -25,6 +27,73 @@ export default function HomeScreen() {
   const [filteredCategories, setFilteredCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [hasNotifications, setHasNotifications] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
+  
+  // Animation values for category buttons
+  const [categoryAnimations, setCategoryAnimations] = useState({});
+
+  // Create animation references for each category when they're loaded
+  useEffect(() => {
+    const animations = {};
+    filteredCategories.forEach(category => {
+      animations[category.id] = {
+        scale: new Animated.Value(1),
+        opacity: new Animated.Value(1),
+        translateY: new Animated.Value(0)
+      };
+    });
+    setCategoryAnimations(animations);
+  }, [filteredCategories]);
+
+  // Entrance animation for all categories
+  useEffect(() => {
+    if (!loading && filteredCategories.length > 0) {
+      const animations = [];
+      
+      filteredCategories.forEach((category, index) => {
+        if (categoryAnimations[category.id]) {
+          // Reset animations
+          categoryAnimations[category.id].translateY.setValue(50);
+          categoryAnimations[category.id].opacity.setValue(0);
+          
+          // Create entrance animations with staggered delay
+          const delay = index * 100;
+          
+          const translateAnim = Animated.timing(categoryAnimations[category.id].translateY, {
+            toValue: 0,
+            duration: 300,
+            delay,
+            useNativeDriver: true,
+            easing: Easing.out(Easing.back(1.5))
+          });
+          
+          const opacityAnim = Animated.timing(categoryAnimations[category.id].opacity, {
+            toValue: 1,
+            duration: 300,
+            delay,
+            useNativeDriver: true
+          });
+          
+          animations.push(translateAnim);
+          animations.push(opacityAnim);
+        }
+      });
+      
+      Animated.parallel(animations).start();
+    }
+  }, [loading, filteredCategories, categoryAnimations]);
+
+  // Simulate receiving notifications (for testing)
+  useEffect(() => {
+    // Simulate receiving a notification after component loads
+    const timer = setTimeout(() => {
+      setNotificationCount(3);
+      setHasNotifications(true);
+    }, 3000);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   // Icon mapping for different category names
   const categoryIcons = {
@@ -35,6 +104,25 @@ export default function HomeScreen() {
     'Others': 'ellipsis-horizontal-outline',
     // Default icon for any other category
     'default': 'grid-outline'
+  };
+
+  // Animation for button press
+  const animateButtonPress = (categoryId) => {
+    const scaleDown = Animated.timing(categoryAnimations[categoryId].scale, {
+      toValue: 0.9,
+      duration: 100,
+      useNativeDriver: true,
+      easing: Easing.inOut(Easing.ease)
+    });
+    
+    const scaleUp = Animated.timing(categoryAnimations[categoryId].scale, {
+      toValue: 1,
+      duration: 100,
+      useNativeDriver: true,
+      easing: Easing.inOut(Easing.ease)
+    });
+    
+    Animated.sequence([scaleDown, scaleUp]).start();
   };
 
   // Fetch categories from API
@@ -53,9 +141,7 @@ export default function HomeScreen() {
             routePath = "Restaurants";
           }else{
             routePath = `/${category.name.replace(/[^a-zA-Z0-9]/g, '')}`;
-
           }
-          console.log(category.name)
           return {
             id: category.id,
             name: category.name,
@@ -105,16 +191,62 @@ export default function HomeScreen() {
       return;
     }
     
-    router.push(category.route);
+    // Play animation before navigating
+    if (categoryAnimations[category.id]) {
+      animateButtonPress(category.id);
+      
+      // Add small delay before navigation to allow animation to complete
+      setTimeout(() => {
+        router.push(category.route);
+      }, 200);
+    } else {
+      router.push(category.route);
+    }
   };
 
-  // Navigation handlers for History and Profile
+  // Navigation handlers for History and Profile with animations
+  const profileButtonAnim = useRef(new Animated.Value(1)).current;
+  const historyButtonAnim = useRef(new Animated.Value(1)).current;
+  const notificationButtonAnim = useRef(new Animated.Value(1)).current;
+  
+  const animateNavButton = (animValue) => {
+    Animated.sequence([
+      Animated.timing(animValue, {
+        toValue: 0.9,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(animValue, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      })
+    ]).start();
+  };
+
   const navigateToHistory = () => {
-    router.push('/history');
+    animateNavButton(historyButtonAnim);
+    setTimeout(() => {
+      router.push('/history');
+    }, 200);
   };
 
   const navigateToProfile = () => {
-    router.push('/Profile');
+    animateNavButton(profileButtonAnim);
+    setTimeout(() => {
+      router.push('/Profile');
+    }, 200);
+  };
+  
+
+  const navigateToNotifications = () => {
+    animateNavButton(notificationButtonAnim);
+    setTimeout(() => {
+      router.push('/notification');
+      // Reset notification count when navigating to notifications page
+      setNotificationCount(0);
+      setHasNotifications(false);
+    }, 200);
   };
 
   // Retry loading categories
@@ -141,43 +273,67 @@ export default function HomeScreen() {
       return (
         <View style={styles.categoryGridContainer}>
           <View style={styles.singleResultContainer}>
-            <TouchableOpacity 
-              key={item.id.toString()}
-              style={[
-                styles.categoryButton,
-                item.status !== 'active' && styles.inactiveCategory
-              ]}
-              onPress={() => handleCategoryPress(item)}
-              disabled={item.status !== 'active'}
-            >
-              {item.image_url ? (
-                <Image 
-                  source={{ uri: item.image_url }} 
-                  style={styles.categoryImage}
-                />
-              ) : (
-                <Ionicons 
-                  name={item.icon} 
-                  size={wp('8%')}
-                  color={item.status === 'active' ? "#420F54" : "#999"} 
-                  style={styles.categoryIcon}
-                />
-              )}
-              <Text 
+            {categoryAnimations[item.id] ? (
+              <Animated.View style={[
+                {
+                  transform: [
+                    { scale: categoryAnimations[item.id].scale },
+                    { translateY: categoryAnimations[item.id].translateY }
+                  ],
+                  opacity: categoryAnimations[item.id].opacity
+                }
+              ]}>
+                <TouchableOpacity 
+                  key={item.id.toString()}
+                  style={[
+                    styles.categoryButton,
+                    item.status !== 'active' && styles.inactiveCategory
+                  ]}
+                  onPress={() => handleCategoryPress(item)}
+                  disabled={item.status !== 'active'}
+                >
+                  {item.image_url ? (
+                    <Image 
+                      source={{ uri: item.image_url }} 
+                      style={styles.categoryImage}
+                    />
+                  ) : (
+                    <Ionicons 
+                      name={item.icon} 
+                      size={wp('8%')}
+                      color={item.status === 'active' ? "#420F54" : "#999"} 
+                      style={styles.categoryIcon}
+                    />
+                  )}
+                  <Text 
+                    style={[
+                      styles.categoryButtonText, 
+                      item.status !== 'active' && styles.inactiveCategoryText
+                    ]} 
+                    numberOfLines={2}
+                  >
+                    {item.name}
+                  </Text>
+                  {item.status !== 'active' && (
+                    <View style={styles.inactiveOverlay}>
+                      <Text style={styles.inactiveText}>Coming Soon</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              </Animated.View>
+            ) : (
+              <TouchableOpacity 
+                key={item.id.toString()}
                 style={[
-                  styles.categoryButtonText, 
-                  item.status !== 'active' && styles.inactiveCategoryText
-                ]} 
-                numberOfLines={2}
+                  styles.categoryButton,
+                  item.status !== 'active' && styles.inactiveCategory
+                ]}
+                onPress={() => handleCategoryPress(item)}
+                disabled={item.status !== 'active'}
               >
-                {item.name}
-              </Text>
-              {item.status !== 'active' && (
-                <View style={styles.inactiveOverlay}>
-                  <Text style={styles.inactiveText}>Coming Soon</Text>
-                </View>
-              )}
-            </TouchableOpacity>
+                {/* ... (rest of button content) ... */}
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       );
@@ -195,43 +351,71 @@ export default function HomeScreen() {
         {rows.map((row, rowIndex) => (
           <View key={`row-${rowIndex}`} style={styles.categoryGridRow}>
             {row.map((item) => (
-              <TouchableOpacity 
-                key={item.id.toString()}
-                style={[
-                  styles.categoryButton,
-                  item.status !== 'active' && styles.inactiveCategory
-                ]}
-                onPress={() => handleCategoryPress(item)}
-                disabled={item.status !== 'active'}
-              >
-                {item.image_url ? (
-                  <Image 
-                    source={{ uri: item.image_url }} 
-                    style={styles.categoryImage}
-                  />
-                ) : (
-                  <Ionicons 
-                    name={item.icon} 
-                    size={wp('8%')}
-                    color={item.status === 'active' ? "#420F54" : "#999"} 
-                    style={styles.categoryIcon}
-                  />
-                )}
-                <Text 
+              categoryAnimations[item.id] ? (
+                <Animated.View 
+                  key={item.id.toString()}
                   style={[
-                    styles.categoryButtonText, 
-                    item.status !== 'active' && styles.inactiveCategoryText
-                  ]} 
-                  numberOfLines={2}
+                    {
+                      transform: [
+                        { scale: categoryAnimations[item.id].scale },
+                        { translateY: categoryAnimations[item.id].translateY }
+                      ],
+                      opacity: categoryAnimations[item.id].opacity,
+                      flex: 1,
+                      marginHorizontal: wp('2%')
+                    }
+                  ]}
                 >
-                  {item.name}
-                </Text>
-                {item.status !== 'active' && (
-                  <View style={styles.inactiveOverlay}>
-                    <Text style={styles.inactiveText}>Coming Soon</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[
+                      styles.categoryButton,
+                      item.status !== 'active' && styles.inactiveCategory
+                    ]}
+                    onPress={() => handleCategoryPress(item)}
+                    disabled={item.status !== 'active'}
+                  >
+                    {item.image_url ? (
+                      <Image 
+                        source={{ uri: item.image_url }} 
+                        style={styles.categoryImage}
+                      />
+                    ) : (
+                      <Ionicons 
+                        name={item.icon} 
+                        size={wp('8%')}
+                        color={item.status === 'active' ? "#420F54" : "#999"} 
+                        style={styles.categoryIcon}
+                      />
+                    )}
+                    <Text 
+                      style={[
+                        styles.categoryButtonText, 
+                        item.status !== 'active' && styles.inactiveCategoryText
+                      ]} 
+                      numberOfLines={2}
+                    >
+                      {item.name}
+                    </Text>
+                    {item.status !== 'active' && (
+                      <View style={styles.inactiveOverlay}>
+                        <Text style={styles.inactiveText}>Coming Soon</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                </Animated.View>
+              ) : (
+                <TouchableOpacity 
+                  key={item.id.toString()}
+                  style={[
+                    styles.categoryButton,
+                    item.status !== 'active' && styles.inactiveCategory
+                  ]}
+                  onPress={() => handleCategoryPress(item)}
+                  disabled={item.status !== 'active'}
+                >
+                  {/* ... (rest of button content) ... */}
+                </TouchableOpacity>
+              )
             ))}
             
             {/* Only add empty placeholder if row has exactly 1 item AND we're not in search mode */}
@@ -244,40 +428,71 @@ export default function HomeScreen() {
     );
   };
 
+  // Custom styles to adjust the animation position
+  const customStyles = {
+    animationContainer: {
+      ...styles.animationContainer, // Keep original styles
+      marginTop: -hp('2%'), // Move animation up by decreasing top margin
+      marginBottom: hp('1%'), // Optional: adjust bottom margin if needed
+    },
+    animation: {
+      ...styles.animation, // Keep original animation styles
+    }
+  };
+
   return (
     <SafeAreaView style={styles.mainContainer}>
-      {/* Top Navigation Header */}
-      <View style={styles.topNavHeader}>
-        <TouchableOpacity 
-          style={styles.profileButton} 
-          onPress={navigateToProfile}
-        >
-          <Ionicons name="person-outline" size={wp('7%')} color="#420F54" />
-        </TouchableOpacity>
-
-        <View style={styles.spacer} />
-
-        <TouchableOpacity 
-          style={styles.topNavButton} 
-          onPress={navigateToHistory}
-        >
-          <Ionicons name="time-outline" size={wp('7%')} color="#420F54" />
-          <Text style={styles.topNavButtonText}>History</Text>
-        </TouchableOpacity>
-      </View>
-
       <ScrollView 
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}
       >
-        {/* Lottie Animation at Top Center */}
-        <View style={styles.animationContainer}>
+        {/* Top Navigation Header - Now inside ScrollView */}
+        <View style={styles.topNavHeader}>
+          <Animated.View style={{transform: [{scale: profileButtonAnim}]}}>
+            <TouchableOpacity 
+              style={styles.profileButton} 
+              onPress={navigateToProfile}
+            >
+              <Ionicons name="person-outline" size={wp('7%')} color="#420F54" />
+            </TouchableOpacity>
+          </Animated.View>
+          
+          {/* Notification Button */}
+          <Animated.View style={{transform: [{scale: notificationButtonAnim}], marginLeft: wp('2%')}}>
+            <TouchableOpacity 
+              style={styles.notificationButton} 
+              onPress={navigateToNotifications}
+            >
+              <Ionicons name="notifications-outline" size={wp('7%')} color="#420F54" />
+              {hasNotifications && (
+                <View style={styles.notificationBadge}>
+                  <Text style={styles.notificationBadgeText}>{notificationCount}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </Animated.View>
+
+          <View style={styles.spacer} />
+
+          <Animated.View style={{transform: [{scale: historyButtonAnim}]}}>
+            <TouchableOpacity 
+              style={styles.topNavButton} 
+              onPress={navigateToHistory}
+            >
+              <Ionicons name="time-outline" size={wp('7%')} color="#420F54" />
+              <Text style={styles.topNavButtonText}>History</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
+        
+        {/* Lottie Animation at Top Center - Using custom styles to move it up */}
+        <View style={customStyles.animationContainer}>
           <LottieView
             ref={animationRef}
             source={require('../assets/home.json')}
             autoPlay
             loop={true}
-            style={styles.animation}
+            style={customStyles.animation}
           />
         </View>
         

@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
-  StyleSheet, 
   View, 
   Text, 
   TouchableOpacity, 
@@ -9,13 +8,16 @@ import {
   Image, 
   ActivityIndicator,
   RefreshControl,
-  SafeAreaView
+  SafeAreaView,
+  Animated,
+  Easing
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import axios from 'axios';
+import styles from '../styles/Restaurantsstyle'; // Import styles from the restaurantstyle.js file
 
 const RestaurantsScreen = () => {
   const router = useRouter();
@@ -28,8 +30,106 @@ const RestaurantsScreen = () => {
   const [page, setPage] = useState(1);
   const [hasMoreData, setHasMoreData] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  
+  // Added for animations
+  const [restaurantAnimations, setRestaurantAnimations] = useState({});
+  const backButtonAnim = useRef(new Animated.Value(1)).current;
 
   const categoryId = 1; // Assuming 1 is for restaurants category
+
+  // Create animation references for each restaurant when they're loaded
+  useEffect(() => {
+    const animations = {};
+    filteredRestaurants.forEach(restaurant => {
+      animations[restaurant.id] = {
+        scale: new Animated.Value(1),
+        opacity: new Animated.Value(1),
+        translateY: new Animated.Value(0)
+      };
+    });
+    setRestaurantAnimations(animations);
+  }, [filteredRestaurants]);
+
+  // Entrance animation for all restaurants
+  useEffect(() => {
+    if (!loading && filteredRestaurants.length > 0) {
+      const animations = [];
+      
+      filteredRestaurants.forEach((restaurant, index) => {
+        if (restaurantAnimations[restaurant.id]) {
+          // Reset animations
+          restaurantAnimations[restaurant.id].translateY.setValue(50);
+          restaurantAnimations[restaurant.id].opacity.setValue(0);
+          
+          // Create entrance animations with staggered delay
+          const delay = index * 100;
+          
+          const translateAnim = Animated.timing(restaurantAnimations[restaurant.id].translateY, {
+            toValue: 0,
+            duration: 300,
+            delay,
+            useNativeDriver: true,
+            easing: Easing.out(Easing.back(1.5))
+          });
+          
+          const opacityAnim = Animated.timing(restaurantAnimations[restaurant.id].opacity, {
+            toValue: 1,
+            duration: 300,
+            delay,
+            useNativeDriver: true
+          });
+          
+          animations.push(translateAnim);
+          animations.push(opacityAnim);
+        }
+      });
+      
+      Animated.parallel(animations).start();
+    }
+  }, [loading, filteredRestaurants, restaurantAnimations]);
+  
+  // Animation for button press
+  const animateButtonPress = (restaurantId) => {
+    const scaleDown = Animated.timing(restaurantAnimations[restaurantId].scale, {
+      toValue: 0.95,
+      duration: 100,
+      useNativeDriver: true,
+      easing: Easing.inOut(Easing.ease)
+    });
+    
+    const scaleUp = Animated.timing(restaurantAnimations[restaurantId].scale, {
+      toValue: 1,
+      duration: 100,
+      useNativeDriver: true,
+      easing: Easing.inOut(Easing.ease)
+    });
+    
+    Animated.sequence([scaleDown, scaleUp]).start();
+  };
+  
+  // Back button animation
+  const animateBackButton = () => {
+    Animated.sequence([
+      Animated.timing(backButtonAnim, {
+        toValue: 0.9,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(backButtonAnim, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      })
+    ]).start();
+  };
+  
+  // Handle back button press with animation
+  const handleBackPress = () => {
+    animateBackButton();
+    setTimeout(() => {
+      router.back();
+    }, 200);
+  };
 
   // Function to fetch restaurants from API
   const fetchRestaurants = async (pageNum = 1, refresh = false) => {
@@ -48,22 +148,13 @@ const RestaurantsScreen = () => {
 
       if (response.data.success) {
         const newRestaurants = response.data.data;
-        
-        // Add placeholder images since API doesn't provide images
-        const restaurantsWithImages = newRestaurants.map(restaurant => ({
-          ...restaurant,
-          image: `https://source.unsplash.com/random/400x300/?restaurant,food&sig=${restaurant.id}`,
-          rating: (Math.random() * 2 + 3).toFixed(1), // Random rating between 3.0 and 5.0
-          cuisine: getRandomCuisine(),
-          waitTime: Math.floor(Math.random() * 30) + 5, // Random wait time between 5-35 minutes
-        }));
 
         if (refresh || pageNum === 1) {
-          setRestaurants(restaurantsWithImages);
-          setFilteredRestaurants(restaurantsWithImages);
+          setRestaurants(newRestaurants);
+          setFilteredRestaurants(newRestaurants);
         } else {
-          setRestaurants(prev => [...prev, ...restaurantsWithImages]);
-          setFilteredRestaurants(prev => [...prev, ...restaurantsWithImages]);
+          setRestaurants(prev => [...prev, ...newRestaurants]);
+          setFilteredRestaurants(prev => [...prev, ...newRestaurants]);
         }
 
         // Check if we have more pages
@@ -78,12 +169,6 @@ const RestaurantsScreen = () => {
       setRefreshing(false);
       setLoadingMore(false);
     }
-  };
-
-  // Generate random cuisine type
-  const getRandomCuisine = () => {
-    const cuisines = ['Italian', 'Chinese', 'Indian', 'Thai', 'Mexican', 'Japanese', 'French', 'Mediterranean'];
-    return cuisines[Math.floor(Math.random() * cuisines.length)];
   };
 
   // Initial fetch
@@ -118,36 +203,52 @@ const RestaurantsScreen = () => {
     }
   };
 
-  // Navigate to restaurant detail
+  // Navigate to restaurant detail with animation
   const handleRestaurantPress = (restaurant) => {
-    router.push({
-      pathname: '/tableSelect',
-      params: { restaurantId: restaurant.id, restaurantName: restaurant.name }
-    });
+    if (restaurantAnimations[restaurant.id]) {
+      animateButtonPress(restaurant.id);
+      
+      // Add small delay before navigation to allow animation to complete
+      setTimeout(() => {
+        router.push({
+          pathname: '/tableSelect',
+          params: { restaurantId: restaurant.id, restaurantName: restaurant.name }
+        });
+      }, 200);
+    } else {
+      router.push({
+        pathname: '/tableSelect',
+        params: { restaurantId: restaurant.id, restaurantName: restaurant.name }
+      });
+    }
   };
 
-  // Render restaurant item
-  const renderRestaurantItem = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.restaurantCard}
-      onPress={() => handleRestaurantPress(item)}
-    >
+  // Render restaurant item with alternating layouts
+  const renderRestaurantItem = ({ item, index }) => {
+    // Determine layout based on index (even/odd)
+    const isEven = index % 2 === 0;
+    
+    // Common components for both layouts
+    const imageComponent = (
       <Image 
         source={{ uri: item.image }} 
-        style={styles.restaurantImage}
+        style={styles.horizontalRestaurantImage}
         resizeMode="cover"
       />
-      <View style={styles.restaurantInfo}>
+    );
+    
+    const infoComponent = (
+      <View style={styles.horizontalRestaurantInfo}>
         <View style={styles.nameAndRating}>
           <Text style={styles.restaurantName} numberOfLines={1}>{item.name}</Text>
           <View style={styles.ratingContainer}>
-            <Ionicons name="star" size={wp('5%')} color="#FFC107" />
+            <Ionicons name="star" size={wp('4%')} color="#FFC107" />
             <Text style={styles.ratingText}>{item.rating}</Text>
           </View>
         </View>
         <Text style={styles.cuisineText}>{item.cuisine}</Text>
         <View style={styles.waitTimeContainer}>
-          <Ionicons name="time-outline" size={wp('5%')} color="#420F54" />
+          <Ionicons name="time-outline" size={wp('4%')} color="#420F54" />
           <Text style={styles.waitTimeText}>{item.waitTime} min wait</Text>
           <View style={styles.statusIndicator}>
             <View style={[styles.statusDot, { backgroundColor: item.status === 'active' ? '#4CAF50' : '#FFC107' }]} />
@@ -155,8 +256,59 @@ const RestaurantsScreen = () => {
           </View>
         </View>
       </View>
-    </TouchableOpacity>
-  );
+    );
+    
+    // Apply animations to restaurant card
+    return restaurantAnimations[item.id] ? (
+      <Animated.View 
+        style={[
+          {
+            transform: [
+              { scale: restaurantAnimations[item.id].scale },
+              { translateY: restaurantAnimations[item.id].translateY }
+            ],
+            opacity: restaurantAnimations[item.id].opacity
+          }
+        ]}
+      >
+        <TouchableOpacity 
+          style={styles.horizontalRestaurantCard}
+          onPress={() => handleRestaurantPress(item)}
+        >
+          {isEven ? (
+            // Even index: Image first, then info
+            <>
+              {imageComponent}
+              {infoComponent}
+            </>
+          ) : (
+            // Odd index: Info first, then image
+            <>
+              {infoComponent}
+              {imageComponent}
+            </>
+          )}
+        </TouchableOpacity>
+      </Animated.View>
+    ) : (
+      <TouchableOpacity 
+        style={styles.horizontalRestaurantCard}
+        onPress={() => handleRestaurantPress(item)}
+      >
+        {isEven ? (
+          <>
+            {imageComponent}
+            {infoComponent}
+          </>
+        ) : (
+          <>
+            {infoComponent}
+            {imageComponent}
+          </>
+        )}
+      </TouchableOpacity>
+    );
+  };
 
   // Render footer for FlatList (loading indicator when loading more)
   const renderFooter = () => {
@@ -170,262 +322,92 @@ const RestaurantsScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="auto" />
+    <>
+      {/* Add Stack.Screen to hide the header completely */}
+      <Stack.Screen 
+        options={{
+          headerShown: false,
+        }} 
+      />
+      
+      <SafeAreaView style={styles.container}>
+        <StatusBar style="auto" />
 
-      {/* Header Title */}
-      <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>Restaurants</Text>
-      </View>
-
-      {/* Search Header */}
-      <View style={styles.searchContainer}>
-        <Ionicons 
-          name="search-outline" 
-          size={wp('6%')} 
-          color="#420F54" 
-          style={styles.searchIcon}
-        />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search restaurants..."
-          placeholderTextColor="#888"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-      </View>
-
-      {/* Error message if needed */}
-      {error && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity onPress={() => fetchRestaurants(1, true)} style={styles.retryButton}>
-            <Text style={styles.retryButtonText}>Retry</Text>
-          </TouchableOpacity>
+        {/* Header Title with Animated Back Button */}
+        <View style={styles.headerContainer}>
+          <Animated.View style={{transform: [{scale: backButtonAnim}]}}>
+            <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={wp('6%')} color="#420F54" />
+            </TouchableOpacity>
+          </Animated.View>
+          <Text style={styles.headerTitle}>Restaurants</Text>
         </View>
-      )}
 
-      {/* Loading indicator */}
-      {loading && !refreshing ? (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#420F54" />
-          <Text style={styles.loaderText}>Loading restaurants...</Text>
+        {/* Search Header */}
+        <View style={styles.searchContainer}>
+          <Ionicons 
+            name="search-outline" 
+            size={wp('6%')} 
+            color="#420F54" 
+            style={styles.searchIcon}
+          />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search restaurants..."
+            placeholderTextColor="#888"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
         </View>
-      ) : (
-        /* Restaurant List */
-        <FlatList
-          data={filteredRestaurants}
-          renderItem={renderRestaurantItem}
-          keyExtractor={item => item.id.toString()}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.listContainer}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              colors={["#420F54"]}
-            />
-          }
-          onEndReached={loadMoreData}
-          onEndReachedThreshold={0.1}
-          ListFooterComponent={renderFooter}
-          ListEmptyComponent={
-            !loading && (
-              <View style={styles.emptyContainer}>
-                <Ionicons name="restaurant-outline" size={wp('20%')} color="#ccc" />
-                <Text style={styles.emptyText}>No restaurants found</Text>
-              </View>
-            )
-          }
-        />
-      )}
-    </SafeAreaView>
+
+        {/* Error message if needed */}
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity onPress={() => fetchRestaurants(1, true)} style={styles.retryButton}>
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Loading indicator */}
+        {loading && !refreshing ? (
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator size="large" color="#420F54" />
+            <Text style={styles.loaderText}>Loading restaurants...</Text>
+          </View>
+        ) : (
+          /* Restaurant List in Vertical List View with horizontal items */
+          <FlatList
+            data={filteredRestaurants}
+            renderItem={renderRestaurantItem}
+            keyExtractor={item => item.id.toString()}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.listContainer}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={["#420F54"]}
+              />
+            }
+            onEndReached={loadMoreData}
+            onEndReachedThreshold={0.1}
+            ListFooterComponent={renderFooter}
+            ListEmptyComponent={
+              !loading && (
+                <View style={styles.emptyContainer}>
+                  <Ionicons name="restaurant-outline" size={wp('20%')} color="#ccc" />
+                  <Text style={styles.emptyText}>No restaurants found</Text>
+                </View>
+              )
+            }
+            numColumns={1} // Changed to 1 column for vertical list of horizontal items
+          />
+        )}
+      </SafeAreaView>
+    </>
   );
 };
 
 export default RestaurantsScreen;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    paddingTop: hp('4%'), // Added extra padding at the top to move content down
-  },
-  headerContainer: {
-    paddingHorizontal: wp('5%'),
-    paddingTop: hp('2%'),
-    paddingBottom: hp('1%'),
-    alignItems: 'center', // Center the header title
-  },
-  headerTitle: {
-    fontSize: wp('8%'), // Increased from 6% to 8%
-    fontWeight: 'bold',
-    color: '#420F54',
-    fontFamily: 'Poppins-Bold', // Added Poppins font
-    textAlign: 'center', // Ensure text is centered
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F3E4FF',
-    borderRadius: wp('5%'),
-    paddingHorizontal: wp('4%'),
-    marginHorizontal: wp('5%'),
-    marginVertical: hp('2%'),
-  },
-  searchIcon: {
-    marginRight: wp('2%'),
-  },
-  searchInput: {
-    flex: 1,
-    height: hp('6%'),
-    fontFamily: 'Poppins-Regular', // Already had Poppins
-    fontSize: wp('4.5%'), // Increased from 4% to 4.5%
-  },
-  listContainer: {
-    paddingHorizontal: wp('5%'),
-    paddingBottom: hp('2%'),
-    alignItems: 'center', // Center the list items
-  },
-  restaurantCard: {
-    backgroundColor: '#fff',
-    borderRadius: wp('4%'),
-    marginBottom: hp('2%'),
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    overflow: 'hidden',
-    width: wp('90%'), // Make the cards a consistent width
-  },
-  restaurantImage: {
-    width: '100%',
-    height: hp('20%'),
-    borderTopLeftRadius: wp('4%'),
-    borderTopRightRadius: wp('4%'),
-  },
-  restaurantInfo: {
-    padding: wp('4%'),
-  },
-  nameAndRating: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: hp('0.5%'),
-  },
-  restaurantName: {
-    fontSize: wp('5.5%'), // Increased from 4.5% to 5.5%
-    fontWeight: 'bold',
-    color: '#272D2F',
-    flex: 1,
-    fontFamily: 'Poppins-Bold', // Added Poppins font
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF9E6',
-    paddingHorizontal: wp('2%'),
-    paddingVertical: hp('0.5%'),
-    borderRadius: wp('2%'),
-  },
-  ratingText: {
-    fontSize: wp('4.5%'), // Increased from 3.5% to 4.5%
-    fontWeight: 'bold',
-    color: '#272D2F',
-    marginLeft: wp('1%'),
-    fontFamily: 'Poppins-Bold', // Added Poppins font
-  },
-  cuisineText: {
-    fontSize: wp('4.5%'), // Increased from 3.5% to 4.5%
-    color: '#666',
-    marginBottom: hp('1%'),
-    fontFamily: 'Poppins-Regular', // Added Poppins font
-  },
-  waitTimeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  waitTimeText: {
-    fontSize: wp('4.5%'), // Increased from 3.5% to 4.5%
-    color: '#272D2F',
-    marginLeft: wp('1%'),
-    marginRight: wp('3%'),
-    fontFamily: 'Poppins-Regular', // Added Poppins font
-  },
-  statusIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statusDot: {
-    width: wp('2%'),
-    height: wp('2%'),
-    borderRadius: wp('1%'),
-    marginRight: wp('1%'),
-  },
-  statusText: {
-    fontSize: wp('4.5%'), // Increased from 3.5% to 4.5%
-    color: '#272D2F',
-    fontFamily: 'Poppins-Regular', // Added Poppins font
-  },
-  loaderContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loaderText: {
-    marginTop: hp('1%'),
-    fontSize: wp('5%'), // Increased from 4% to 5%
-    color: '#420F54',
-    fontFamily: 'Poppins-Regular', // Added Poppins font
-    textAlign: 'center', // Ensure text is centered
-  },
-  footerLoader: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: hp('2%'),
-  },
-  footerText: {
-    marginLeft: wp('2%'),
-    fontSize: wp('4.5%'), // Increased from 3.5% to 4.5%
-    color: '#420F54',
-    fontFamily: 'Poppins-Regular', // Added Poppins font
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: hp('10%'),
-  },
-  emptyText: {
-    marginTop: hp('2%'),
-    fontSize: wp('5%'), // Increased from 4% to 5%
-    color: '#666',
-    textAlign: 'center',
-    fontFamily: 'Poppins-Regular', // Added Poppins font
-  },
-  errorContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: hp('5%'),
-  },
-  errorText: {
-    fontSize: wp('5%'), // Increased from 4% to 5%
-    color: '#D32F2F',
-    textAlign: 'center',
-    marginBottom: hp('2%'),
-    fontFamily: 'Poppins-Regular', // Added Poppins font
-  },
-  retryButton: {
-    backgroundColor: '#420F54',
-    paddingVertical: hp('1%'),
-    paddingHorizontal: wp('5%'),
-    borderRadius: wp('3%'),
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontSize: wp('4.5%'), // Increased from 4% to 4.5%
-    fontWeight: 'bold',
-    fontFamily: 'Poppins-Bold', // Added Poppins font
-  },
-});
