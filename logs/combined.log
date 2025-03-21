@@ -19,3 +19,4 @@
 {"level":"info","message":"Calculated price for reservation 13 with 16 seats: 250","timestamp":"2025-03-17 19:11:27"}
 {"level":"info","message":"No device tokens found for customer 86b0fb25-e1f7-41a1-8338-fee52ca2669d","timestamp":"2025-03-17 19:11:39"}
 {"level":"info","message":"Notification sent to user 86b0fb25-e1f7-41a1-8338-fee52ca2669d: Payment Confirmed","timestamp":"2025-03-17 19:11:39"}
+{"code":"","details":"TypeError: fetch failed\n    at node:internal/deps/undici/undici:13502:13\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async getAllCategories (/Applications/Kavindu's files/SLOTZI/sdgp_v1/Backend/src/controllers/categoryController.js:8:33)","hint":"","level":"error","message":"TypeError: fetch failed","timestamp":"2025-03-21 19:04:44"}
