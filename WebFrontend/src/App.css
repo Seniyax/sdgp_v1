@@ -1,9 +1,5 @@
 body{
-  background-size: cover;
-  background-color: #f6f7ec;
-  color: #420842;
+    height: 100vh;
+    width: 100vw;
+    min-width: 100vw;
 }
-
-
-
-

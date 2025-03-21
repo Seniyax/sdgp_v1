@@ -1,81 +1,108 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { CheckCircle, Clock, ArrowLeft } from 'lucide-react';
 import "../style/Verification.css";
 
 const Verification = () => {
   const navigate = useNavigate();
   const [progress, setProgress] = useState(0);
-  const [loadingText, setLoadingText] = useState("Verifying details");
-  const [dots, setDots] = useState("");
-
+  const [statusMessage, setStatusMessage] = useState('Initiating verification process...');
+  
+  // Simulate verification progress
   useEffect(() => {
-    const progressInterval = setInterval(() => {
-      setProgress((prevProgress) => {
+    const timer = setInterval(() => {
+      setProgress(prevProgress => {
         if (prevProgress >= 100) {
-          clearInterval(progressInterval);
-          // Navigate to dashboard or home after verification is complete
-          setTimeout(() => navigate("/dashboard"), 500);
+          clearInterval(timer);
           return 100;
         }
+        
+        // Update status message based on progress
+        if (prevProgress === 0) {
+          setStatusMessage('Initiating verification process...');
+        } else if (prevProgress === 25) {
+          setStatusMessage('Checking business information...');
+        } else if (prevProgress === 50) {
+          setStatusMessage('Validating contact details...');
+        } else if (prevProgress === 75) {
+          setStatusMessage('Finalizing verification...');
+        } else if (prevProgress >= 95) {
+          setStatusMessage('Verification complete!');
+        }
+        
         return prevProgress + 1;
       });
-    }, 30); // Total loading time: ~3 seconds
+    }, 100);
 
-    // Animate the loading dots
-    const dotsInterval = setInterval(() => {
-      setDots((prevDots) => {
-        if (prevDots.length >= 3) return "";
-        return prevDots + ".";
-      });
-    }, 400);
-
-    // Update loading text based on progress
-    const textInterval = setInterval(() => {
-      if (progress < 33) {
-        setLoadingText("Verifying details");
-      } else if (progress < 66) {
-        setLoadingText("Authenticating");
-      } else if (progress < 100) {
-        setLoadingText("Preparing your dashboard");
+    // After completion, redirect to dashboard
+    const redirectTimer = setTimeout(() => {
+      if (progress >= 100) {
+        navigate('/business-dashboard');
       }
-    }, 1000);
+    }, 12000);
 
-    // Clean up intervals
     return () => {
-      clearInterval(progressInterval);
-      clearInterval(dotsInterval);
-      clearInterval(textInterval);
+      clearInterval(timer);
+      clearTimeout(redirectTimer);
     };
   }, [navigate, progress]);
 
+  const handleBackClick = () => {
+    navigate('/business-dashboard');
+  };
+
   return (
-    <div className="global-container">
-      <div className="verification-container">
-        <div className="verification-card">
-          <div className="logo-container">
-            <div className="logo">SlotZi</div>
+    <div className="verification-container">
+      <div className="verification-card">
+        <div className="verification-header">
+          <button className="back-button" onClick={handleBackClick}>
+            <ArrowLeft size={18} />
+            <span>Back to Dashboard</span>
+          </button>
+          <h1>Business Verification</h1>
+        </div>
+        
+        <div className="verification-content">
+          <div className="verification-icon">
+            {progress < 100 ? (
+              <div className="clock-icon">
+                <Clock size={64} />
+              </div>
+            ) : (
+              <div className="check-icon">
+                <CheckCircle size={64} />
+              </div>
+            )}
           </div>
-
-          <div className="loading-animation">
-            <div className="spinner"></div>
+          
+          <div className="verification-status">
+            <h2>{progress < 100 ? 'Verification in Progress' : 'Verification Complete'}</h2>
+            <p className="status-message">{statusMessage}</p>
           </div>
-
-          <div className="verification-text">
-            {loadingText}
-            <span className="loading-dots">{dots}</span>
-          </div>
-
+          
           <div className="progress-container">
-            <div
-              className="progress-bar"
-              style={{ width: `${progress}%` }}
-            ></div>
+            <div className="progress-bar" style={{ width: `${progress}%` }}></div>
           </div>
-
-          <div className="verification-message">
-            Please wait while we verify your account information
+          
+          <div className="progress-percentage">
+            <span>{Math.min(progress, 100)}%</span>
+          </div>
+          
+          <div className="verification-info">
+            <h3>What's happening?</h3>
+            <p>We're verifying the accuracy of your business information to ensure customers can find and engage with your business effectively.</p>
+            <p>This process typically takes just a moment to complete.</p>
           </div>
         </div>
+        
+        {progress >= 100 && (
+          <div className="verification-complete">
+            <p>Your business information has been successfully verified!</p>
+            <button className="continue-button" onClick={() => navigate('/business-dashboard')}>
+              Return to Dashboard
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

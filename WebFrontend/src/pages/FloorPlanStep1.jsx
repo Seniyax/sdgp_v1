@@ -90,18 +90,18 @@ function FloorPlanStep1({
   };
 
   return (
-    <div className="d-flex flex-column align-items-center justify-content-center min-vh-100 bg-transparent p-4">
-      <div className="bg-white rounded shadow p-4 w-100 w-md-50">
-        <h1 className="h4 text-dark mb-4 d-flex align-items-center">
-          <i className="bi bi-rulers mr-2" style={{ fontSize: "24px" }}></i>
-          Floor Plan Dimensions
-        </h1>
-        <p className="text-muted mb-4">
+    <div className="floorplan-container">
+      <div className="floorplan-card">
+        <div className="floorplan-header">
+          <i className="bi bi-rulers header-icon"></i>
+          <h1 className="header-title">Floor Plan Dimensions</h1>
+        </div>
+        <p className="floorplan-description">
           Please provide the size of your floor area in square meters. This will
           be used to determine the initial aspect ratio of the canvas.
         </p>
-        <form onSubmit={handleSubmit} className="mb-4">
-          <div className="mb-3">
+        <form onSubmit={handleSubmit} className="floorplan-form">
+          <div className="form-group">
             <label htmlFor="width" className="form-label">
               Width (meters)
             </label>
@@ -110,14 +110,14 @@ function FloorPlanStep1({
               id="width"
               value={width}
               onChange={(e) => setWidth(e.target.value)}
-              className="form-control"
+              className="form-input"
               placeholder="Enter width"
               step="0.1"
               min="0.1"
               required
             />
           </div>
-          <div className="mb-3">
+          <div className="form-group">
             <label htmlFor="height" className="form-label">
               Height (meters)
             </label>
@@ -126,14 +126,14 @@ function FloorPlanStep1({
               id="height"
               value={height}
               onChange={(e) => setHeight(e.target.value)}
-              className="form-control"
+              className="form-input"
               placeholder="Enter height"
               step="0.1"
               min="0.1"
               required
             />
           </div>
-          <div className="mb-3">
+          <div className="form-group">
             <label htmlFor="floorAmount" className="form-label">
               Floors
             </label>
@@ -147,25 +147,16 @@ function FloorPlanStep1({
                   setFloorCount(value);
                 }
               }}
-              className="form-control"
+              className="form-input"
               placeholder="Number of floors"
               min="1"
               required
             />
           </div>
           {parseInt(floorCount) > 0 && (
-            <div className="mb-3">
+            <div className="form-group">
               <label className="form-label">Floor Naming</label>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  gap: "10px",
-                  flexWrap: "wrap",
-                  transition: "opacity 300ms ease, transform 300ms ease",
-                  opacity: isAnimating ? 0 : 1,
-                }}
-              >
+              <div className={`floor-names-container ${isAnimating ? 'animating' : ''}`}>
                 {floorNames.slice(startIndex, endIndex).map((name, index) => {
                   const floorIndex = startIndex + index;
                   return (
@@ -176,27 +167,27 @@ function FloorPlanStep1({
                       onChange={(e) =>
                         handleFloorNameChange(floorIndex, e.target.value)
                       }
-                      className="form-control"
-                      style={{ width: "150px", transition: "all 300ms ease" }}
+                      className="floor-name-input"
                       required
                     />
                   );
                 })}
               </div>
-              <div className="d-flex justify-content-center align-items-center mt-2">
+              <div className="pagination-controls">
                 <button
                   type="button"
-                  className="btn btn-secondary"
-                  style={{ marginRight: "5px" }}
+                  className="pagination-btn"
                   disabled={namingPage === 0}
                   onClick={() => changeNamingPage(namingPage - 1)}
                 >
                   &lt;
                 </button>
+                <span className="pagination-info">
+                  {startIndex + 1}-{endIndex} of {floorNames.length}
+                </span>
                 <button
                   type="button"
-                  className="btn btn-secondary"
-                  style={{ marginLeft: "5px" }}
+                  className="pagination-btn"
                   disabled={endIndex >= floorNames.length}
                   onClick={() => changeNamingPage(namingPage + 1)}
                 >
@@ -205,14 +196,14 @@ function FloorPlanStep1({
               </div>
             </div>
           )}
-          {error && <div className="text-danger mb-3">{error}</div>}
-          <div className="d-flex justify-content-end">
+          {error && <div className="error-message">{error}</div>}
+          <div className="form-actions">
             <button
               type="submit"
-              className="btn btn-violet d-flex align-items-center"
+              className="btn-violet"
             >
               Next
-              <i className="bi bi-arrow-right ml-2"></i>
+              <i className="bi bi-arrow-right"></i>
             </button>
           </div>
         </form>
