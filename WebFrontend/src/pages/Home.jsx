@@ -1,38 +1,65 @@
-import React from 'react';
-import video from '../assets/video.mp4';
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { 
-  ArrowRight, Users, Building2, Calendar, Star, Clock, Shield, 
-  BarChart as ChartBar, Settings, Zap, Facebook, Twitter, 
-  Instagram, Mail, Phone, Award, CheckCircle, MapPin, HelpCircle
-} from 'lucide-react';
+/* eslint-disable no-unused-vars */
+import { React, useState, useEffect } from "react";
+import video from "../assets/video.mp4";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import {
+  ArrowRight,
+  Users,
+  Building2,
+  Calendar,
+  Star,
+  Clock,
+  Shield,
+  BarChart as ChartBar,
+  Settings,
+  Zap,
+  Facebook,
+  Twitter,
+  Instagram,
+  Mail,
+  Phone,
+  Award,
+  CheckCircle,
+  MapPin,
+  HelpCircle,
+} from "lucide-react";
 import "../style/Home.css";
+import Swal from "sweetalert2";
 
 const Home = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    setUser(JSON.parse(sessionStorage.getItem("user")));
+  }, []);
+
   // Data for stats section
   const stats = [
     { icon: Users, value: "10,000+", label: "Active Users" },
     { icon: Building2, value: "2,500+", label: "Businesses" },
-    { icon: Calendar, value: "1.2M+", label: "Bookings Monthly" }
+    { icon: Calendar, value: "1.2M+", label: "Bookings Monthly" },
   ];
-  
-  const handleRegisterClick = () => {
-    navigate('/business-registration'); // Navigate to Business Registration page
-  };
 
-  const handleJoinClick = () => {
-    navigate('/business-join'); // Navigate to Business Join page
-  };
-
-  const handleManageClick = () => {
-    navigate('/manage-business'); // Navigate to manage page
+  const handleNavigation = (path) => {
+    if (user) {
+      navigate(path);
+    } else {
+      Swal.fire({
+        title: "Not Signed In",
+        text: "Please sign in or sign up to continue.",
+        icon: "warning",
+        confirmButtonText: "Okay",
+      }).then(() => {
+        navigate("/sign-in");
+      });
+    }
   };
 
   const handleContactClick = () => {
-    navigate('/customer-support'); // Navigate to CustomerSupport page
+    navigate("/customer-support"); // Navigate to CustomerSupport page
   };
 
   // Data for features section
@@ -40,33 +67,39 @@ const Home = () => {
     {
       icon: Calendar,
       title: "Smart Scheduling",
-      description: "Intelligent booking system that adapts to your business needs and optimizes your calendar."
+      description:
+        "Intelligent booking system that adapts to your business needs and optimizes your calendar.",
     },
     {
       icon: Clock,
       title: "Time Management",
-      description: "Reduce no-shows with automated reminders and seamless rescheduling options."
+      description:
+        "Reduce no-shows with automated reminders and seamless rescheduling options.",
     },
     {
       icon: Shield,
       title: "Secure Platform",
-      description: "Enterprise-grade security ensures your data and your customers' information stays protected."
+      description:
+        "Enterprise-grade security ensures your data and your customers' information stays protected.",
     },
     {
       icon: ChartBar,
       title: "Detailed Analytics",
-      description: "Gain insights into your business performance with comprehensive reporting tools."
+      description:
+        "Gain insights into your business performance with comprehensive reporting tools.",
     },
     {
       icon: Settings,
       title: "Customizable",
-      description: "Tailor the platform to match your brand and specific business requirements."
+      description:
+        "Tailor the platform to match your brand and specific business requirements.",
     },
     {
       icon: Zap,
       title: "Integration Ready",
-      description: "Connects with your existing tools including Google Calendar, Outlook, and CRM systems."
-    }
+      description:
+        "Connects with your existing tools including Google Calendar, Outlook, and CRM systems.",
+    },
   ];
 
   // Data for values section
@@ -74,18 +107,21 @@ const Home = () => {
     {
       icon: CheckCircle,
       title: "Customer Success",
-      description: "We're dedicated to helping your business thrive with our tools and support."
+      description:
+        "We're dedicated to helping your business thrive with our tools and support.",
     },
     {
       icon: Shield,
       title: "Reliability",
-      description: "Built with enterprise-grade security and 99.9% uptime for businesses of all sizes."
+      description:
+        "Built with enterprise-grade security and 99.9% uptime for businesses of all sizes.",
     },
     {
       icon: Award,
       title: "Innovation",
-      description: "Constantly evolving our platform with the latest technologies and best practices."
-    }
+      description:
+        "Constantly evolving our platform with the latest technologies and best practices.",
+    },
   ];
 
   // Data for steps section
@@ -93,24 +129,25 @@ const Home = () => {
     {
       icon: Settings,
       title: "Setup Your Account",
-      description: "Create your profile, customize your booking preferences, and set your availability in minutes."
+      description:
+        "Create your profile, customize your booking preferences, and set your availability in minutes.",
     },
     {
       icon: Calendar,
       title: "Share Your Booking Link",
-      description: "Add your personalized booking page to your website or share directly with customers."
+      description:
+        "Add your personalized booking page to your website or share directly with customers.",
     },
     {
       icon: CheckCircle,
       title: "Start Accepting Bookings",
-      description: "Watch as appointments automatically flow into your calendar with zero double-bookings."
-    }
+      description:
+        "Watch as appointments automatically flow into your calendar with zero double-bookings.",
+    },
   ];
 
   return (
     <div className="container">
-      
-
       {/* Main Content */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -118,79 +155,80 @@ const Home = () => {
         exit={{ opacity: 0 }}
         className="main"
       >
-       {/* Hero Section */}
-<div className="hero">
-  <video className="hero-video" autoPlay loop muted playsInline>
-    <source src={video} type="video/mp4" />
-  </video>
-  <div className="hero-overlay"></div>
-  <div className="wrapper padded">
-    <motion.div
-      initial={{ y: 20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ delay: 0.2 }}
-      className="center"
-    >
-      <span className="badge">
-        Revolutionizing Time Management
-      </span>
-      <h1 className="title">
-        Smart Scheduling for<br />Modern Businesses
-      </h1>
-      <p className="subtitle">
-        Transform your business operations with SlotZi's intelligent reservation platform.
-        Streamline bookings, reduce no-shows, and delight your customers.
-      </p>
-      <div className="buttons">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="secondary"
-          onClick={handleRegisterClick}
-        >
-          <Users className="icon" />
-          Register Business
-          <ArrowRight className="icon" />
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="secondary"
-          onClick={handleJoinClick}
-        >
-          <Building2 className="icon" />
-          Join Business
-          <ArrowRight className="icon" />
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="tertiary"
-          onClick={handleManageClick}
-        >
-          <HelpCircle className="icon" />
-          Manage Business
-          <ArrowRight className="icon" />
-        </motion.button>
-      </div>
-      <div className="stats">
-        {stats.map((stat, index) => (
-          <motion.div
-            key={index}
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4 + index * 0.1 }}
-            className="card"
-          >
-            <stat.icon className="staticon" />
-            <h3 className="statvalue">{stat.value}</h3>
-            <p className="statlabel">{stat.label}</p>
-          </motion.div>
-        ))}
-      </div>
-    </motion.div>
-  </div>
-</div>
+        {/* Hero Section */}
+        <div className="hero">
+          <video className="hero-video" autoPlay loop muted playsInline>
+            <source src={video} type="video/mp4" />
+          </video>
+          <div className="hero-overlay"></div>
+          <div className="wrapper padded">
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="center"
+            >
+              <span className="badge">Revolutionizing Time Management</span>
+              <h1 className="title">
+                Smart Scheduling for
+                <br />
+                Modern Businesses
+              </h1>
+              <p className="subtitle">
+                Transform your business operations with SlotZi&apos;s
+                intelligent reservation platform. Streamline bookings, reduce
+                no-shows, and delight your customers.
+              </p>
+              <div className="buttons">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="secondary"
+                  onClick={() => handleNavigation("/business-registration")}
+                >
+                  <Users className="icon" />
+                  Register Business
+                  <ArrowRight className="icon" />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="secondary"
+                  onClick={() => handleNavigation("/business-join")}
+                >
+                  <Building2 className="icon" />
+                  Join Business
+                  <ArrowRight className="icon" />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="tertiary"
+                  onClick={() => handleNavigation("/manage-business")}
+                >
+                  <HelpCircle className="icon" />
+                  Manage Business
+                  <ArrowRight className="icon" />
+                </motion.button>
+              </div>
+              <div className="stats">
+                {stats.map((stat, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.4 + index * 0.1 }}
+                    className="card"
+                  >
+                    <stat.icon className="staticon" />
+                    <h3 className="statvalue">{stat.value}</h3>
+                    <p className="statlabel">{stat.label}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </div>
 
         {/* Features Section */}
         <div className="features">
@@ -201,15 +239,12 @@ const Home = () => {
               viewport={{ once: true }}
               className="center"
             >
-              <span className="badge">
-                Why Choose SlotZi
-              </span>
-              <h2 className="heading">
-                Everything You Need to Succeed
-              </h2>
+              <span className="badge">Why Choose SlotZi</span>
+              <h2 className="heading">Everything You Need to Succeed</h2>
               <p className="text">
-                Experience the future of business reservations with our comprehensive platform 
-                designed to help your business thrive in the digital age.
+                Experience the future of business reservations with our
+                comprehensive platform designed to help your business thrive in
+                the digital age.
               </p>
             </motion.div>
 
@@ -245,8 +280,9 @@ const Home = () => {
                 ))}
               </div>
               <p className="quote">
-                "SlotZi has transformed how we handle appointments. Our no-show rate dropped by 60%, 
-                and customer satisfaction is at an all-time high!"
+                &quot;SlotZi has transformed how we handle appointments. Our
+                no-show rate dropped by 60%, and customer satisfaction is at an
+                all-time high!&quot;
               </p>
               <div className="author">
                 <h4 className="name">Sarah Johnson</h4>
@@ -265,11 +301,10 @@ const Home = () => {
               viewport={{ once: true }}
               className="center"
             >
-              <h2 className="ctaheading">
-                Ready to Transform Your Business?
-              </h2>
+              <h2 className="ctaheading">Ready to Transform Your Business?</h2>
               <p className="ctasubtext">
-                Join thousands of businesses already using SlotZi to streamline their operations.
+                Join thousands of businesses already using SlotZi to streamline
+                their operations.
               </p>
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -282,7 +317,7 @@ const Home = () => {
             </motion.div>
           </div>
         </div>
-        
+
         {/* Subscription Plans Section */}
         <div className="subscription">
           <div className="wrapper">
@@ -292,15 +327,11 @@ const Home = () => {
               viewport={{ once: true }}
               className="center"
             >
-              <span className="badge">
-                Pick Your Plan
-              </span>
-              <h2 className="heading">
-                Simple Pricing for Every Business
-              </h2>
+              <span className="badge">Pick Your Plan</span>
+              <h2 className="heading">Simple Pricing for Every Business</h2>
               <p className="subheading">
-                Choose the plan that works best for your business needs.
-                No hidden fees, cancel anytime.
+                Choose the plan that works best for your business needs. No
+                hidden fees, cancel anytime.
               </p>
             </motion.div>
 
@@ -322,7 +353,8 @@ const Home = () => {
                   <span className="period">/month</span>
                 </div>
                 <p className="planDescription">
-                  Perfect for individuals or small businesses just getting started.
+                  Perfect for individuals or small businesses just getting
+                  started.
                 </p>
                 <ul className="planFeatures">
                   <li>
@@ -346,7 +378,7 @@ const Home = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="planButton"
-                  onClick={handleRegisterClick}
+                  onClick={() => handleNavigation("/business-registration")}
                 >
                   Get Started
                   <ArrowRight className="icon" />
@@ -393,13 +425,12 @@ const Home = () => {
                     <CheckCircle className="featureIcon" />
                     <span>Priority support</span>
                   </li>
-                
                 </ul>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="planButton"
-                  onClick={handleRegisterClick}
+                  onClick={() => handleNavigation("/business-registration")}
                 >
                   Start Monthly
                   <ArrowRight className="icon" />
@@ -426,7 +457,8 @@ const Home = () => {
                   <span>Save Rs.</span>789
                 </div>
                 <p className="planDescription">
-                  Complete solution for established businesses and organizations.
+                  Complete solution for established businesses and
+                  organizations.
                 </p>
                 <ul className="planFeatures">
                   <li>
@@ -449,13 +481,12 @@ const Home = () => {
                     <CheckCircle className="featureIcon" />
                     <span>Star points earned</span>
                   </li>
-                  
                 </ul>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="planButton"
-                  onClick={handleRegisterClick}
+                  onClick={() => handleNavigation("/business-registration")}
                 >
                   Start Yearly
                   <ArrowRight className="icon" />
@@ -471,7 +502,10 @@ const Home = () => {
               className="enterpriseOffer"
             >
               <h3>Need a Custom Solution?</h3>
-              <p>Contact our sales team for a tailored enterprise package that fits your specific needs.</p>
+              <p>
+                Contact our sales team for a tailored enterprise package that
+                fits your specific needs.
+              </p>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -495,7 +529,9 @@ const Home = () => {
             >
               <h1 className="heading">About SlotZi</h1>
               <p className="subheading">
-                We're revolutionizing the way businesses handle reservations, making it simpler and more efficient for everyone involved.
+                We&apos;re revolutionizing the way businesses handle
+                reservations, making it simpler and more efficient for everyone
+                involved.
               </p>
             </motion.div>
 
@@ -525,7 +561,10 @@ const Home = () => {
             >
               <h2 className="missiontitle">Our Mission</h2>
               <p className="missiontext">
-                To empower businesses with innovative scheduling solutions that save time, reduce complexity, and enhance the customer experience. We believe in making reservation management accessible, efficient, and stress-free for everyone.
+                To empower businesses with innovative scheduling solutions that
+                save time, reduce complexity, and enhance the customer
+                experience. We believe in making reservation management
+                accessible, efficient, and stress-free for everyone.
               </p>
             </motion.div>
           </div>
@@ -534,18 +573,16 @@ const Home = () => {
         {/* How It Works Section */}
         <div className="howworks">
           <div className="wrapper">
-
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               className="center"
             >
-              <span className="badge">
-                Simple & Efficient
-              </span>
+              <span className="badge">Simple & Efficient</span>
               <h1 className="heading">How SlotZi Works</h1>
               <p className="subheading">
-                Discover how our platform streamlines your business scheduling in three simple steps
+                Discover how our platform streamlines your business scheduling
+                in three simple steps
               </p>
             </motion.div>
           </div>
@@ -571,9 +608,7 @@ const Home = () => {
                     <h3 className="steptitle">{step.title}</h3>
                     <p className="stepdesc">{step.description}</p>
                   </div>
-                  {index < steps.length - 1 && (
-                    <div className="connector" />
-                  )}
+                  {index < steps.length - 1 && <div className="connector" />}
                 </motion.div>
               ))}
             </div>
@@ -591,7 +626,8 @@ const Home = () => {
             >
               <h1 className="heading">Contact Us</h1>
               <p className="subheading">
-                Have questions? We're here to help. Reach out to our team and we'll get back to you as soon as possible.
+                Have questions? We&apos;re here to help. Reach out to our team
+                and we&apos;ll get back to you as soon as possible.
               </p>
             </motion.div>
 
@@ -605,7 +641,9 @@ const Home = () => {
                 <h2 className="formtitle">Get in Touch</h2>
                 <form className="form">
                   <div className="field">
-                    <label htmlFor="name" className="label">Full Name</label>
+                    <label htmlFor="name" className="label">
+                      Full Name
+                    </label>
                     <input
                       type="text"
                       id="name"
@@ -614,7 +652,9 @@ const Home = () => {
                     />
                   </div>
                   <div className="field">
-                    <label htmlFor="email" className="label">Email Address</label>
+                    <label htmlFor="email" className="label">
+                      Email Address
+                    </label>
                     <input
                       type="email"
                       id="email"
@@ -623,7 +663,9 @@ const Home = () => {
                     />
                   </div>
                   <div className="field">
-                    <label htmlFor="message" className="label">Message</label>
+                    <label htmlFor="message" className="label">
+                      Message
+                    </label>
                     <textarea
                       id="message"
                       rows="4"
@@ -668,21 +710,34 @@ const Home = () => {
                   <div className="infoitem">
                     <MapPin className="infoicon" />
                     <div>
-                    <h3 className="itemtitle">Location</h3>
-                      <p className="itemtext">IIT CIty Offcie<br />Galle Road, Colombo</p>
+                      <h3 className="itemtitle">Location</h3>
+                      <p className="itemtext">
+                        IIT CIty Offcie
+                        <br />
+                        Galle Road, Colombo
+                      </p>
                     </div>
                   </div>
                 </div>
                 <div className="social">
                   <h3 className="socialtitle">Follow Us</h3>
                   <div className="socialicons">
-                    <a href="https://www.instagram.com/slot_zi?igsh=aDIxa3hjbjlzcHo0&utm_source=qr" className="sociallink">
+                    <a
+                      href="https://www.instagram.com/slot_zi?igsh=aDIxa3hjbjlzcHo0&utm_source=qr"
+                      className="sociallink"
+                    >
                       <Facebook className="socialicon" />
                     </a>
-                    <a href="https://www.instagram.com/slot_zi?igsh=aDIxa3hjbjlzcHo0&utm_source=qr" className="sociallink">
+                    <a
+                      href="https://www.instagram.com/slot_zi?igsh=aDIxa3hjbjlzcHo0&utm_source=qr"
+                      className="sociallink"
+                    >
                       <Twitter className="socialicon" />
                     </a>
-                    <a href="https://www.instagram.com/slot_zi?igsh=aDIxa3hjbjlzcHo0&utm_source=qr" className="sociallink">
+                    <a
+                      href="https://www.instagram.com/slot_zi?igsh=aDIxa3hjbjlzcHo0&utm_source=qr"
+                      className="sociallink"
+                    >
                       <Instagram className="socialicon" />
                     </a>
                   </div>
@@ -698,15 +753,26 @@ const Home = () => {
             <div className="footergrid">
               <div className="footercol">
                 <h3 className="footertitle">SlotZi</h3>
-                <p className="footertext">The intelligent scheduling platform for modern businesses.</p>
+                <p className="footertext">
+                  The intelligent scheduling platform for modern businesses.
+                </p>
                 <div className="footersocial">
-                  <a href="https://www.instagram.com/slot_zi?igsh=aDIxa3hjbjlzcHo0&utm_source=qr" className="footerlink">
+                  <a
+                    href="https://www.instagram.com/slot_zi?igsh=aDIxa3hjbjlzcHo0&utm_source=qr"
+                    className="footerlink"
+                  >
                     <Facebook className="footericon" />
                   </a>
-                  <a href="https://www.instagram.com/slot_zi?igsh=aDIxa3hjbjlzcHo0&utm_source=qr" className="footerlink">
+                  <a
+                    href="https://www.instagram.com/slot_zi?igsh=aDIxa3hjbjlzcHo0&utm_source=qr"
+                    className="footerlink"
+                  >
                     <Twitter className="footericon" />
                   </a>
-                  <a href="https://www.instagram.com/slot_zi?igsh=aDIxa3hjbjlzcHo0&utm_source=qr" className="footerlink">
+                  <a
+                    href="https://www.instagram.com/slot_zi?igsh=aDIxa3hjbjlzcHo0&utm_source=qr"
+                    className="footerlink"
+                  >
                     <Instagram className="footericon" />
                   </a>
                 </div>
@@ -714,33 +780,83 @@ const Home = () => {
               <div className="footercol">
                 <h3 className="footertitle">Product</h3>
                 <ul className="footermenu">
-                  <li><Link to="/features" className="footerlink">Features</Link></li>
-                  <li><Link to="/pricing" className="footerlink">Pricing</Link></li>
-                  <li><Link to="/testimonials" className="footerlink">Testimonials</Link></li>
-                  <li><Link to="/integrations" className="footerlink">Integrations</Link></li>
+                  <li>
+                    <Link to="/features" className="footerlink">
+                      Features
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/pricing" className="footerlink">
+                      Pricing
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/testimonials" className="footerlink">
+                      Testimonials
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/integrations" className="footerlink">
+                      Integrations
+                    </Link>
+                  </li>
                 </ul>
               </div>
               <div className="footercol">
                 <h3 className="footertitle">Company</h3>
                 <ul className="footermenu">
-                  <li><Link to="/about" className="footerlink">About Us</Link></li>
-                  <li><Link to="/careers" className="footerlink">Careers</Link></li>
-                  <li><Link to="/blog" className="footerlink">Blog</Link></li>
-                  <li><Link to="/customer-support" className="footerlink">Contact</Link></li>
+                  <li>
+                    <Link to="/about" className="footerlink">
+                      About Us
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/careers" className="footerlink">
+                      Careers
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/blog" className="footerlink">
+                      Blog
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/customer-support" className="footerlink">
+                      Contact
+                    </Link>
+                  </li>
                 </ul>
               </div>
               <div className="footercol">
                 <h3 className="footertitle">Support</h3>
                 <ul className="footermenu">
-                  <li><Link to="/customer-support" className="footerlink">Help Center</Link></li>
-                  <li><Link to="/faq" className="footerlink">FAQ</Link></li>
-                  <li><Link to="/privacy" className="footerlink">Privacy Policy</Link></li>
-                  <li><Link to="/terms" className="footerlink">Terms of Service</Link></li>
+                  <li>
+                    <Link to="/customer-support" className="footerlink">
+                      Help Center
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/faq" className="footerlink">
+                      FAQ
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/privacy" className="footerlink">
+                      Privacy Policy
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/terms" className="footerlink">
+                      Terms of Service
+                    </Link>
+                  </li>
                 </ul>
               </div>
             </div>
             <div className="copyright">
-              <p className="copyrighttext">© {new Date().getFullYear()} SlotZi. All rights reserved.</p>
+              <p className="copyrighttext">
+                © {new Date().getFullYear()} SlotZi. All rights reserved.
+              </p>
             </div>
           </div>
         </footer>

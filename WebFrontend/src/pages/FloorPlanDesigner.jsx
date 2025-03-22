@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../style/FloorPlan.css";
 import { AnimatePresence, motion } from "framer-motion";
@@ -10,14 +11,22 @@ import FloorPlanStep3 from "./FloorPlanStep3";
 import FloorPlanWaiting from "./FloorPlanWaiting";
 import FloorPlanSuccess from "./FloorPlanSuccess";
 import FloorPlanFaliure from "./FloorPlanFaliure";
-// import { useSession } from "next-auth/react";
 
 function FloorPlanDesigner() {
+  const navigate = useNavigate();
+  const [businessId, setBusinessId] = useState();
+  useEffect(() => {
+    const user = JSON.parse(sessionStorage.getItem("user"));
+    const business = JSON.parse(sessionStorage.getItem("business"));
+    if (!user || !business) {
+      navigate("/");
+    }
+    setBusinessId(business.id);
+  }, [navigate]);
+
   const [currentStep, setCurrentStep] = useState(1);
-  // Dimensions in meters (or the original units from step 1)
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
-  // Canvas dimensions (calculated once using width and height)
   const [canvasWidth, setCanvasWidth] = useState(0);
   const [canvasHeight, setCanvasHeight] = useState(0);
   const [floorCount, setFloorCount] = useState(0);
@@ -25,14 +34,12 @@ function FloorPlanDesigner() {
   const [floorNames, setFloorNames] = useState([]);
   const [floorShapes, setFloorShapes] = useState([]);
   const [floorTables, setFloorTables] = useState([]);
-  const [direction, setDirection] = useState(1); // 1: next, -1: back
+  const [direction, setDirection] = useState(1);
   const [backendSuccess, setBackendSuccess] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [saveError, setSaveError] = useState(null);
-  // State to control custom transition types
   const [transitionType, setTransitionType] = useState("default");
 
-  // Animation variants based on direction and transitionType
   const variants = {
     enter: ({ direction, transitionType }) => {
       if (
@@ -83,11 +90,6 @@ function FloorPlanDesigner() {
     },
   };
 
-  // const { data: session } = useSession();
-  // const businessId = session?.business_id;
-  const businessId = 20;
-
-  // Modified changeStep to optionally set a custom transition type and include a small delay.
   const changeStep = (newStep, customTransitionType = null) => {
     setDirection(newStep > currentStep ? 1 : -1);
     if (customTransitionType) {
@@ -110,7 +112,6 @@ function FloorPlanDesigner() {
     floorCountValue,
     names
   ) => {
-    // Initialize or adjust floor shapes and tables
     if (floorShapes.length === 0) {
       const newFloorShapes = Array.from({ length: floorCountValue }, () => []);
       const newFloorTables = Array.from({ length: floorCountValue }, () => []);
@@ -132,11 +133,9 @@ function FloorPlanDesigner() {
       }
     }
 
-    // Save the original dimensions (in meters) if needed
     setWidth(widthValue);
     setHeight(heightValue);
 
-    // Calculate canvas dimensions here in FloorPlanDesigner
     const SIZE = 1000;
     const aspectRatio = widthValue / heightValue;
     const computedCanvasWidth = aspectRatio >= 1 ? SIZE : SIZE * aspectRatio;
@@ -178,7 +177,6 @@ function FloorPlanDesigner() {
         floor: table.floor,
       }));
 
-      // Use the computed canvasWidth and canvasHeight from state
       const payload = {
         business_id: businessId,
         canvas_width: canvasWidth,
@@ -187,22 +185,15 @@ function FloorPlanDesigner() {
         tables: tablesPayload,
       };
 
-      console.log("Payload:", JSON.stringify(payload, null, 2));
-
       setIsLoading(true);
       setSaveError(null);
 
-      // Record the start time
       const startTime = Date.now();
 
       try {
-        const response = await axios.post(
-          `api/floor-plan/create`,
-          payload
-        );
+        const response = await axios.post(`api/floor-plan/create`, payload);
         console.log("Floor plan saved successfully", response.data);
 
-        // Ensure a minimum of 3 seconds delay
         const elapsed = Date.now() - startTime;
         if (elapsed < 3000) {
           await new Promise((resolve) => setTimeout(resolve, 3000 - elapsed));
@@ -262,7 +253,6 @@ function FloorPlanDesigner() {
     setFloorTables(updated);
   };
 
-  // Render floor buttons (only when not on step 1)
   const renderFloorButtons = () => {
     return (
       <div
@@ -302,13 +292,7 @@ function FloorPlanDesigner() {
     }
 
     if (currentStep === 4) {
-      return (
-        <FloorPlanSuccess
-          goToDashboard={() => {
-            /* Redirect or reset state as needed */
-          }}
-        />
-      );
+      return <FloorPlanSuccess businessId={businessId} />;
     }
 
     switch (currentStep) {
@@ -336,7 +320,6 @@ function FloorPlanDesigner() {
                 }));
                 setFloorShapes(updated);
               }}
-              // Pass the calculated canvas dimensions instead of the raw width/height
               canvasWidth={canvasWidth}
               canvasHeight={canvasHeight}
             />
@@ -362,7 +345,6 @@ function FloorPlanDesigner() {
     }
   };
 
-  // Helper function to generate a unique key for motion.
   const getStepKey = () => {
     if (isLoading) return 4;
     if (currentStep >= 4) {

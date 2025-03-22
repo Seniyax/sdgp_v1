@@ -1,22 +1,33 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+/* eslint-disable no-unused-vars */
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import "../style/SignUp.css";
 
 const SignUp = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const user = JSON.parse(sessionStorage.getItem("user"));
+    if (user) {
+      navigate("/");
+    }
+  }, [navigate]);
+
   const [formData, setFormData] = useState({
-    fullName: '',
-    nic: '',
-    email: '',
-    address: '',
-    contactNumber: '',
-    username: '',
-    password: '',
-    confirmPassword: '',
+    fullName: "",
+    nic: "",
+    email: "",
+    address: "",
+    contactNumber: "",
+    username: "",
+    password: "",
+    confirmPassword: "",
   });
-  
+
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -28,12 +39,17 @@ const SignUp = () => {
 
   const nextStep = () => {
     if (currentStep === 1) {
-      if (!formData.fullName || !formData.nic || !formData.email || !formData.address) {
-        setError('Please fill in all required fields');
+      if (
+        !formData.fullName ||
+        !formData.nic ||
+        !formData.email ||
+        !formData.address
+      ) {
+        setError("Please fill in all required fields");
         return;
       }
     }
-    setError('');
+    setError("");
     setCurrentStep(currentStep + 1);
   };
 
@@ -41,23 +57,40 @@ const SignUp = () => {
     setCurrentStep(currentStep - 1);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords don't match");
       return;
     }
-    
+
     setIsLoading(true);
-    setError('');
-    
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Signup successful', formData);
-      // Add your actual signup logic here
+    setError("");
+
+    const payload = {
+      name: formData.fullName,
+      nic: formData.nic,
+      email: formData.email,
+      address: formData.address,
+      contact: formData.contactNumber,
+      username: formData.username,
+      password: formData.password,
+      confirm_password: formData.confirmPassword,
+    };
+
+    try {
+      const response = await axios.post("api/user/sign-up", payload);
+      if (response.data.success) {
+        console.log("Signup successful", response.data);
+        navigate("/sign-in");
+      }
+    } catch (err) {
+      console.error("Signup error", err);
+      setError("An error occurred during signup. Please try again.");
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const renderStep1 = () => (
@@ -77,7 +110,7 @@ const SignUp = () => {
           />
         </div>
       </div>
-      
+
       <div className="form-group">
         <label htmlFor="nic">NIC</label>
         <div className="input-container">
@@ -93,7 +126,7 @@ const SignUp = () => {
           />
         </div>
       </div>
-      
+
       <div className="form-group">
         <label htmlFor="email">Email</label>
         <div className="input-container">
@@ -109,7 +142,7 @@ const SignUp = () => {
           />
         </div>
       </div>
-      
+
       <div className="form-group">
         <label htmlFor="address">Address</label>
         <div className="input-container">
@@ -144,7 +177,7 @@ const SignUp = () => {
           />
         </div>
       </div>
-      
+
       <div className="form-group">
         <label htmlFor="username">Username</label>
         <div className="input-container">
@@ -160,7 +193,7 @@ const SignUp = () => {
           />
         </div>
       </div>
-      
+
       <div className="form-group">
         <label htmlFor="password">Password</label>
         <div className="input-container">
@@ -176,7 +209,7 @@ const SignUp = () => {
           />
         </div>
       </div>
-      
+
       <div className="form-group">
         <label htmlFor="confirmPassword">Confirm Password</label>
         <div className="input-container">
@@ -203,51 +236,53 @@ const SignUp = () => {
             <h2>Create Account</h2>
             <p>Step {currentStep} of 2</p>
             <div className="progress-bar">
-              <div 
-                className="progress" 
-                style={{ width: currentStep === 1 ? '50%' : '100%' }}
+              <div
+                className="progress"
+                style={{ width: currentStep === 1 ? "50%" : "100%" }}
               ></div>
             </div>
           </div>
-          
+
           {error && <div className="error-message">{error}</div>}
-          
+
           <form onSubmit={handleSubmit} className="signup-form">
             {currentStep === 1 ? renderStep1() : renderStep2()}
-            
+
             <div className="form-buttons">
               {currentStep > 1 && (
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="back-button"
                   onClick={prevStep}
                 >
                   Back
                 </button>
               )}
-              
+
               {currentStep < 2 ? (
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="next-button"
                   onClick={nextStep}
                 >
                   Next
                 </button>
               ) : (
-                <button 
-                  type="submit" 
-                  className={`signup-button ${isLoading ? 'loading' : ''}`}
+                <button
+                  type="submit"
+                  className={`signup-button ${isLoading ? "loading" : ""}`}
                   disabled={isLoading}
                 >
-                  {isLoading ? 'Creating Account...' : 'Sign Up'}
+                  {isLoading ? "Creating Account..." : "Sign Up"}
                 </button>
               )}
             </div>
           </form>
-          
+
           <div className="signin-link">
-            <p>Already have an account? <Link to="/signin">Sign In</Link></p>
+            <p>
+              Already have an account? <Link to="/sign-in">Sign In</Link>
+            </p>
           </div>
         </div>
       </div>

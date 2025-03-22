@@ -1,49 +1,112 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+/* eslint-disable no-unused-vars */
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "../style/ManageBusiness.css";
+import axios from "axios";
+import Swal from "sweetalert2";
 
 const ManageBusiness = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
   const [businesses, setBusinesses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // Mock data - replace with actual API call
+  // Check for user and redirect if not valid
   useEffect(() => {
-    // Simulate API fetch
-    setTimeout(() => {
-      setBusinesses([
-        { id: 1, name: "Coastal Cafe", type: "Restaurant", role: "Owner"},
-        { id: 2, name: "Blue Ocean Spa", type: "Wellness", role: "Manager" },
-        { id: 3, name: "Mountain Retreat", type: "Accommodation", role: "Owner" },
-        { id: 4, name: "City Fitness", type: "Gym", role: "Admin" },
-        { id: 5, name: "Tech Coworking", type: "Office Space", role: "Manager" },
-      ]);
-      setIsLoading(false);
-    }, 800);
-  }, []);
+    const user = JSON.parse(sessionStorage.getItem("user"));
+    if (!user) {
+      navigate("/sign-in");
+    } else if (!user.is_verified) {
+      Swal.fire({
+        title: "Not Signed In",
+        text: "Please confirm your user email and sign in again.",
+        icon: "warning",
+        confirmButtonText: "Okay",
+      }).then(() => {
+        navigate("/sign-in");
+      });
+    } else {
+      setUser(user);
+    }
+  }, [navigate]);
 
-  const filteredBusinesses = businesses.filter(business => 
-    business.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    business.type.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Fetch businesses from the API once the user is set
+  useEffect(() => {
+    if (!user) return; // Wait until user is available
+    const fetchBusinesses = async () => {
+      try {
+        setIsLoading(true);
+        // Send username in the POST request payload
+        const response = await axios.post(
+          "api/business-user-relation/get-businesses",
+          { username: user.username }
+        );
+        if (response.data.success) {
+          setBusinesses(response.data.data);
+        } else {
+          throw new Error(
+            response.data.message || "Failed to fetch businesses"
+          );
+        }
+        setIsLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setIsLoading(false);
+      }
+    };
 
-  const handleNavigateToDashboard = (businessId) => {
-    navigate(`/dashboard/${businessId}`);
+    fetchBusinesses();
+  }, [user]);
+
+  // Filter businesses based on search term
+  const filteredBusinesses = businesses.filter((businessRelation) => {
+    const businessName = businessRelation.business.name;
+    return (
+      businessName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      businessRelation.type.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
+
+  const handleNavigateToBusinessDashboard = (businessId) => {
+    navigate(`/business-dashboard/${businessId}`);
   };
 
+  const handleNavigateToReservationDashboard = (businessId) => {
+    navigate(`/reservation-dashboard/${businessId}`);
+  };
 
   const handleRegisterBusiness = () => {
-    navigate('/business-registration');
+    navigate("/business-registration");
   };
 
   const handleJoinBusiness = () => {
-    navigate('/business-join');
+    navigate("/business-join");
   };
 
   const handleViewAccount = () => {
-    navigate('/account');
+    navigate("/user-profile");
   };
+
+  if (isLoading) {
+    return (
+      <div className="manage-business-container loading">
+        <div className="loading-spinner"></div>
+        <p>Loading businesses...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="manage-business-container error">
+        <h2>Oops! Something went wrong</h2>
+        <p>{error}</p>
+        <button onClick={() => window.location.reload()}>Try Again</button>
+      </div>
+    );
+  }
 
   return (
     <div className="manage-business-container">
@@ -61,7 +124,10 @@ const ManageBusiness = () => {
       </div>
 
       <div className="action-buttons">
-        <button onClick={handleRegisterBusiness} className="action-button register">
+        <button
+          onClick={handleRegisterBusiness}
+          className="action-button register"
+        >
           <i className="fas fa-file-signature"></i> Register
         </button>
         <button onClick={handleJoinBusiness} className="action-button join">
@@ -73,40 +139,42 @@ const ManageBusiness = () => {
       </div>
 
       <div className="businesses-table-container">
-        {isLoading ? (
-          <div className="loading-spinner">
-            
-          </div>
-        ) : filteredBusinesses.length > 0 ? (
+        {filteredBusinesses.length > 0 ? (
           <table className="businesses-table">
             <thead>
               <tr>
                 <th>Business Name</th>
-                <th>Type</th>
-                <th>Your Role</th>
+                <th>Relation</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredBusinesses.map((business) => (
-                <tr key={business.id}>
-                  <td>{business.name}</td>
-                  <td>{business.type}</td>
-                  <td>{business.role}</td>
+              {filteredBusinesses.map((relation) => (
+                <tr key={relation.id}>
+                  <td>{relation.business.name}</td>
+                  <td>{relation.type}</td>
                   <td className="actions-cell">
-                    <button 
-                      onClick={() => handleNavigateToDashboard(business.id)}
+                    <button
+                      onClick={() =>
+                        handleNavigateToReservationDashboard(relation.business_id)
+                      }
                       className="dashboard-button"
                       title="Go to Dashboard"
                     >
                       <i className="fas fa-tachometer-alt"></i> Dashboard
                     </button>
-                    <button className="edit-button" title="Edit Business">
-                      <i className="fas fa-edit"></i>
-                    </button>
-                    <button className="settings-button" title="Business Settings">
-                      <i className="fas fa-cog"></i>
-                    </button>
+                    {(relation.type.toLowerCase() === "owner" ||
+                      relation.type.toLowerCase() === "admin") && (
+                      <button
+                        onClick={() =>
+                          handleNavigateToBusinessDashboard(relation.business_id)
+                        }
+                        className="details-button"
+                        title="View Business Details"
+                      >
+                        View Business Details
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -117,7 +185,10 @@ const ManageBusiness = () => {
             <i className="fas fa-search"></i>
             <h3>No businesses found</h3>
             <p>Try adjusting your search or create a new business</p>
-            <button onClick={handleCreateBusiness} className="create-new-button">
+            <button
+              onClick={handleRegisterBusiness}
+              className="create-new-button"
+            >
               Create New Business
             </button>
           </div>
@@ -127,9 +198,15 @@ const ManageBusiness = () => {
       <div className="quick-help">
         <h3>Need Help?</h3>
         <div className="help-links">
-          <a href="/help/create-business"><i className="fas fa-plus-circle"></i> How to create a business</a>
-          <a href="/help/join-business"><i className="fas fa-users"></i> How to join an existing business</a>
-          <a href="/help/business-settings"><i className="fas fa-sliders-h"></i> Managing business settings</a>
+          <a href="/help/create-business">
+            <i className="fas fa-plus-circle"></i> How to create a business
+          </a>
+          <a href="/help/join-business">
+            <i className="fas fa-users"></i> How to join an existing business
+          </a>
+          <a href="/help/business-settings">
+            <i className="fas fa-sliders-h"></i> Managing business settings
+          </a>
         </div>
       </div>
     </div>

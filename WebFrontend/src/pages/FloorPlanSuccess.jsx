@@ -1,13 +1,14 @@
 /* eslint-disable no-unused-vars */
+/* eslint-disable react/prop-types */
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "../style/FloorPlan.css";
 
-const FloorPlanSuccess = () => {
+const FloorPlanSuccess = ({ businessId }) => {
   const navigate = useNavigate();
 
-  const goToDashboard = () => {
-    navigate("/reservationDashboard");
+  const handleGoToDashboard = () => {
+    navigate(`/reservation-dashboard/${businessId}`);
   };
 
   return (
@@ -16,7 +17,7 @@ const FloorPlanSuccess = () => {
         <h1 className="display-4">Success!</h1>
         <p className="lead">Your floor plan was created successfully.</p>
       </div>
-      <button onClick={goToDashboard} className="btn btn-violet mt-4">
+      <button onClick={handleGoToDashboard} className="btn btn-violet mt-4">
         Go to Dashboard
       </button>
     </div>

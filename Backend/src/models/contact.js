@@ -15,15 +15,9 @@ async function getContacts(businessId) {
 }
 
 async function createContacts(businessId, contacts) {
-  contacts.forEach((contact) => {
-    const errorMessage = validateContact(contact);
-    if (errorMessage) {
-      throw new Error(errorMessage);
-    }
-  });
-
   const contactsToInsert = contacts.map((contact) => ({
-    number: contact,
+    number: contact.number,
+    type: contact.type,
     business_id: businessId,
   }));
   const { data, error } = await supabase

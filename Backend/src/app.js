@@ -23,8 +23,10 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+// Increase payload size limits
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 // Passport Initialization
 app.use(passport.initialize());
@@ -39,7 +41,7 @@ app.get("/health", (req, res) => {
 
 // API Routes
 app.use("/api/categories", categoryRoutes);
-app.use("/api/reservations", reservationRoutes);
+app.use("/api/reservation", reservationRoutes);
 app.use("/api/business", businessRoutes);
 app.use("/api/email", emailRoutes);
 app.use("/api/user", userRoutes);

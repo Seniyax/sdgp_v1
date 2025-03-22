@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, Clock, ArrowLeft } from 'lucide-react';
@@ -89,8 +90,8 @@ const Verification = () => {
           </div>
           
           <div className="verification-info">
-            <h3>What's happening?</h3>
-            <p>We're verifying the accuracy of your business information to ensure customers can find and engage with your business effectively.</p>
+            <h3>What&apos;s happening?</h3>
+            <p>We&apos;re verifying the accuracy of your business information to ensure customers can find and engage with your business effectively.</p>
             <p>This process typically takes just a moment to complete.</p>
           </div>
         </div>

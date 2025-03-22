@@ -10,18 +10,16 @@ const sectionVariants = {
 };
 
 const AddReservation = ({
-  onCancel, // Callback to cancel/resets the form (if needed)
-  onClearSelection, // New callback to clear the selected tables array
+  onCancel,
+  onClearSelection,
   selectedTables,
   onTableSelect,
-  socket, // Socket instance passed from the dashboard
-  defaultStartTime, // Default start time picked in the dashboard
-  defaultEndDate, // Default reservation date picked in the dashboard
+  socket,
+  defaultStartTime,
+  defaultEndDate,
 }) => {
-  // "status" can be "idle", "loading", or "success"
   const [status, setStatus] = useState("idle");
 
-  // Compute the total group size by adding seats from each table.
   const initialGroupSize = selectedTables.reduce(
     (sum, table) => sum + (table.seatCount || 0),
     0
@@ -38,7 +36,6 @@ const AddReservation = ({
     customer_number: "",
   });
 
-  // Update group size when selectedTables change.
   useEffect(() => {
     const computedGroupSize = selectedTables.reduce(
       (sum, table) => sum + (table.seatCount || 0),
@@ -79,12 +76,11 @@ const AddReservation = ({
     }
     setStatus("loading");
     try {
-      // Loop over each selected table sequentially.
       for (const table of selectedTables) {
         const payload = {
           business_id: formData.business_id,
           table_number: table.tableNumber || "",
-          customer_username: null, // Force customer_username to be null
+          customer_username: null,
           group_size: formData.group_size,
           slot_type: formData.slot_type,
           start_time: formData.start_time,
@@ -94,7 +90,6 @@ const AddReservation = ({
           status: "Active",
         };
 
-        // Wait for the socket response for this reservation.
         await new Promise((resolve, reject) => {
           socket.emit("createReservation", payload, (response) => {
             if (response && response.success) {
@@ -109,9 +104,7 @@ const AddReservation = ({
         });
       }
       console.log("Reservations created");
-      // Show success message
       setStatus("success");
-      // After 2 seconds, reset the form and clear selected tables
       setTimeout(() => {
         resetForm();
         if (typeof onClearSelection === "function") {
@@ -122,7 +115,6 @@ const AddReservation = ({
     } catch (error) {
       console.error("Error creating reservations:", error);
       alert("Failed to create reservation: " + error);
-      // Revert back to idle state to allow retry
       setStatus("idle");
     }
   };
@@ -148,7 +140,6 @@ const AddReservation = ({
             animate="visible"
             exit="exit"
           >
-            {/* Selected tables summary */}
             {selectedTables.length > 0 ? (
               <div className="mb-3">
                 <label className="form-label">Selected Tables</label>
@@ -182,9 +173,7 @@ const AddReservation = ({
               </div>
             )}
 
-            {/* Two-column layout */}
             <div className="row">
-              {/* Left Column */}
               <div className="col-md-6">
                 <div className="mb-3 position-relative">
                   <label htmlFor="start_time" className="form-label">
@@ -225,7 +214,6 @@ const AddReservation = ({
                   />
                 </div>
               </div>
-              {/* Right Column */}
               <div className="col-md-6">
                 <div className="mb-3">
                   <label htmlFor="slot_type" className="form-label">
@@ -273,7 +261,6 @@ const AddReservation = ({
                 </div>
               </div>
             </div>
-            {/* Action Buttons */}
             <div className="row">
               <div className="col d-flex justify-content-end">
                 <button type="submit" className="btn btn-violet me-2">

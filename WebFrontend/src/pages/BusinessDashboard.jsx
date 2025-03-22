@@ -1,194 +1,138 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+/* eslint-disable no-unused-vars */
+import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
 import {
   Building,
   MapPin,
   Phone,
   Mail,
   Globe,
-  Calendar,
   Clock,
-  Edit,
   Trash2,
-  ChevronDown,
-  ChevronUp,
-  Camera,
   Facebook,
   Instagram,
   Twitter,
-  AlertTriangle,
-  X,
-  CheckCircle,
   User,
   Briefcase,
-  CheckSquare
-} from 'lucide-react';
+} from "lucide-react";
+import Swal from "sweetalert2";
 import "../style/BusinessDashboard.css";
 
 const BusinessDashboard = () => {
+  const { businessId } = useParams();
   const navigate = useNavigate();
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showEditOptions, setShowEditOptions] = useState(false);
-  const [showSuccessToast, setShowSuccessToast] = useState(false);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [expandedSections, setExpandedSections] = useState({
-    details: true,
-    hours: true,
-    media: true,
-    reservations: true,
-    social: true,
-    contact: true
-  });
+  const [business, setBusiness] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock data - this would come from your API or state management
-  const [businessData, setBusinessData] = useState({
-    businessName: 'Coastal Breeze Spa & Salon',
-    category: 'Spa',
-    description: 'Luxury spa and salon services in a relaxing coastal atmosphere. We offer a variety of treatments including massages, facials, haircuts, styling, and nail services.',
-    address: '783 Ocean View Boulevard',
-    city: 'Santa Monica',
-    state: 'CA',
-    zipCode: '90401',
-    country: 'United States',
-    phone: '(310) 555-8732',
-    email: 'info@coastalbreezespa.com',
-    website: 'https://www.coastalbreezespa.com',
-    openingHours: {
-      monday: { open: '09:00', close: '19:00', closed: false },
-      tuesday: { open: '09:00', close: '19:00', closed: false },
-      wednesday: { open: '09:00', close: '19:00', closed: false },
-      thursday: { open: '09:00', close: '20:00', closed: false },
-      friday: { open: '09:00', close: '20:00', closed: false },
-      saturday: { open: '10:00', close: '18:00', closed: false },
-      sunday: { open: '10:00', close: '16:00', closed: false },
-    },
-    logo: '/sample-images/spa-logo.png',
-    coverImage: '/sample-images/spa-cover.jpg',
-    images: ['/sample-images/spa-1.jpg', '/sample-images/spa-2.jpg', '/sample-images/spa-3.jpg'],
-    reservationSlots: {
-      defaultDuration: 60,
-      capacity: 3,
-      advance: 14,
-    },
-    socialMedia: {
-      facebook: 'https://facebook.com/coastalbreezespa',
-      instagram: 'https://instagram.com/coastalbreezespa',
-      twitter: 'https://twitter.com/coastalbreezespa',
-    },
-    contactPerson: {
-      name: 'Jessica Wilson',
-      position: 'Spa Manager',
-      phone: '(310) 555-9241',
-      email: 'jessica@coastalbreezespa.com',
-    },
-  });
+  const fetchBusiness = useCallback(async () => {
+    try {
+      const response = await axios.post("/api/business/get-by-id", {
+        business_id: businessId,
+      });
+      if (response.data.success && response.data.data) {
+        const fetchedBusiness = response.data.data.business;
+        sessionStorage.setItem("business", JSON.stringify(fetchedBusiness));
+        setBusiness(fetchedBusiness);
+      } else {
+        setError(response.data.message || "Failed to fetch business data.");
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [businessId]);
 
-  const toggleSection = (section) => {
-    setExpandedSections({
-      ...expandedSections,
-      [section]: !expandedSections[section]
+  useEffect(() => {
+    if (businessId) {
+      fetchBusiness();
+    }
+  }, [businessId, fetchBusiness]);
+
+  // Check if user is logged in and business is loaded; otherwise, redirect to home.
+  useEffect(() => {
+    const user = JSON.parse(sessionStorage.getItem("user"));
+    if (!user || (!loading && !business)) {
+      navigate("/");
+    }
+  }, [navigate, business, loading]);
+
+  if (loading) {
+    return <div>Loading business data...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  // Destructure values from the fetched business.
+  const {
+    name,
+    description,
+    logo,
+    cover,
+    opening_hour,
+    closing_hour,
+    facebook_link,
+    instagram_link,
+    twitter_link,
+  } = business;
+
+  // Default images if logo/cover are missing.
+  const defaultLogo = "/default-logo.png";
+  const defaultCover = "/default-cover.jpg";
+
+  // Delete business handler
+  const handleDelete = () => {
+    Swal.fire({
+      title: "Delete Business?",
+      text: `Are you sure you want to delete ${name}? This action cannot be undone.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Delete Business",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await axios.delete("/api/business/delete", {
+            data: { business_id: businessId },
+          });
+          Swal.fire("Deleted!", "Business has been deleted.", "success");
+          setTimeout(() => {
+            navigate("/dashboard");
+          }, 3000);
+        } catch (err) {
+          Swal.fire(
+            "Error",
+            err.response?.data?.message || "Failed to delete business.",
+            "error"
+          );
+        }
+      }
     });
-  };
-
-  const handleEditClick = () => {
-    setShowEditOptions(!showEditOptions);
-  };
-
-  const handleDeleteClick = () => {
-    setShowDeleteModal(true);
-  };
-
-  const handleConfirmClick = () => {
-    setShowConfirmModal(true);
-  };
-
-  const handleCancelDelete = () => {
-    setShowDeleteModal(false);
-  };
-
-  const handleCancelConfirm = () => {
-    setShowConfirmModal(false);
-  };
-
-  const handleConfirmDelete = () => {
-    // Here you would call your API to delete the business
-    setShowDeleteModal(false);
-    // Show success toast then redirect after a delay
-    setShowSuccessToast(true);
-    setTimeout(() => {
-      navigate('/dashboard');
-    }, 3000);
-  };
-
-  const handleConfirmDetails = () => {
-    // Here you would call your API to confirm business details
-    setShowConfirmModal(false);
-    
-    // Navigate to verification.jsx page
-    navigate('/verification');
-  };
-
-  const handleEditBusiness = () => {
-    navigate('/edit-business');
-  };
-
-  const formatTime = (time) => {
-    if (!time) return '';
-    const [hours, minutes] = time.split(':');
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const formattedHour = hour % 12 || 12;
-    return `${formattedHour}:${minutes} ${ampm}`;
   };
 
   return (
     <div className="business-dashboard">
-      {/* Success Toast */}
-      {showSuccessToast && (
-        <div className="success-toast">
-          <CheckCircle className="success-icon" />
-          <p>Business successfully deleted</p>
-          <button className="close-toast" onClick={() => setShowSuccessToast(false)}>
-            <X size={20} />
-          </button>
-        </div>
-      )}
-
       {/* Header Section with Cover Image */}
-      <div className="dashboard-header" style={{ backgroundImage: `url(${businessData.coverImage})` }}>
+      <div
+        className="dashboard-header"
+        style={{ backgroundImage: `url(${cover || defaultCover})` }}
+      >
         <div className="header-overlay">
           <div className="business-logo">
-            <img src={businessData.logo} alt={`${businessData.businessName} logo`} />
+            <img src={logo || defaultLogo} alt={`${name} logo`} />
           </div>
           <div className="business-header-info">
-            <h1 className="business-name">{businessData.businessName}</h1>
-            <span className="business-category">
-              <Building size={16} className="icon" />
-              {businessData.category}
-            </span>
+            <h1 className="business-name">{name}</h1>
           </div>
         </div>
       </div>
 
-      {/* Dashboard Actions */}
+      {/* Only Delete Button */}
       <div className="dashboard-actions">
-        <div className="edit-dropdown">
-          <button className="btn btn-primary" onClick={handleEditClick}>
-            <Edit size={16} className="icon" /> Edit Business
-          </button>
-          {showEditOptions && (
-            <div className="edit-dropdown-content">
-              <button onClick={handleEditBusiness}>Edit All Information</button>
-              <button onClick={handleEditBusiness}>Edit Business Hours</button>
-              <button onClick={handleEditBusiness}>Edit Images</button>
-              <button onClick={handleEditBusiness}>Edit Contact Info</button>
-            </div>
-          )}
-        </div>
-        <button className="btn btn-secondary" onClick={handleConfirmClick}>
-          <CheckSquare size={16} className="icon" /> Confirm Details
-        </button>
-        <button className="btn btn-danger" onClick={handleDeleteClick}>
+        <button className="btn btn-danger" onClick={handleDelete}>
           <Trash2 size={16} className="icon" /> Delete Business
         </button>
       </div>
@@ -197,366 +141,165 @@ const BusinessDashboard = () => {
       <div className="dashboard-content">
         {/* Business Details Section */}
         <div className="dashboard-section">
-          <div 
-            className="section-header" 
-            onClick={() => toggleSection('details')}
-          >
+          <div className="section-header">
             <h2>
               <Building size={20} className="icon" /> Business Details
             </h2>
-            <button className="toggle-btn">
-              {expandedSections.details ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-            </button>
           </div>
-
-          {expandedSections.details && (
-            <div className="section-content">
-              <div className="info-grid">
-                <div className="info-item">
-                  <div className="info-label">
-                    Business Name
-                  </div>
-                  <div className="info-value">
-                    {businessData.businessName}
-                  </div>
-                </div>
-
-                <div className="info-item">
-                  <div className="info-label">
-                    Category
-                  </div>
-                  <div className="info-value">
-                    {businessData.category}
-                  </div>
-                </div>
-
-                <div className="info-item">
-                  <div className="info-label">
-                    Description
-                  </div>
-                  <div className="info-value">
-                    {businessData.description}
-                  </div>
+          <div className="section-content">
+            <div className="info-grid">
+              <div className="info-item">
+                <div className="info-label">Business Name</div>
+                <div className="info-value">{name}</div>
+              </div>
+              <div className="info-item">
+                <div className="info-label">Description</div>
+                <div className="info-value">
+                  {description || "No description provided."}
                 </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
 
         {/* Location & Contact Section */}
         <div className="dashboard-section">
-          <div 
-            className="section-header" 
-            onClick={() => toggleSection('contact')}
-          >
+          <div className="section-header">
             <h2>
               <MapPin size={20} className="icon" /> Location & Contact
             </h2>
-            <button className="toggle-btn">
-              {expandedSections.contact ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-            </button>
           </div>
-
-          {expandedSections.contact && (
-            <div className="section-content">
-              <div className="info-grid">
-                <div className="info-item">
-                  <div className="info-label">
-                    <MapPin size={16} className="icon" /> Address
-                  </div>
-                  <div className="info-value">
-                    {businessData.address}, {businessData.city}, {businessData.state} {businessData.zipCode}
-                    {businessData.country && `, ${businessData.country}`}
-                  </div>
+          <div className="section-content">
+            <div className="info-grid">
+              <div className="info-item">
+                <div className="info-label">
+                  <MapPin size={16} className="icon" /> Address
                 </div>
-
-                <div className="info-item">
-                  <div className="info-label">
-                    <Phone size={16} className="icon" /> Phone
-                  </div>
-                  <div className="info-value">
-                    {businessData.phone}
-                  </div>
+                <div className="info-value">
+                  PapaJohnsStreet, PapaJohnsCity, PapaJohnsState, Sri Lanka
                 </div>
-
-                <div className="info-item">
-                  <div className="info-label">
-                    <Mail size={16} className="icon" /> Email
-                  </div>
-                  <div className="info-value">
-                    {businessData.email}
-                  </div>
+              </div>
+              <div className="info-item">
+                <div className="info-label">
+                  <Phone size={16} className="icon" /> Phone
                 </div>
-
-                {businessData.website && (
-                  <div className="info-item">
-                    <div className="info-label">
-                      <Globe size={16} className="icon" /> Website
-                    </div>
-                    <div className="info-value">
-                      <a href={businessData.website} target="_blank" rel="noopener noreferrer">
-                        {businessData.website}
-                      </a>
-                    </div>
-                  </div>
-                )}
+                <div className="info-value">(072) 111-2233</div>
+              </div>
+              <div className="info-item">
+                <div className="info-label">
+                  <Mail size={16} className="icon" /> Email
+                </div>
+                <div className="info-value">contact@pastaparadise.com</div>
+              </div>
+              <div className="info-item">
+                <div className="info-label">
+                  <Globe size={16} className="icon" /> Website
+                </div>
+                <div className="info-value">
+                  <a
+                    href="https://www.pastaparadise.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    https://www.pastaparadise.com
+                  </a>
+                </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
 
         {/* Business Hours Section */}
         <div className="dashboard-section">
-          <div 
-            className="section-header" 
-            onClick={() => toggleSection('hours')}
-          >
+          <div className="section-header">
             <h2>
               <Clock size={20} className="icon" /> Business Hours
             </h2>
-            <button className="toggle-btn">
-              {expandedSections.hours ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-            </button>
           </div>
-
-          {expandedSections.hours && (
-            <div className="section-content hours-grid">
-              {Object.entries(businessData.openingHours).map(([day, hours]) => (
-                <div className="hours-item" key={day}>
-                  <div className="day-name">
-                    {day.charAt(0).toUpperCase() + day.slice(1)}
-                  </div>
-                  <div className="hours-value">
-                    {hours.closed ? (
-                      <span className="closed">Closed</span>
-                    ) : (
-                      <span>{formatTime(hours.open)} - {formatTime(hours.close)}</span>
-                    )}
-                  </div>
-                </div>
-              ))}
+          <div className="section-content hours-grid">
+            <div className="hours-item">
+              <div className="day-name">Opening Hour</div>
+              <div className="hours-value">{opening_hour || "00:00"}</div>
             </div>
-          )}
-        </div>
-
-        {/* Business Images Section */}
-        <div className="dashboard-section">
-          <div 
-            className="section-header" 
-            onClick={() => toggleSection('media')}
-          >
-            <h2>
-              <Camera size={20} className="icon" /> Business Images
-            </h2>
-            <button className="toggle-btn">
-              {expandedSections.media ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-            </button>
+            <div className="hours-item">
+              <div className="day-name">Closing Hour</div>
+              <div className="hours-value">{closing_hour || "24:00"}</div>
+            </div>
           </div>
-
-          {expandedSections.media && (
-            <div className="section-content">
-              <div className="image-gallery">
-                {businessData.images.map((image, index) => (
-                  <div className="gallery-image" key={index}>
-                    <img src={image} alt={`Business image ${index + 1}`} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Reservation Settings Section */}
-        <div className="dashboard-section">
-          <div 
-            className="section-header" 
-            onClick={() => toggleSection('reservations')}
-          >
-            <h2>
-              <Calendar size={20} className="icon" /> Reservation Settings
-            </h2>
-            <button className="toggle-btn">
-              {expandedSections.reservations ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-            </button>
-          </div>
-
-          {expandedSections.reservations && (
-            <div className="section-content">
-              <div className="info-grid">
-                <div className="info-item">
-                  <div className="info-label">
-                    Default Duration
-                  </div>
-                  <div className="info-value">
-                    {businessData.reservationSlots.defaultDuration} minutes
-                  </div>
-                </div>
-
-                <div className="info-item">
-                  <div className="info-label">
-                    Maximum Bookings per Slot
-                  </div>
-                  <div className="info-value">
-                    {businessData.reservationSlots.capacity} customers
-                  </div>
-                </div>
-
-                <div className="info-item">
-                  <div className="info-label">
-                    Advance Booking Period
-                  </div>
-                  <div className="info-value">
-                    {businessData.reservationSlots.advance} days
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Social Media Section */}
         <div className="dashboard-section">
-          <div 
-            className="section-header" 
-            onClick={() => toggleSection('social')}
-          >
+          <div className="section-header">
             <h2>
               <Globe size={20} className="icon" /> Social Media
             </h2>
-            <button className="toggle-btn">
-              {expandedSections.social ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-            </button>
           </div>
-
-          {expandedSections.social && (
-            <div className="section-content">
-              <div className="social-links">
-                {businessData.socialMedia.facebook && (
-                  <a href={businessData.socialMedia.facebook} target="_blank" rel="noopener noreferrer" className="social-link">
-                    <Facebook size={20} className="icon" />
-                    Facebook
-                  </a>
-                )}
-                {businessData.socialMedia.instagram && (
-                  <a href={businessData.socialMedia.instagram} target="_blank" rel="noopener noreferrer" className="social-link">
-                    <Instagram size={20} className="icon" />
-                    Instagram
-                  </a>
-                )}
-                {businessData.socialMedia.twitter && (
-                  <a href={businessData.socialMedia.twitter} target="_blank" rel="noopener noreferrer" className="social-link">
-                    <Twitter size={20} className="icon" />
-                    Twitter
-                  </a>
-                )}
-              </div>
+          <div className="section-content">
+            <div className="social-links">
+              {facebook_link && (
+                <a
+                  href={facebook_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="social-link"
+                >
+                  <Facebook size={20} className="icon" /> Facebook
+                </a>
+              )}
+              {instagram_link && (
+                <a
+                  href={instagram_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="social-link"
+                >
+                  <Instagram size={20} className="icon" /> Instagram
+                </a>
+              )}
+              {twitter_link && (
+                <a
+                  href={twitter_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="social-link"
+                >
+                  <Twitter size={20} className="icon" /> Twitter
+                </a>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Contact Person Section */}
+        {/* Primary Contact Section */}
         <div className="dashboard-section">
-          <div 
-            className="section-header" 
-            onClick={() => toggleSection('contact')}
-          >
+          <div className="section-header">
             <h2>
               <User size={20} className="icon" /> Primary Contact
             </h2>
-            <button className="toggle-btn">
-              {expandedSections.contact ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-            </button>
           </div>
-
-          {expandedSections.contact && (
-            <div className="section-content">
-              <div className="contact-person">
-                <div className="contact-avatar">
-                  <User size={48} />
-                </div>
-                <div className="contact-details">
-                  <h3 className="contact-name">
-                    {businessData.contactPerson.name}
-                  </h3>
-                  <p className="contact-position">
-                    <Briefcase size={14} className="icon" /> {businessData.contactPerson.position}
-                  </p>
-                  <p className="contact-phone">
-                    <Phone size={14} className="icon" /> {businessData.contactPerson.phone}
-                  </p>
-                  <p className="contact-email">
-                    <Mail size={14} className="icon" /> {businessData.contactPerson.email}
-                  </p>
-                </div>
+          <div className="section-content">
+            <div className="contact-person">
+              <div className="contact-avatar">
+                <User size={48} />
+              </div>
+              <div className="contact-details">
+                <h3 className="contact-name">Jessica Wilson</h3>
+                <p className="contact-position">
+                  <Briefcase size={14} className="icon" /> Spa Manager
+                </p>
+                <p className="contact-phone">
+                  <Phone size={14} className="icon" /> (310) 555-9241
+                </p>
+                <p className="contact-email">
+                  <Mail size={14} className="icon" />{" "}
+                  jessica@coastalbreezespa.com
+                </p>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
-
-      {/* Delete Business Confirmation Modal */}
-      {showDeleteModal && (
-        <div className="modal-overlay">
-          <div className="modal-container">
-            <div className="modal-header">
-              <h2>
-                <AlertTriangle size={24} className="icon warning" /> Delete Business?
-              </h2>
-              <button className="modal-close" onClick={handleCancelDelete}>
-                <X size={24} />
-              </button>
-            </div>
-            <div className="modal-content">
-              <p className="warning-message">
-                Are you sure you want to delete {businessData.businessName}? This action cannot be undone.
-              </p>
-              <p className="info-message">
-                All business information, including reservation settings and customer data, will be permanently removed.
-              </p>
-            </div>
-            <div className="modal-actions">
-              <button className="btn btn-secondary" onClick={handleCancelDelete}>
-                Cancel
-              </button>
-              <button className="btn btn-danger" onClick={handleConfirmDelete}>
-                Delete Business
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Confirm Details Modal */}
-      {showConfirmModal && (
-        <div className="modal-overlay">
-          <div className="modal-container">
-            <div className="modal-header">
-              <h2>
-                <CheckCircle size={24} className="icon success" /> Confirm Business Details
-              </h2>
-              <button className="modal-close" onClick={handleCancelConfirm}>
-                <X size={24} />
-              </button>
-            </div>
-            <div className="modal-content">
-              <p className="confirm-message">
-                Please review and confirm that all details for {businessData.businessName} are accurate and up-to-date.
-              </p>
-              <p className="info-message">
-                Confirming these details will mark your business information as verified in our system.
-              </p>
-            </div>
-            <div className="modal-actions">
-              <button className="btn btn-secondary" onClick={handleCancelConfirm}>
-                Cancel
-              </button>
-              <button className="btn btn-success" onClick={handleConfirmDetails}>
-                Confirm Details
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

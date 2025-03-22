@@ -143,8 +143,21 @@ exports.getOneBusiness = async (req, res) => {
 exports.createBusiness = async (req, res) => {
   let rollbackData = {};
   try {
-    const { username, name, email_address, location, contacts, category_name } =
-      req.body;
+    const {
+      username,
+      name,
+      email_address,
+      location,
+      category_name,
+      description,
+      website,
+      opening_hour,
+      closing_hour,
+      facebook_link,
+      instagram_link,
+      twitter_link,
+    } = req.body;
+    const contacts = JSON.parse(req.body.contacts);
     if (!name || !email_address || !location || !contacts || !category_name) {
       return res.status(400).json({
         success: false,
@@ -166,7 +179,7 @@ exports.createBusiness = async (req, res) => {
       });
     }
     for (let contact of contacts) {
-      const contactError = validateContact(contact);
+      const contactError = validateContact(contact.number);
       if (contactError) {
         return res.status(400).json({
           success: false,
@@ -181,13 +194,25 @@ exports.createBusiness = async (req, res) => {
         message: "Category not found",
       });
     }
+    const logoImageFile = req.files.logo ? req.files.logo[0] : null;
+    const coverImageFile = req.files.cover ? req.files.cover[0] : null;
+
     const loc = await createLocation(location);
     const verificationToken = crypto.randomBytes(32).toString("hex");
     const businessRecord = await createBusinessRecord(
       name,
       categoryId,
       loc.id,
-      verificationToken
+      verificationToken,
+      description,
+      website,
+      logoImageFile,
+      coverImageFile,
+      opening_hour,
+      closing_hour,
+      facebook_link,
+      instagram_link,
+      twitter_link
     );
     rollbackData.businessId = businessRecord.id;
     const emailRecord = await createPrimaryEmail(
@@ -387,7 +412,6 @@ exports.updateBusiness = async (req, res) => {
       changeLogs.push("No changes were made.");
     }
     const logDescription = "Business updated:\n" + changeLogs.join("\n");
-    console.log("hello");
 
     await insertBusinessUpdateLog(
       currentBusiness.owner_id || currentBusiness.id,

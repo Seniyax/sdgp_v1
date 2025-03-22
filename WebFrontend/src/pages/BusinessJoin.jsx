@@ -1,38 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+/* eslint-disable no-unused-vars */
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "../style/BusinessJoin.css";
+import axios from "axios";
+import Swal from "sweetalert2";
 
 const BusinessJoin = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState();
+
+  useEffect(() => {
+    const user = JSON.parse(sessionStorage.getItem("user"));
+    if (!user) {
+      navigate("/sign-in");
+    } else if (!user.is_verified) {
+      Swal.fire({
+        title: "Not Signed In",
+        text: "Please confirm your user email and sign in again.",
+        icon: "warning",
+        confirmButtonText: "Okay",
+      }).then(() => {
+        navigate("/sign-in");
+      });
+    } else {
+      setUser(user);
+    }
+  }, [navigate]);
+
   const [businesses, setBusinesses] = useState([]);
-  const [selectedBusiness, setSelectedBusiness] = useState('');
-  const [supervisorUsername, setSupervisorUsername] = useState('');
-  const [role, setRole] = useState('Staff');
+  const [selectedBusiness, setSelectedBusiness] = useState("");
+  const [supervisorUsername, setSupervisorUsername] = useState("");
+  const [role, setRole] = useState("Staff");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isFormValid, setIsFormValid] = useState(false);
-  
-  const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false); // New state for submission
 
   useEffect(() => {
-    
-    // Fetch businesses from API
     const fetchBusinesses = async () => {
       try {
         setIsLoading(true);
-        // Replace with your actual API endpoint
-        const response = await fetch('https://api.example.com/businesses');// apiiiiiii
-        if (!response.ok) {
-          throw new Error('Failed to fetch businesses');
-        }
-        const data = await response.json();
-        setBusinesses(data);
+        const response = await axios.get("api/business/get-all");
+        setBusinesses(response.data.data);
         setIsLoading(false);
       } catch (err) {
         setError(err.message);
         setIsLoading(false);
       }
     };
-
     fetchBusinesses();
   }, []);
 
@@ -43,36 +58,41 @@ const BusinessJoin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!isFormValid) return;
+    if (!isFormValid || isSubmitting) return;
+    setIsSubmitting(true); // Disable button while sending request
 
     try {
-      // Submit join request to API
-      const response = await fetch('https://api.example.com/join-request', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          businessId: selectedBusiness,
-          supervisorUsername,
-          role,
-        }),
-      });
+      const response = await axios.post(
+        "api/business-user-relation/create-business",
+        {
+          business_id: selectedBusiness,
+          username: user.username,
+          type: role,
+          supervisor_username: supervisorUsername,
+        }
+      );
 
-      if (!response.ok) {
-        throw new Error('Failed to submit join request');
+      if (!response) {
+        throw new Error("Failed to join business");
+      } else if (!response.data.success) {
+        console.error("Failed to join business:", response.data.message);
+      } else {
+        Swal.fire({
+          title: "Joining Business",
+          text: "Please wait until the supervisor verifies your request.",
+          icon: "warning",
+          confirmButtonText: "Okay",
+        }).then(() => {
+          setSelectedBusiness("");
+          setSupervisorUsername("");
+          setRole("Staff");
+        });
       }
-
-      // Navigate to waiting page
-      navigate('/waiting', { 
-        state: { 
-          businessName: businesses.find(b => b.id === selectedBusiness)?.name,
-          supervisorUsername,
-          role 
-        } 
-      });
     } catch (err) {
+      console.error("Error joining business:", err);
       setError(err.message);
+    } finally {
+      setIsSubmitting(false); // Re-enable button after request completes
     }
   };
 
@@ -102,7 +122,7 @@ const BusinessJoin = () => {
           <h1>Join a Business</h1>
           <p>Connect with your team and get started</p>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="join-form">
           <div className="form-group">
             <label htmlFor="business">Business Name</label>
@@ -113,7 +133,9 @@ const BusinessJoin = () => {
                 onChange={(e) => setSelectedBusiness(e.target.value)}
                 required
               >
-                <option value="" disabled>Select a business</option>
+                <option value="" disabled>
+                  Select a business
+                </option>
                 {businesses.map((business) => (
                   <option key={business.id} value={business.id}>
                     {business.name}
@@ -122,7 +144,7 @@ const BusinessJoin = () => {
               </select>
             </div>
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="supervisor">Supervisor Username</label>
             <input
@@ -134,33 +156,35 @@ const BusinessJoin = () => {
               required
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="role">Role</label>
             <div className="role-select">
               <button
                 type="button"
-                className={role === 'Admin' ? 'active' : ''}
-                onClick={() => setRole('Admin')}
+                className={role === "Admin" ? "active" : ""}
+                onClick={() => setRole("Admin")}
               >
                 Admin
               </button>
               <button
                 type="button"
-                className={role === 'Staff' ? 'active' : ''}
-                onClick={() => setRole('Staff')}
+                className={role === "Staff" ? "active" : ""}
+                onClick={() => setRole("Staff")}
               >
                 Staff
               </button>
             </div>
           </div>
-          
-          <button 
-            type="submit" 
-            className={`join-button ${isFormValid ? 'active' : 'disabled'}`}
-            disabled={!isFormValid}
+
+          <button
+            type="submit"
+            className={`join-button ${
+              isFormValid && !isSubmitting ? "active" : "disabled"
+            }`}
+            disabled={!isFormValid || isSubmitting} // Disable if form is invalid or submitting
           >
-            Join Business
+            {isSubmitting ? "Sending request..." : "Join Business"}
           </button>
         </form>
       </div>

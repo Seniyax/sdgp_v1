@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import "../style/Waiting.css";
@@ -166,7 +167,7 @@ const Waiting = () => {
           {status === 'pending' && (
             <p className="waiting-message">
               Your request has been sent to {supervisorUsername} for approval.
-              You'll be automatically redirected once approved.
+              You&apos;ll be automatically redirected once approved.
             </p>
           )}
           

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState } from 'react';
 import "../style/CustomerSupport.css";
 
@@ -130,7 +131,7 @@ const CustomerSupport = () => {
             ))
           ) : (
             <div className="no-results">
-              <p>No results found for "{searchQuery}". Please try another search or contact us directly.</p>
+              <p>No results found for &quot;{searchQuery}&quot;. Please try another search or contact us directly.</p>
             </div>
           )}
         </div>
@@ -203,7 +204,7 @@ const CustomerSupport = () => {
                 <div className="success-message">
                   <div className="check-icon">✓</div>
                   <h2>Thank you!</h2>
-                  <p>Your message has been sent. We'll get back to you shortly.</p>
+                  <p>Your message has been sent. We&apos;ll get back to you shortly.</p>
                 </div>
               )}
             </div>

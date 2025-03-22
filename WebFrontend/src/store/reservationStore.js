@@ -1,6 +1,5 @@
 import { create } from "zustand";
 
-// Helper to ensure reservations have a consistent structure.
 const normalizeReservation = (reservation) => ({
   ...reservation,
   table: reservation.table || {
@@ -16,7 +15,6 @@ const normalizeReservation = (reservation) => ({
 const useReservationStore = create((set) => ({
   reservations: [],
   setReservations: (reservations) =>
-    // Normalize each reservation before storing
     set({ reservations: reservations.map(normalizeReservation) }),
   addReservation: (reservation) => {
     const normalizedReservation = normalizeReservation(reservation);

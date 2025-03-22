@@ -1,4 +1,3 @@
-// reservationSocket.js
 const axios = require("axios");
 const dayjs = require("dayjs");
 const customParseFormat = require("dayjs/plugin/customParseFormat");
@@ -8,7 +7,6 @@ module.exports = function (io) {
   io.on("connection", (socket) => {
     console.log("Socket connected:", socket.id);
 
-    // Retrieve reservations for a business
     socket.on("getReservations", async (data) => {
       try {
         const response = await axios.post(
@@ -28,7 +26,6 @@ module.exports = function (io) {
       }
     });
 
-    // Update an existing reservation (using PUT)
     socket.on("updateReservation", async (data, callback) => {
       try {
         const response = await axios.put(
@@ -36,7 +33,7 @@ module.exports = function (io) {
           {
             reservation_id: data.reservation_id,
             update_data: data.update_data,
-            customer_username: data.customer_username, // include username if provided
+            customer_username: data.customer_username,
           }
         );
         if (response.data.success) {
@@ -45,7 +42,6 @@ module.exports = function (io) {
             updatedReservation: response.data.reservation,
           });
 
-          // Broadcast the updated reservation to all clients
           io.emit("reservationUpdated", response.data.reservation);
         } else {
           callback({ success: false, message: "Failed to update reservation" });
@@ -56,10 +52,8 @@ module.exports = function (io) {
       }
     });
 
-    // Create a new reservation
     socket.on("createReservation", async (data, callback) => {
       try {
-        // Clean and convert the start_time from 12-hour to 24-hour format.
         const cleanedTime = data.start_time
           .replace(/[\u202F\u00A0]/g, " ")
           .trim()
@@ -69,13 +63,11 @@ module.exports = function (io) {
           ? parsedTime.format("HH:mm:ss")
           : data.start_time;
 
-        // Parse and format the date to "YYYY-MM-DD".
         const parsedDate = dayjs(data.end_date);
         const formattedDate = parsedDate.isValid()
           ? parsedDate.format("YYYY-MM-DD")
           : data.end_date;
 
-        // Send the reservation request.
         const response = await axios.post(
           "http://localhost:3000/api/reservation/create",
           {
@@ -95,7 +87,6 @@ module.exports = function (io) {
         if (response.data.success) {
           callback({ success: true, reservation: response.data.reservation });
 
-          // Broadcast the new reservation to all clients
           io.emit("reservationAdded", response.data.reservation);
         } else {
           callback({ success: false, message: "Failed to create reservation" });
@@ -106,9 +97,8 @@ module.exports = function (io) {
       }
     });
 
-    // Delete a reservation (Cancel)
     socket.on("deleteReservation", async (data, callback) => {
-      console.log("DELETE EVENT RECEIVED", data); // Log immediately when event is received
+      console.log("DELETE EVENT RECEIVED", data);
 
       try {
         console.log("About to make DELETE request to API");
@@ -121,7 +111,6 @@ module.exports = function (io) {
           console.log("Delete successful, sending callback and broadcast");
           callback({ success: true, message: response.data.message });
 
-          // Broadcast the deleted reservation ID to all clients
           console.log("Broadcasting deletion with ID:", data.reservation_id);
           console.log("Type of ID:", typeof data.reservation_id);
 

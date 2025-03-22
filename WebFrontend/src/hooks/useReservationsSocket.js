@@ -4,7 +4,7 @@ import useReservationStore from "../store/reservationStore";
 
 const SOCKET_SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
-const useReservationsSocket = () => {
+const useReservationsSocket = (businessId) => {
   const {
     setReservations,
     addReservation,
@@ -20,7 +20,7 @@ const useReservationsSocket = () => {
 
     newSocket.on("connect", () => {
       console.log("Connected to reservations socket");
-      newSocket.emit("getReservations", { business_id: 20 });
+      newSocket.emit("getReservations", { business_id: businessId });
     });
 
     newSocket.on("reservationsData", (data) => {
@@ -44,7 +44,13 @@ const useReservationsSocket = () => {
     return () => {
       newSocket.disconnect();
     };
-  }, [setReservations, addReservation, updateReservation, deleteReservation]);
+  }, [
+    businessId,
+    setReservations,
+    addReservation,
+    updateReservation,
+    deleteReservation,
+  ]);
 
   return socket;
 };

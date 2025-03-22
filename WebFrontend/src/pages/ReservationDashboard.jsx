@@ -1,14 +1,53 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
-import { AnimatePresence, color, motion } from "framer-motion";
-import FloorPlanLayout from "./FloorPlanLayout"; // using your layout with theme and animated balls
+import { useNavigate, useParams } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import FloorPlanLayout from "./FloorPlanLayout";
 import ViewFloorPlan from "./ViewFloorPlan";
 import useReservationStore from "../store/reservationStore";
 import useReservationsSocket from "../hooks/useReservationsSocket";
 import AddReservation from "./AddReservation";
+import Swal from "sweetalert2";
 
 const ReservationDashboard = () => {
+  const { businessId } = useParams();
+  const navigate = useNavigate();
+  const [business, setBusiness] = useState(null);
+  const [isBusinessLoaded, setIsBusinessLoaded] = useState(false);
+
+  const fetchBusiness = useCallback(async () => {
+    try {
+      const response = await axios.post("/api/business/get-by-id", {
+        business_id: businessId,
+      });
+      if (response.data.success && response.data.data) {
+        const fetchedBusiness = response.data.data.business;
+        sessionStorage.setItem("business", JSON.stringify(fetchedBusiness));
+        setBusiness(fetchedBusiness);
+      } else {
+        console.error("Failed to fetch business:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching business:", error);
+    } finally {
+      setIsBusinessLoaded(true);
+    }
+  }, [businessId]);
+
+  useEffect(() => {
+    if (businessId) {
+      fetchBusiness();
+    }
+  }, [businessId, fetchBusiness]);
+
+  useEffect(() => {
+    const user = JSON.parse(sessionStorage.getItem("user"));
+    if (isBusinessLoaded && (!user || !business)) {
+      navigate("/");
+    }
+  }, [navigate, business, isBusinessLoaded]);
+
   const {
     reservations,
     setReservations,
@@ -16,24 +55,55 @@ const ReservationDashboard = () => {
     deleteReservation,
   } = useReservationStore();
 
-  // Floor plan state and authentication
   const [floorPlan, setFloorPlan] = useState(null);
   const [floorError, setFloorError] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [selectedFloorIndex, setSelectedFloorIndex] = useState(0);
 
-  // "Add Reservation" mode state and table selections
+  useEffect(() => {
+    const userIsAuthenticated = true;
+    setIsAuthenticated(userIsAuthenticated);
+    if (!userIsAuthenticated) return;
+    const fetchFloorPlan = async () => {
+      try {
+        const response = await axios.post("/api/floor-plan/get", {
+          business_id: businessId,
+        });
+        console.log(response.data.message);
+        if (response.data.success) {
+          setFloorPlan({
+            floors: response.data.floors,
+            tables: response.data.tables,
+          });
+        } else {
+          setFloorError("Failed to load floor plan.");
+          navigate("/manage-business");
+        }
+      } catch (err) {
+        if (err.response?.data?.message === "Floor plan not found") {
+          Swal.fire({
+            title: "Missing floorplan",
+            text: "Couln't find floorplan",
+            icon: "warning",
+            confirmButtonText: "Create Floorplan",
+          }).then(() => {
+            navigate("/floorplan-designer");
+          });
+        }
+        setFloorError(err.response?.data?.message || err.message);
+      }
+    };
+    fetchFloorPlan();
+  }, [businessId, navigate, setIsAuthenticated, setFloorPlan, setFloorError]);
+
   const [addingReservation, setAddingReservation] = useState(false);
   const [selectedTables, setSelectedTables] = useState([]);
-
   const addFormRef = useRef(null);
-
-  // New state for time mode: "manual" or "auto"
   const [timeMode, setTimeMode] = useState("auto");
 
-  // Date/time state (using allowed hours logic)
-  const allowedStartHour = 9;
-  const allowedEndHour = 22;
+  const allowedStartHour = business?.opening_hour ?? 0;
+  const allowedEndHour = business?.closing_hour ?? 24;
+
   const computeDefaultDate = () => {
     const now = new Date();
     const defaultDate = new Date(now);
@@ -129,16 +199,13 @@ const ReservationDashboard = () => {
     }
   };
 
-  // Filter active reservations
   const activeReservations = reservations.filter(
     (res) => res.status === "Active"
   );
 
-  // Define the selected period as [selectedDate - 10 minutes, selectedDate]
   const selectedPeriodEnd = new Date(selectedDate.getTime() + 10 * 60 * 1000);
   const selectedPeriodStart = new Date(selectedDate.getTime() - 10 * 60 * 1000);
 
-  // Only include reservations with matching end_date and any overlap in time.
   const filteredReservations = activeReservations.filter((res) => {
     if (res.end_date !== selectedDate.toISOString().split("T")[0]) return false;
     const reservationStart = new Date(`${res.end_date}T${res.start_time}`);
@@ -149,16 +216,15 @@ const ReservationDashboard = () => {
     );
   });
 
-  // Extract reserved table numbers from filtered reservations
   const reservedTableNumbers = Array.from(
     new Set(
       filteredReservations
-        .sort((a, b) => new Date(a.start_time) - new Date(b.start_time)) // Sort by start_time
+        .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
         .map((res) => res.table.table_number)
     )
   );
 
-  const socket = useReservationsSocket();
+  const socket = useReservationsSocket(businessId);
 
   const handleCancel = (id) => {
     if (!socket) {
@@ -179,6 +245,10 @@ const ReservationDashboard = () => {
   };
 
   const handleDone = (id) => {
+    if (!socket) {
+      console.error("Socket is not initialized.");
+      return;
+    }
     socket.emit(
       "updateReservation",
       {
@@ -199,7 +269,6 @@ const ReservationDashboard = () => {
     );
   };
 
-  // Compute canvas dimensions based on the selected floor.
   const canvasWidth =
     floorPlan && floorPlan.floors && floorPlan.floors[selectedFloorIndex]
       ? floorPlan.floors[selectedFloorIndex].canvas_width || 800
@@ -209,12 +278,12 @@ const ReservationDashboard = () => {
       ? floorPlan.floors[selectedFloorIndex].canvas_height || 600
       : 600;
 
-  // Fetch reservations via REST API for initial load
   useEffect(() => {
+    if (!business) return;
     const fetchReservations = async () => {
       try {
         const response = await axios.post("/api/reservation/get", {
-          business_id: 20,
+          business_id: business.id,
         });
         console.log("Reservations Updated:");
         setReservations(response.data.reservations);
@@ -224,32 +293,7 @@ const ReservationDashboard = () => {
       }
     };
     fetchReservations();
-  }, [setReservations]);
-
-  // Fetch floor plan data
-  useEffect(() => {
-    const userIsAuthenticated = true;
-    setIsAuthenticated(userIsAuthenticated);
-    if (!userIsAuthenticated) return;
-    const fetchFloorPlan = async () => {
-      try {
-        const response = await axios.post("api/floor-plan/get", {
-          business_id: 20,
-        });
-        if (response.data.success) {
-          setFloorPlan({
-            floors: response.data.floors,
-            tables: response.data.tables,
-          });
-        } else {
-          setFloorError("Failed to load floor plan.");
-        }
-      } catch (err) {
-        setFloorError(err.response?.data?.message || err.message);
-      }
-    };
-    fetchFloorPlan();
-  }, []);
+  }, [setReservations, business]);
 
   const sectionVariants = {
     hidden: { opacity: 0 },
@@ -282,7 +326,6 @@ const ReservationDashboard = () => {
             Floor Map
           </motion.h2>
 
-          {/* Date & Time selectors with toggle */}
           <motion.div
             className="row mb-3"
             variants={sectionVariants}
@@ -331,7 +374,6 @@ const ReservationDashboard = () => {
             </div>
           </motion.div>
 
-          {/* Floor Selector */}
           <motion.div
             className="row mb-3"
             variants={sectionVariants}
@@ -363,9 +405,7 @@ const ReservationDashboard = () => {
           </motion.div>
         </div>
 
-        {/* Main Content */}
         <div className="row">
-          {/* Left Column: Floor Plan and Reservation Form */}
           <div className="col-12">
             {!isAuthenticated && (
               <motion.p
@@ -399,7 +439,6 @@ const ReservationDashboard = () => {
                 Loading floor plan...
               </motion.p>
             ) : (
-              // Container with fixed dimensions to prevent layout shifts
               <div
                 style={{
                   position: "relative",
@@ -415,7 +454,6 @@ const ReservationDashboard = () => {
                     initial="hidden"
                     animate="visible"
                     exit="exit"
-                    // Absolute positioning to ensure the exiting floor plan doesn't occupy space
                     style={{
                       position: "absolute",
                       top: 0,
@@ -443,7 +481,7 @@ const ReservationDashboard = () => {
                             addingReservation={addingReservation}
                             onTableSelect={handleTableSelect}
                             selectedTables={selectedTables}
-                            reservedTables={reservedTableNumbers} // new prop!
+                            reservedTables={reservedTableNumbers}
                           />
                         );
                       })()}
@@ -453,7 +491,6 @@ const ReservationDashboard = () => {
             )}
           </div>
 
-          {/* Right Column: Reservations List & Add Reservation */}
           <div className="col-12">
             <div className="row mt-4">
               <div className="col-5 offset-2">
