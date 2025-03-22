@@ -1,0 +1,101 @@
+// public/simulation/result.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Result</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 40px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .failed {
+            color: #f44336;
+        }
+        .canceled {
+            color: #ff9800;
+        }
+        button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #0052a3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Payment <span id="statusText"></span></h1>
+        
+        <p id="message"></p>
+        
+        <p><strong>Order ID:</strong> <span id="orderId"></span></p>
+        
+        <button id="returnBtn">Return to App</button>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Extract parameters from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const status = urlParams.get('status');
+            const orderId = urlParams.get('orderId');
+            
+            // Update UI based on status
+            const statusTextElement = document.getElementById('statusText');
+            const messageElement = document.getElementById('message');
+            
+            document.getElementById('orderId').textContent = orderId || 'Unknown';
+            
+            if (status === 'success') {
+                statusTextElement.textContent = 'Successful';
+                statusTextElement.className = 'success';
+                messageElement.textContent = 'Your payment was processed successfully. Your reservation is now confirmed.';
+            } else if (status === 'failed') {
+                statusTextElement.textContent = 'Failed';
+                statusTextElement.className = 'failed';
+                messageElement.textContent = 'Your payment could not be processed. Please try again.';
+            } else if (status === 'canceled') {
+                statusTextElement.textContent = 'Canceled';
+                statusTextElement.className = 'canceled';
+                messageElement.textContent = 'Your payment was canceled.';
+            } else {
+                statusTextElement.textContent = 'Unknown';
+                messageElement.textContent = 'Payment status unknown.';
+            }
+            
+            // Handle return button
+            document.getElementById('returnBtn').addEventListener('click', function() {
+                // In a real app, this would redirect to your app
+                // For simulation, just go back to the home page
+                window.location.href = '/';
+            });
+        });
+    </script>
+</body>
+</html>

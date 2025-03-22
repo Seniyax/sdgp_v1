@@ -3,21 +3,19 @@ const { TABLES } = require("../config/constants");
 const logger = require("../utils/logger");
 
 class Category {
-  constructor(data) {
-    this.id = data.id;
-    this.name = data.name;
-    this.description = data.description;
-    this.image_url = data.image_url;
-    this.status = data.status;
-  }
-
-  // Get all categories
-  static async getAll() {
-    try {
-      const { data, error } = await supabase
-        .from(TABLES.CATEGORY)
-        .select("*")
-        .order("id");
+    constructor(data) {
+        this.id = data.id;
+        this.name = data.name;
+        this.description = data.description;
+        this.image_url = data.image_url;
+        this.status = data.status;
+    }
+    static async getAll() {
+        try {
+            const { data, error } = await supabaseClient
+                .from(TABLES.CATEGORY)
+                .select('*')
+                .order('id');
 
       if (error) throw error;
       return data.map((category) => new Category(category));
@@ -27,14 +25,13 @@ class Category {
     }
   }
 
-  // Get category by ID
-  static async getById(id) {
-    try {
-      const { data, error } = await supabase
-        .from(TABLES.CATEGORY)
-        .select("*")
-        .eq("id", id)
-        .single();
+    static async getById(id) {
+        try {
+            const { data, error } = await supabaseClient
+                .from(TABLES.CATEGORY)
+                .select('*')
+                .eq('id', id)
+                .single();
 
       if (error) throw error;
       return data ? new Category(data) : null;
@@ -44,14 +41,13 @@ class Category {
     }
   }
 
-  // Get active categories
-  static async getActive() {
-    try {
-      const { data, error } = await supabase
-        .from(TABLES.CATEGORY)
-        .select("*")
-        .eq("status", "active")
-        .order("id");
+    static async getActive() {
+        try {
+            const { data, error } = await supabaseClient
+                .from(TABLES.CATEGORY)
+                .select('*')
+                .eq('status', 'active')
+                .order('id');
 
       if (error) throw error;
       return data.map((category) => new Category(category));
@@ -61,11 +57,10 @@ class Category {
     }
   }
 
-  // Get businesses in category
-  async getBusinesses(page = 1, limit = 10) {
-    try {
-      const from = (page - 1) * limit;
-      const to = from + limit - 1;
+    async getBusinesses(page = 1, limit = 10) {
+        try {
+            const from = (page - 1) * limit;
+            const to = from + limit - 1;
 
       const { data, count, error } = await supabase
         .from(TABLES.BUSINESS)

@@ -37,7 +37,7 @@ exports.createReservation = async (req, res) => {
     group_size,
     slot_type,
     start_time,
-    end_date, // NEW: date coming in from frontend
+    end_date,
     customer_name,
     customer_number,
     status,
@@ -48,7 +48,7 @@ exports.createReservation = async (req, res) => {
     !group_size ||
     !slot_type ||
     !start_time ||
-    !end_date // Ensure we have the date too
+    !end_date
   ) {
     return res.status(400).json({
       success: false,
@@ -57,14 +57,13 @@ exports.createReservation = async (req, res) => {
     });
   }
 
-  // Now use the provided end_date for the ML prediction.
   try {
     const mlResponse = await axios.post(
       "http://localhost:3000/api/ml/predict",
       {
         group_size: group_size.toString(),
-        slot_type: slot_type, // use the provided slot_type
-        date: end_date, // pass the end_date received from frontend
+        slot_type: slot_type,
+        date: end_date,
         time: start_time,
       }
     );
@@ -84,7 +83,7 @@ exports.createReservation = async (req, res) => {
       slotType: slot_type,
       customerName: customer_name ? customer_name : null,
       customerNumber: customer_number ? customer_number : null,
-      endDate: end_date, // NEW: include the date for DB insertion
+      endDate: end_date,
       status: status,
     };
 

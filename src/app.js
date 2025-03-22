@@ -1,4 +1,4 @@
-const express= require("express");
+const express = require("express");
 const cors = require("cors");
 const passport = require("passport");
 require("./config/passport");
@@ -12,7 +12,11 @@ const userRoutes = require("./routes/userRoutes");
 const bHURoutes = require("./routes/bHURoutes");
 const mLRoutes = require("./routes/mLRoutes");
 const floorPlanRoutes = require("./routes/floorPlanRoutes");
-const authRoutes = require("./routes/authRoutes")
+const authRoutes = require("./routes/authRoutes");
+const categoryRoutes = require("./routes/categoryRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
+const reservationHistoryRoutes = require("./routes/reservationHistoryRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 const app = express();
 
@@ -46,9 +50,12 @@ app.use("/api/user", userRoutes);
 app.use("/api/business-user-relation", bHURoutes);
 app.use("/api/ml", mLRoutes);
 app.use("/api/floor-plan", floorPlanRoutes);
-app.use('/auth',authRoutes)
+app.use("/auth", authRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/reservations/history", reservationHistoryRoutes);
 
-// Error handler middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({

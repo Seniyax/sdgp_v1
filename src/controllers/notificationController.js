@@ -4,14 +4,9 @@ const supabase = require('../config/supabaseClient');
 const logger = require('../utils/logger');
 
 class NotificationController {
-  /**
-   * Get notifications for the authenticated user
-   * @param {Object} req Express request
-   * @param {Object} res Express response
-   */
   async getUserNotifications(req, res) {
     const { unread_only } = req.query;
-    const customerId = req.user.id; // Assuming auth middleware sets req.user
+    const customerId = req.user.id; 
     
     try {
       const notifications = await notificationService.getUserNotifications(
@@ -31,13 +26,8 @@ class NotificationController {
     }
   }
 
-  /**
-   * Get count of unread notifications for the user
-   * @param {Object} req Express request
-   * @param {Object} res Express response
-   */
   async getUnreadCount(req, res) {
-    const customerId = req.user.id; // Assuming auth middleware sets req.user
+    const customerId = req.user.id; 
     
     try {
       const { count, error } = await supabase
@@ -59,18 +49,12 @@ class NotificationController {
       });
     }
   }
-
-  /**
-   * Mark a notification as read
-   * @param {Object} req Express request
-   * @param {Object} res Express response
-   */
+  
   async markAsRead(req, res) {
     const { id } = req.params;
-    const customerId = req.user.id; // Assuming auth middleware sets req.user
+    const customerId = req.user.id; 
     
     try {
-      // First check if the notification belongs to the user
       const { data: notification, error: fetchError } = await supabase
         .from('notification')
         .select('*')
@@ -98,14 +82,9 @@ class NotificationController {
       });
     }
   }
-
-  /**
-   * Mark all user's notifications as read
-   * @param {Object} req Express request
-   * @param {Object} res Express response
-   */
+  
   async markAllAsRead(req, res) {
-    const customerId = req.user.id; // Assuming auth middleware sets req.user
+    const customerId = req.user.id; 
     
     try {
       await notificationService.markAllAsRead(customerId);
@@ -122,98 +101,8 @@ class NotificationController {
     }
   }
 
-  /**
-   * Register a device token for push notifications
-   * @param {Object} req Express request
-   * @param {Object} res Express response
-   */
-  async registerDeviceToken(req, res) {
-    const { device_token, device_type } = req.body;
-    const customerId = req.user.id; // Assuming auth middleware sets req.user
-    
-    if (!device_token || !device_type) {
-      return ApiResponse.badRequest(res, {
-        message: 'Device token and device type are required'
-      });
-    }
-    
-    // Make sure device_type matches the expected values in the DB schema
-    const normalizedDeviceType = device_type.charAt(0).toUpperCase() + device_type.slice(1).toLowerCase();
-    
-    if (!['Android', 'iOS'].includes(normalizedDeviceType)) {
-      return ApiResponse.badRequest(res, {
-        message: "Device type must be 'Android' or 'iOS'"
-      });
-    }
-    
-    try {
-      const token = await notificationService.registerDeviceToken(
-        customerId,
-        device_token,
-        normalizedDeviceType
-      );
-      
-      return ApiResponse.success(res, {
-        message: 'Device token registered successfully',
-        data: token
-      });
-    } catch (error) {
-      logger.error(`Error registering device token: ${error.message}`);
-      return ApiResponse.error(res, {
-        message: 'Error registering device token',
-        errors: error.message
-      });
-    }
-  }
-
-  /**
-   * Delete a device token
-   * @param {Object} req Express request
-   * @param {Object} res Express response
-   */
-  async deleteDeviceToken(req, res) {
-    const { device_token } = req.body;
-    const customerId = req.user.id; // Assuming auth middleware sets req.user
-    
-    if (!device_token) {
-      return ApiResponse.badRequest(res, {
-        message: 'Device token is required'
-      });
-    }
-    
-    try {
-      const { error } = await supabase
-        .from('device_token')
-        .delete()
-        .eq('device_token', device_token)
-        .eq('customer_id', customerId);
-        
-      if (error) throw error;
-      
-      return ApiResponse.success(res, {
-        message: 'Device token deleted successfully'
-      });
-    } catch (error) {
-      logger.error(`Error deleting device token: ${error.message}`);
-      return ApiResponse.error(res, {
-        message: 'Error deleting device token',
-        errors: error.message
-      });
-    }
-  }
-
-  /**
-   * Subscribe to real-time notifications
-   * This endpoint provides information to the client
-   * about how to subscribe to real-time updates
-   * @param {Object} req Express request
-   * @param {Object} res Express response 
-   */
-  async subscribeToNotifications(req, res) {
-    const customerId = req.user.id; // Assuming auth middleware sets req.user
-    
-    // The client will need to use Supabase's subscribe functionality
-    // We're just providing instructions here
+  subscribeToNotifications(req, res) {
+    const customerId = req.user.id; 
     return ApiResponse.success(res, {
       message: 'To receive real-time notifications, subscribe to the notification table with your customer ID',
       data: {
