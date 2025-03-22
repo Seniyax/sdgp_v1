@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import React, { useState, useRef } from 'react';
-=======
 import React, { useState, useRef, useEffect } from 'react';
->>>>>>> teamA
 import { 
   StyleSheet, 
   View, 
@@ -10,91 +6,21 @@ import {
   TouchableOpacity, 
   ScrollView, 
   TextInput, 
-<<<<<<< HEAD
-  FlatList 
-=======
+  FlatList,
   ActivityIndicator,
   Image
->>>>>>> teamA
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import LottieView from 'lottie-react-native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { Ionicons } from '@expo/vector-icons';
-<<<<<<< HEAD
-=======
 import axios from 'axios';
->>>>>>> teamA
 
 export default function HomeScreen() {
   const animationRef = useRef(null);
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
-<<<<<<< HEAD
-
-  // Expanded categories with more details
-  const categories = [
-    { 
-      id: 1, 
-      name: 'Restaurants', 
-      icon: 'restaurant-outline',
-      route: '/Restaurants'
-    },
-    { 
-      id: 2, 
-      name: 'Meeting Rooms', 
-      icon: 'business-outline',
-      route: '/MeetingRooms'
-    },
-    { 
-      id: 3, 
-      name: 'Customer Care', 
-      icon: 'people-outline',
-      route: '/CustomerCareCenter'
-    },
-    { 
-      id: 4, 
-      name: 'Education', 
-      icon: 'school-outline',
-      route: '/EducationCenter'
-    },
-    { 
-      id: 5, 
-      name: 'Others', 
-      icon: 'ellipsis-horizontal-outline',
-      route: '/Others'
-    },
-  ];
-
-  // Navigation handler for different categories
-  const handleCategoryPress = (route) => {
-    router.push(route);
-  };
-
-  // Filter categories based on search query
-  const filteredCategories = categories.filter(category => 
-    category.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // Render individual category item
-  const renderCategoryItem = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.categoryButton}
-      onPress={() => handleCategoryPress(item.route)}
-    >
-      <Ionicons 
-        name={item.icon} 
-        size={wp('10%')} 
-        color="#420F54" 
-        style={styles.categoryIcon}
-      />
-      <Text style={styles.categoryButtonText} numberOfLines={2}>
-        {item.name}
-      </Text>
-    </TouchableOpacity>
-  );
-=======
   const [categories, setCategories] = useState([]);
   const [filteredCategories, setFilteredCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -308,7 +234,6 @@ export default function HomeScreen() {
       </View>
     );
   };
->>>>>>> teamA
 
   return (
     <ScrollView 
@@ -351,17 +276,6 @@ export default function HomeScreen() {
         />
       </View>
       
-<<<<<<< HEAD
-      {/* Category Grid */}
-      <FlatList
-        data={filteredCategories}
-        renderItem={renderCategoryItem}
-        keyExtractor={(item) => item.id.toString()}
-        numColumns={2}
-        columnWrapperStyle={styles.categoryGridRow}
-        contentContainerStyle={styles.categoryGridContainer}
-      />
-=======
       {/* Error View */}
       {error && (
         <View style={styles.errorContainer}>
@@ -382,7 +296,6 @@ export default function HomeScreen() {
         /* Category Grid using manual rendering instead of FlatList */
         renderCategoryGrid()
       )}
->>>>>>> teamA
       
       <StatusBar style="auto" />
     </ScrollView>
@@ -448,26 +361,6 @@ const styles = StyleSheet.create({
   categoryGridContainer: {
     width: wp('90%'),
     alignItems: 'center',
-<<<<<<< HEAD
-  },
-  categoryGridRow: {
-    justifyContent: 'space-between',
-    marginBottom: hp('2%'),
-  },
-  categoryButton: {
-    backgroundColor: '#F3E4FF',
-    borderRadius: wp('6%'),
-    width: wp('42%'),
-    height: hp('22%'),
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 6,
-    paddingHorizontal: wp('2%'),
-=======
     paddingVertical: hp('1%'),
   },
   // Special container for single search result
@@ -534,20 +427,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp('3%'),
     paddingVertical: hp('0.5%'),
     borderRadius: wp('2%'),
->>>>>>> teamA
   },
   categoryIcon: {
     marginBottom: hp('1%'),
   },
-<<<<<<< HEAD
-  categoryButtonText: {
-    color: '#420F54',
-    fontFamily: 'Poppins-Bold',
-    fontSize: wp('4.5%'),
-    textAlign: 'center',
-    width: '90%',
-  },
-=======
   categoryImage: {
     width: wp('15%'),
     height: wp('15%'),
@@ -611,5 +494,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: 'Poppins-Regular',
   },
->>>>>>> teamA
 });

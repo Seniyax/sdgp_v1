@@ -1,36 +1,27 @@
-<<<<<<< HEAD
-import { Stack } from 'expo-router';
-=======
-// import { Stack } from 'expo-router';
-
-// export default function Layout() {
-//   return (
-//     <Stack screenOptions={{ headerShown: false }}>
-//       <Stack.Screen name="index" options={{ headerShown: false, gestureEnabled: false }} />
-//       <Stack.Screen name="home" options={{ headerShown: false, gestureEnabled: false }} />
-//       <Stack.Screen name="Restaurants" options={{ title: "Restaurants", headerShown: true }} />
-//       <Stack.Screen name="tableSelect" options={{ title: "Table Selection", headerShown: true }} />
-//       <Stack.Screen name="payments" options={{ title: "Payments", headerShown: true }} />
-//     </Stack>
-//   );
-// }
-
 import { Stack } from "expo-router";
->>>>>>> teamA
 
 export default function Layout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
-<<<<<<< HEAD
-      <Stack.Screen name="index" options={{ headerShown: false, gestureEnabled: false }} />
-      <Stack.Screen name="home" options={{ headerShown: false, gestureEnabled: false }} />
-      <Stack.Screen name="restaurants" options={{ title: "Restaurants", headerShown: true }} />
-      <Stack.Screen name="tableSelect" options={{ title: "Table Selection", headerShown: true }} />
-      <Stack.Screen name="payments" options={{ title: "Payments", headerShown: true }} />
-=======
       <Stack.Screen
         name="index"
         options={{ headerShown: false, gestureEnabled: false }}
+      />
+      <Stack.Screen
+        name="home"
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
+      <Stack.Screen
+        name="restaurants"
+        options={{ title: "Restaurants", headerShown: true }}
+      />
+      <Stack.Screen
+        name="tableSelect"
+        options={{ title: "Table Selection", headerShown: true }}
+      />
+      <Stack.Screen
+        name="payments"
+        options={{ title: "Payments", headerShown: true }}
       />
       <Stack.Screen
         name="floorPlan"
@@ -52,7 +43,6 @@ export default function Layout() {
         name="payments_uvindu"
         options={{ title: "Payments", headerShown: true }}
       />
->>>>>>> teamA
     </Stack>
   );
 }

@@ -1,19 +1,3 @@
-<<<<<<< HEAD
-import { StyleSheet, Text, View } from 'react-native';
-import { Link } from 'expo-router'; 
-
-const Restaurants = () => {
-  return (
-    <View>
-      <Text>Restaurants</Text>
-    </View>
-  );
-};
-
-export default Restaurants;
-
-const styles = StyleSheet.create({});
-=======
 import React, { useState, useEffect } from 'react';
 import { 
   StyleSheet, 
@@ -445,4 +429,3 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Bold', // Added Poppins font
   },
 });
->>>>>>> teamA

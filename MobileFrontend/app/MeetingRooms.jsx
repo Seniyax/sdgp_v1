@@ -4,11 +4,7 @@ import React from 'react'
 const MeetingRooms = () => {
   return (
     <View>
-<<<<<<< HEAD
-      <Text>MeetingRooms</Text>
-=======
       <Text> Under construction</Text>
->>>>>>> teamA
     </View>
   )
 }
