@@ -15,6 +15,12 @@ exports.getFloorPlan = async (req, res) => {
   }
   try {
     const floors = await getFloorsByBusiness(business_id);
+    if (floors.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Floor plan not found",
+      });
+    }
     const tables = await getTablesByBusiness(business_id);
     return res.status(200).json({
       success: true,
@@ -31,19 +37,22 @@ exports.getFloorPlan = async (req, res) => {
 };
 
 exports.createFloorPlan = async (req, res) => {
-  return res.status(201).json({
-    success: true,
-    message: "Floor plan created successfully",
-  });
   const { business_id, canvas_width, canvas_height, floors, tables } = req.body;
   if (!business_id || !canvas_width || !canvas_height || !floors || !tables) {
     return res.status(400).json({
       success: false,
-      message: "business_id, canvas_width, canvas_height, floors and tables arrays are required",
+      message:
+        "business_id, canvas_width, canvas_height, floors and tables arrays are required",
     });
   }
   try {
-    await createFloorPlanWithTables(business_id, canvas_width, canvas_height, floors, tables);
+    await createFloorPlanWithTables(
+      business_id,
+      canvas_width,
+      canvas_height,
+      floors,
+      tables
+    );
     return res.status(201).json({
       success: true,
       message: "Floor plan created successfully",

@@ -87,6 +87,12 @@ exports.getOneUser = async (req, res) => {
         message: "Invalid credentials",
       });
     }
+    if (!user.is_verified) {
+      return res.status(401).json({
+        success: false,
+        message: "Check your email for the email confirmation",
+      });
+    }
     res.status(200).json({
       success: true,
       user,
