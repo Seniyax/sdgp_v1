@@ -268,6 +268,45 @@ exports.logout = async (req, res) => {
     }
 };
 
+
+exports.resetpassword = async (req,res) => {
+    try{
+        const {email} = req.body;
+        const {error} = await supabase.auth.resetPasswordForEmail(email,{
+            redirectTo:'http://localhost:3000/auth/update-password'
+
+        });
+        if (error) {
+            return res.status(400).json({error:error.message});
+
+        }
+        res.status(200).json({message:'Password reset email sent. Check your inbox!' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to send password reset email', details: error.message });
+    }
+};
+
+exports.updatePassword = async (req, res) => {
+    try {
+        const { new_password } = req.body;
+
+        const { error } = await supabase.auth.updateUser({
+            password: new_password
+        });
+
+        if (error) {
+            return res.status(400).json({ error: error.message });
+        }
+
+        res.status(200).json({ message: 'Password updated successfully. You can now log in with your new password.' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to update password', details: error.message });
+    }
+};
+
+    
+
+
 exports.getSession = async (req, res) => {
     try {
         const { data, error } = await supabase.auth.getSession();
