@@ -16,6 +16,7 @@ yarn-error.log*
 # Logs
 logs
 *.log
+logs/
 
 # Coverage directory used by testing tools
 coverage/
