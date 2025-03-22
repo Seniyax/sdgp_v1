@@ -8,8 +8,6 @@ router.post('/signup', authcontroller.signup);
 router.post('/signin', authcontroller.signin);
 router.post('/social/:provider', authcontroller.socialLogin);
 router.post('/logout', authcontroller.logout);
-router.post('/reset-password',authcontroller.resetpassword);
-router.post('/update-password',authcontroller.updatePassword);
 
 // Session managment routes
 router.get('/sessions',authcontroller.getSession);
