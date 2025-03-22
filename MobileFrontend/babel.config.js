@@ -4,8 +4,6 @@ module.exports = function (api) {
   return {
     presets: ["babel-preset-expo"],
     plugins: [
-      // Remove or comment out this line:
-      // "nativewind/babel",
       [
         "module:react-native-dotenv",
         {

@@ -1,4 +1,4 @@
-const express = require("express");
+const express= require("express");
 const cors = require("cors");
 const passport = require("passport");
 require("./config/passport");
@@ -12,6 +12,7 @@ const userRoutes = require("./routes/userRoutes");
 const bHURoutes = require("./routes/bHURoutes");
 const mLRoutes = require("./routes/mLRoutes");
 const floorPlanRoutes = require("./routes/floorPlanRoutes");
+const authRoutes = require("./routes/authRoutes")
 
 const app = express();
 
@@ -24,14 +25,11 @@ app.use(
   })
 );
 
-// Increase payload size limits
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-// Passport Initialization
 app.use(passport.initialize());
 
-// Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({
     status: "OK",
@@ -48,6 +46,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/business-user-relation", bHURoutes);
 app.use("/api/ml", mLRoutes);
 app.use("/api/floor-plan", floorPlanRoutes);
+app.use('/auth',authRoutes)
 
 // Error handler middleware
 app.use((err, req, res, next) => {
@@ -58,8 +57,6 @@ app.use((err, req, res, next) => {
     error: err.message,
   });
 });
-
-// 404 handler - for unmatched routes
 app.use((req, res) => {
   res.status(404).json({
     success: false,
