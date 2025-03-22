@@ -53,24 +53,6 @@ exports.signup = async (req, res) => {
             });
         }
 
-        if(authData.session){
-            const {access_token,refresh_token}=authData.session;
-
-            res.cookie('sb-access-token',access_token,{
-                httpOnly:true,
-                secure:process.env.NODE_ENV === 'production',
-                sameSite:'strict',
-                maxAge:3600 * 1000
-            });
-
-            res.cookie('sb-refresh-token', refresh_token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
-                maxAge: 7 * 24 * 3600 * 1000 
-            });
-        }
-
         res.status(201).json({
             message: 'User registration successful',
             user: {
@@ -110,26 +92,6 @@ exports.signin = async (req, res) => {
             .select('*')
             .eq('id', data.user.id)
             .single();
-
-            if (data.session) {
-                const { access_token, refresh_token } = data.session;
-                
-                // Set secure HTTP-only cookies
-                res.cookie('sb-access-token', access_token, {
-                    httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
-                    sameSite: 'strict',
-                    maxAge: 3600 * 1000 // 1 hour
-                });
-                
-                res.cookie('sb-refresh-token', refresh_token, {
-                    httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
-                    sameSite: 'strict',
-                    maxAge: 7 * 24 * 3600 * 1000 // 7 days
-                });
-            }
-
 
         res.status(200).json({
             message: 'Login successful',
@@ -196,25 +158,6 @@ exports.socialLogin = async (req, res) => {
                 error: 'Failed to update user profile'
             });
         }
-        if (data.session) {
-            const { access_token, refresh_token } = data.session;
-            
-            // Set secure HTTP-only cookies
-            res.cookie('sb-access-token', access_token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
-                maxAge: 3600 * 1000 // 1 hour
-            });
-            
-            res.cookie('sb-refresh-token', refresh_token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
-                maxAge: 7 * 24 * 3600 * 1000 // 7 days
-            });
-        }
-
 
         res.status(200).json({
             message: 'Social login successful',
@@ -246,16 +189,6 @@ exports.logout = async (req, res) => {
             });
         }
 
-    // Clear auth cookies
-        res.clearCookie('sb-access-token');
-        res.clearCookie('sb-refresh-token');
-
-        res.status(200).json({
-            message: 'Logged out successfully'
-        });    
-
-
-
         res.status(200).json({
             message: 'Logged out successfully'
         });
@@ -263,113 +196,6 @@ exports.logout = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             error: 'Logout process failed',
-            details: error.message
-        });
-    }
-};
-
-exports.getSession = async (req, res) => {
-    try {
-        const { data, error } = await supabase.auth.getSession();
-        
-        if (error) {
-            return res.status(401).json({
-                error: 'No active session',
-                details: error.message
-            });
-        }
-        
-        if (!data.session) {
-            return res.status(401).json({
-                error: 'No active session'
-            });
-        }
-        
-        // Get user profile
-        const { data: profileData } = await supabase
-            .from('customer')
-            .select('*')
-            .eq('id', data.session.user.id)
-            .single();
-            
-        res.status(200).json({
-            user: {
-                id: data.session.user.id,
-                email: data.session.user.email,
-                full_name: profileData?.full_name
-            }
-        });
-        
-    } catch (error) {
-        res.status(500).json({
-            error: 'Failed to get session',
-            details: error.message
-        });
-    }
-};
-
-// New method to refresh session
-exports.refreshSession = async (req, res) => {
-    try {
-        const { data, error } = await supabase.auth.refreshSession();
-        
-        if (error) {
-            return res.status(401).json({
-                error: 'Failed to refresh session',
-                details: error.message
-            });
-        }
-        
-        if (data.session) {
-            const { access_token, refresh_token } = data.session;
-            
-            // Update auth cookies
-            res.cookie('sb-access-token', access_token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
-                maxAge: 3600 * 1000 // 1 hour
-            });
-            
-            res.cookie('sb-refresh-token', refresh_token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
-                maxAge: 7 * 24 * 3600 * 1000 // 7 days
-            });
-        }
-        
-        res.status(200).json({
-            message: 'Session refreshed successfully',
-            user: data.user
-        });
-        
-    } catch (error) {
-        res.status(500).json({
-            error: 'Failed to refresh session',
-            details: error.message
-        });
-    }
-};
-
-// Middleware to check authentication
-exports.requireAuth = async (req, res, next) => {
-    try {
-        const { data, error } = await supabase.auth.getSession();
-        
-        if (error || !data.session) {
-            return res.status(401).json({
-                error: 'Authentication required'
-            });
-        }
-        
-        // Add user to request object
-        req.user = data.session.user;
-        
-        next();
-    } catch (error) {
-        res.status(500).json({
-            error: 'Authentication check failed',
             details: error.message
         });
     }
