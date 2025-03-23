@@ -2,6 +2,10 @@
 node_modules/
 package-lock.json
 
+WebFrontend/
+Backend/
+MobileFrontend/
+
 # Debug log files
 npm-debug.log*
 yarn-debug.log*
