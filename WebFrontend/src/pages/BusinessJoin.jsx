@@ -40,7 +40,7 @@ const BusinessJoin = () => {
     const fetchBusinesses = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get("api/business/get-all");
+        const response = await axios.get("/api/business/get-all");
         setBusinesses(response.data.data);
         setIsLoading(false);
       } catch (err) {
@@ -63,7 +63,7 @@ const BusinessJoin = () => {
 
     try {
       const response = await axios.post(
-        "api/business-user-relation/create-business",
+        "/api/business-user-relation/create-business",
         {
           business_id: selectedBusiness,
           username: user.username,

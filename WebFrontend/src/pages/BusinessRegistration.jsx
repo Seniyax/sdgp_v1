@@ -82,7 +82,7 @@ const BusinessRegistration = () => {
 
   async function fetchCategories() {
     try {
-      const response = await axios.get("api/categories/");
+      const response = await axios.get("/api/categories/");
       if (response.data.success && response.data.data) {
         setCategories(response.data.data.map((category) => category.name));
       } else {
@@ -291,7 +291,7 @@ const BusinessRegistration = () => {
     formPayload.append("twitter_link", formData.socialMedia.twitter);
 
     try {
-      const response = await axios.post("api/business/register", formPayload, {
+      const response = await axios.post("/api/business/register", formPayload, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

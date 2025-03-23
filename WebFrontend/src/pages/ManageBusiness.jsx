@@ -41,7 +41,7 @@ const ManageBusiness = () => {
         setIsLoading(true);
         // Send username in the POST request payload
         const response = await axios.post(
-          "api/business-user-relation/get-businesses",
+          "/api/business-user-relation/get-businesses",
           { username: user.username }
         );
 

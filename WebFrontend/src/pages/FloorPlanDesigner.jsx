@@ -227,7 +227,7 @@ function FloorPlanDesigner() {
       const startTime = Date.now();
 
       try {
-        const response = await axios.post(`api/floor-plan/create`, payload);
+        const response = await axios.post(`/api/floor-plan/create`, payload);
         console.log("Floor plan saved successfully", response.data);
 
         const elapsed = Date.now() - startTime;
