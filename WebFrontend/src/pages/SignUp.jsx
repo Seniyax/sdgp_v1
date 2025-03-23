@@ -80,7 +80,7 @@ const SignUp = () => {
     };
 
     try {
-      const response = await axios.post("/api/user/sign-up", payload);
+      const response = await axios.post("https://sdgpv1-production.up.railway.app/api/user/sign-up", payload);
       if (response.data.success) {
         console.log("Signup successful", response.data);
         navigate("/sign-in");
