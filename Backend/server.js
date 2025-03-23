@@ -18,7 +18,7 @@ const CLIENT_ORIGIN =
 
 const io = socketIo(server, {
   cors: {
-    origin: [CLIENT_ORIGIN],
+    origin: ["*"],
     methods: ["GET", "POST", "PUT", "DELETE"],
   },
 });
