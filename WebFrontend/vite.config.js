@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://localhost:3000",
+        target: "https://sdgpv1-production.up.railway.app",
         changeOrigin: true,
         secure: false, // Set to true if using HTTPS
       },
