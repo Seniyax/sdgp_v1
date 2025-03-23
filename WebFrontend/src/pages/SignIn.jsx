@@ -40,7 +40,7 @@ const SignIn = () => {
     };
 
     try {
-      const response = await axios.post("/api/user/sign-in", payload);
+      const response = await axios.post("https://sdgpv1-production.up.railway.app/api/user/sign-in", payload);
       if (response.data.success) {
         console.log("Login successful", response.data);
         sessionStorage.setItem("user", JSON.stringify(response.data.user));
