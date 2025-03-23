@@ -17,36 +17,44 @@ async function createBusinessRecord(
   twitter_link
 ) {
   try {
-    const uniqueLogoName = `${uuidv4()}-${logo.originalname}`;
-    const uniqueCoverName = `${uuidv4()}-${cover.originalname}`;
+    // let uniqueLogoName = null;
+    // let uniqueCoverName = null;
 
-    const [logoUpload, coverUpload] = await Promise.allSettled([
-      supabase.storage.from("images").upload(`logos/${uniqueLogoName}`, logo),
-      supabase.storage
-        .from("images")
-        .upload(`covers/${uniqueCoverName}`, cover),
-    ]);
+    // if(logo && cover){
+    //    uniqueLogoName = `${uuidv4()}-${logo.originalname}`;
+    //    uniqueCoverName = `${uuidv4()}-${cover.originalname}`;
+    // }
 
-    if (logoUpload.status === "rejected") {
-      console.error("Error uploading logo:", logoUpload.reason);
-      throw new Error(`Error uploading logo: ${logoUpload.reason.message}`);
-    }
+    // const [logoUpload, coverUpload] = await Promise.allSettled([
+    //   supabase.storage.from("images").upload(`logos/${uniqueLogoName}`, logo),
+    //   supabase.storage
+    //     .from("images")
+    //     .upload(`covers/${uniqueCoverName}`, cover),
+    // ]);
 
-    if (coverUpload.status === "rejected") {
-      console.error("Error uploading cover:", coverUpload.reason);
-      throw new Error(`Error uploading cover: ${coverUpload.reason.message}`);
-    }
+    // if (logoUpload.status === "rejected") {
+    //   console.error("Error uploading logo:", logoUpload.reason);
+    //   throw new Error(`Error uploading logo: ${logoUpload.reason.message}`);
+    // }
 
-    const logoUrl = supabase.storage
-      .from("images")
-      .getPublicUrl(`logos/${uniqueLogoName}`).publicURL;
-    const coverUrl = supabase.storage
-      .from("images")
-      .getPublicUrl(`covers/${uniqueCoverName}`).publicURL;
+    // if (coverUpload.status === "rejected") {
+    //   console.error("Error uploading cover:", coverUpload.reason);
+    //   throw new Error(`Error uploading cover: ${coverUpload.reason.message}`);
+    // }
 
-    if (!logoUrl || !coverUrl) {
-      throw new Error("Failed to retrieve image URLs");
-    }
+    // const logoUrl = supabase.storage
+    //   .from("images")
+    //   .getPublicUrl(`logos/${uniqueLogoName}`).publicURL;
+    // const coverUrl = supabase.storage
+    //   .from("images")
+    //   .getPublicUrl(`covers/${uniqueCoverName}`).publicURL;
+
+    // if (!logoUrl || !coverUrl) {
+    //   throw new Error("Failed to retrieve image URLs");
+    // }
+
+    const logoUrl = null;
+    const coverUrl = null;
 
     const { data, error } = await supabase
       .from("business")
@@ -96,7 +104,9 @@ async function getAllBusinesses() {
 }
 
 async function getBusinessesMinimal() {
-  const { data, error } = await supabase.from("business").select("id, name, is_verified");
+  const { data, error } = await supabase
+    .from("business")
+    .select("id, name, is_verified");
   if (error) throw error;
   return data;
 }
