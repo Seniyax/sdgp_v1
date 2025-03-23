@@ -35,6 +35,7 @@ const ManageBusiness = () => {
   // Fetch businesses from the API once the user is set
   useEffect(() => {
     if (!user) return; // Wait until user is available
+
     const fetchBusinesses = async () => {
       try {
         setIsLoading(true);
@@ -43,8 +44,13 @@ const ManageBusiness = () => {
           "api/business-user-relation/get-businesses",
           { username: user.username }
         );
+
         if (response.data.success) {
-          setBusinesses(response.data.data);
+          // Filter only verified businesses before setting the state
+          const verifiedBusinesses = response.data.data.filter(
+            (business) => business.is_verified
+          );
+          setBusinesses(verifiedBusinesses);
         } else {
           throw new Error(
             response.data.message || "Failed to fetch businesses"
@@ -156,7 +162,9 @@ const ManageBusiness = () => {
                   <td className="actions-cell">
                     <button
                       onClick={() =>
-                        handleNavigateToReservationDashboard(relation.business_id)
+                        handleNavigateToReservationDashboard(
+                          relation.business_id
+                        )
                       }
                       className="dashboard-button"
                       title="Go to Dashboard"
@@ -167,7 +175,9 @@ const ManageBusiness = () => {
                       relation.type.toLowerCase() === "admin") && (
                       <button
                         onClick={() =>
-                          handleNavigateToBusinessDashboard(relation.business_id)
+                          handleNavigateToBusinessDashboard(
+                            relation.business_id
+                          )
                         }
                         className="details-button"
                         title="View Business Details"

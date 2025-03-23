@@ -285,7 +285,6 @@ const ReservationDashboard = () => {
         const response = await axios.post("/api/reservation/get", {
           business_id: business.id,
         });
-        console.log("Reservations Updated:");
         setReservations(response.data.reservations);
       } catch (error) {
         console.error("Error fetching reservations:", error);

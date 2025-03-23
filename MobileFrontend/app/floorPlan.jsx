@@ -21,6 +21,7 @@ import { Dimensions } from "react-native";
 import { useRouter } from "expo-router";
 import useReservationsSocket from "../hooks/useReservationsSocket";
 import useReservationStore from "../store/reservationStore";
+import { useAuth } from "../contexts/AuthContext";
 
 import StraightWall from "../components/straightWall";
 import SquareTable from "../components/squareTable";
@@ -130,9 +131,10 @@ const FloorPlan = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const router = useRouter();
+  const { business } = useAuth();
 
-  const allowedStartHour = 9;
-  const allowedEndHour = 22;
+  const allowedStartHour = business.opening_hour;
+  const allowedEndHour = business.closing_hour;
 
   const computeDefaultDate = () => {
     const now = new Date();
@@ -187,7 +189,7 @@ const FloorPlan = () => {
     setLoading(true);
     try {
       const response = await axios.post(`${API_BASE_URL}/api/floor-plan/get`, {
-        business_id: 20,
+        business_id: business.id,
       });
       if (response.data.success) {
         setFloorPlanData(response.data);
@@ -198,8 +200,20 @@ const FloorPlan = () => {
         setError("Failed to load floor plan.");
       }
     } catch (err) {
+      const errorMsg = err.response?.data?.message || err.message;
+      Alert.alert(
+        "Error",
+        errorMsg,
+        [
+          {
+            text: "OK",
+            onPress: () => router.push("/restaurants"),
+          },
+        ],
+        { cancelable: true }
+      );
       console.log("Network Error:", err);
-      setError(err.response?.data?.message || err.message);
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }

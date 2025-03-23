@@ -125,6 +125,12 @@ export default function HomeScreen() {
     Animated.sequence([scaleDown, scaleUp]).start();
   };
 
+  const toCamelCase = (str) => 
+    str
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '') // Remove special characters except spaces
+      .replace(/\s+(\w)/g, (_, letter) => letter.toUpperCase()); // Capitalize after space  
+
   // Fetch categories from API
   const fetchCategories = async () => {
     setLoading(true);
@@ -135,13 +141,7 @@ export default function HomeScreen() {
         const mappedCategories = response.data.data.map(category => {
           // Determine the icon based on category name or use default
           const iconName = categoryIcons[category.name] || categoryIcons.default;
-          var routePath = "";
-          // Create route path based on category name (remove spaces and special chars)
-          if (category.name === "Restaurant"){
-            routePath = "Restaurants";
-          }else{
-            routePath = `/${category.name.replace(/[^a-zA-Z0-9]/g, '')}`;
-          }
+          let routePath = toCamelCase(category.name) + "s";
           return {
             id: category.id,
             name: category.name,
@@ -234,7 +234,7 @@ export default function HomeScreen() {
   const navigateToProfile = () => {
     animateNavButton(profileButtonAnim);
     setTimeout(() => {
-      router.push('/Profile');
+      router.push('/profile');
     }, 200);
   };
   

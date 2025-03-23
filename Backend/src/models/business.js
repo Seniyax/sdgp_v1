@@ -96,7 +96,7 @@ async function getAllBusinesses() {
 }
 
 async function getBusinessesMinimal() {
-  const { data, error } = await supabase.from("business").select("id, name");
+  const { data, error } = await supabase.from("business").select("id, name, is_verified");
   if (error) throw error;
   return data;
 }

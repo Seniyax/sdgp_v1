@@ -86,6 +86,7 @@ const BusinessJoin = () => {
           setSelectedBusiness("");
           setSupervisorUsername("");
           setRole("Staff");
+          navigate("/manage-business");
         });
       }
     } catch (err) {
@@ -114,7 +115,6 @@ const BusinessJoin = () => {
       </div>
     );
   }
-
   return (
     <div className="business-join-container">
       <div className="join-card">
@@ -136,11 +136,13 @@ const BusinessJoin = () => {
                 <option value="" disabled>
                   Select a business
                 </option>
-                {businesses.map((business) => (
-                  <option key={business.id} value={business.id}>
-                    {business.name}
-                  </option>
-                ))}
+                {businesses
+                  .filter((business) => business.is_verified)
+                  .map((business) => (
+                    <option key={business.id} value={business.id}>
+                      {business.name}
+                    </option>
+                  ))}
               </select>
             </div>
           </div>

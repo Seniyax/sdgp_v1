@@ -17,7 +17,7 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 import FormInput from '../../components/FormInput';
 import AuthButton from '../../components/AuthButton';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { isValidEmail } from '../../utils/validation';
 import { api } from '../../services/api';
 

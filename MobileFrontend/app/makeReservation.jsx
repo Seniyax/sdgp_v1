@@ -14,10 +14,13 @@ import {
 } from "react-native-responsive-screen";
 import useReservationsSocket from "../hooks/useReservationsSocket";
 import useReservationStore from "../store/reservationStore";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function MakeReservation() {
   const params = useLocalSearchParams();
   const router = useRouter();
+  const { user } = useAuth();
+  const { business } = useAuth();
 
   // Parse selected tables passed from floorPlan (JSON string)
   const tables = params.selectedTables ? JSON.parse(params.selectedTables) : [];
@@ -65,17 +68,16 @@ export default function MakeReservation() {
     setLoading(true);
 
     // Create reservation for each table.
-    // Updated payload includes "end_date" (which is the date) and ensures "start_time" is in "HH:MM:SS" format.
     const createReservationForTable = (table) =>
       new Promise((resolve, reject) => {
         const payload = {
-          business_id: 20,
-          table_number: table.tableNumber, // one table per request
-          customer_username: "uvindu_dev",
+          business_id: business.id,
+          table_number: table.tableNumber,
+          customer_username: user.username,
           group_size: totalSeats.toString(),
           slot_type: reservationType,
-          start_time: time, // expected format "HH:MM:SS"
-          end_date: date, // NEW: sending the date as end_date
+          start_time: time,
+          end_date: date,
         };
 
         socket.emit("createReservation", payload, (response) => {

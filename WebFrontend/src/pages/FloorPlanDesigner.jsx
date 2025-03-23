@@ -11,18 +11,54 @@ import FloorPlanStep3 from "./FloorPlanStep3";
 import FloorPlanWaiting from "./FloorPlanWaiting";
 import FloorPlanSuccess from "./FloorPlanSuccess";
 import FloorPlanFaliure from "./FloorPlanFaliure";
+import Swal from "sweetalert2";
 
 function FloorPlanDesigner() {
   const navigate = useNavigate();
-  const [businessId, setBusinessId] = useState();
+  const [businessId, setBusinessId] = useState(null);
+
   useEffect(() => {
     const user = JSON.parse(sessionStorage.getItem("user"));
     const business = JSON.parse(sessionStorage.getItem("business"));
+
     if (!user || !business) {
       navigate("/");
+    } else {
+      setBusinessId(business.id);
     }
-    setBusinessId(business.id);
   }, [navigate]);
+
+  useEffect(() => {
+    if (!businessId) return;
+
+    const fetchBusinessById = async () => {
+      try {
+        const response = await axios.post("/api/business/get-by-id", {
+          business_id: businessId,
+        });
+
+        if (response.data.success) {
+          const { business } = response.data.data;
+          if (!business.is_verified) {
+            Swal.fire({
+              title: "Verification Pending",
+              text: "Your business has been created, but your primary email has not yet been verified. Please check your email for further instructions.",
+              icon: "warning",
+              confirmButtonText: "Okay",
+            }).then(() => {
+              navigate("/manage-business");
+            });
+          }
+        } else {
+          throw new Error(response.data.message || "Failed to fetch business");
+        }
+      } catch (err) {
+        console.error("Error fetching business:", err.message);
+      }
+    };
+
+    fetchBusinessById();
+  }, [businessId, navigate]);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [width, setWidth] = useState(0);

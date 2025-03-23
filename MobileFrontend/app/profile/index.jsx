@@ -15,8 +15,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 import LoadingSpinner from '../../components/LoadingSpinner';
-import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function ProfileScreen() {
   const { user, signOut, loading } = useAuth();
@@ -152,7 +152,7 @@ export default function ProfileScreen() {
           {/* My Reservations */}
           <TouchableOpacity
             style={styles.optionItem}
-            onPress={() => router.push('/reservations')}
+            onPress={() => router.push('/history')}
           >
             <View style={styles.optionIconContainer}>
               <Ionicons

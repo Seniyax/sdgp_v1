@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   StyleSheet,
   View,
@@ -8,24 +8,27 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert
-} from 'react-native';
-import { router, Link } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { Ionicons } from '@expo/vector-icons';
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
-import * as Facebook from 'expo-auth-session/providers/facebook';
-import * as AppleAuthentication from 'expo-apple-authentication';
+  Alert,
+} from "react-native";
+import { router, Link } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
+import * as WebBrowser from "expo-web-browser";
+import * as Google from "expo-auth-session/providers/google";
+import * as Facebook from "expo-auth-session/providers/facebook";
+import * as AppleAuthentication from "expo-apple-authentication";
 
-import FormInput from '../../components/FormInput';
-import AuthButton from '../../components/AuthButton';
-import SocialButton from '../../components/SocialButton';
-import LoadingSpinner from '../../components/LoadingSpinner';
-import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
-import { validateSignupForm } from '../../utils/validation';
+import FormInput from "../../components/FormInput";
+import AuthButton from "../../components/AuthButton";
+import SocialButton from "../../components/SocialButton";
+import LoadingSpinner from "../../components/LoadingSpinner";
+import { useAuth } from "../../contexts/AuthContext";
+import { useTheme } from "../../contexts/ThemeContext";
+import { validateSignupForm } from "../../utils/validation";
 
 // Required for web browser redirect
 WebBrowser.maybeCompleteAuthSession();
@@ -36,10 +39,11 @@ export default function SignUpScreen() {
 
   // Form state
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+    name: "",
+    email: "",
+    username: "",
+    password: "",
+    confirmPassword: "",
   });
 
   // Validation state
@@ -47,7 +51,7 @@ export default function SignUpScreen() {
     name: false,
     email: false,
     password: false,
-    confirmPassword: false
+    confirmPassword: false,
   });
   const [errors, setErrors] = useState({});
 
@@ -58,39 +62,40 @@ export default function SignUpScreen() {
   const [appleLoading, setAppleLoading] = useState(false);
 
   // Google auth configuration
-  const [googleRequest, googleResponse, googlePromptAsync] = Google.useAuthRequest({
-    expoClientId: 'YOUR_EXPO_CLIENT_ID',
-    iosClientId: 'YOUR_IOS_CLIENT_ID',
-    androidClientId: 'YOUR_ANDROID_CLIENT_ID',
-    webClientId: 'YOUR_WEB_CLIENT_ID',
-  });
+  const [googleRequest, googleResponse, googlePromptAsync] =
+    Google.useAuthRequest({
+      expoClientId: "YOUR_EXPO_CLIENT_ID",
+      iosClientId: "YOUR_IOS_CLIENT_ID",
+      androidClientId: "YOUR_ANDROID_CLIENT_ID",
+      webClientId: "YOUR_WEB_CLIENT_ID",
+    });
 
   // Facebook auth configuration
   const [fbRequest, fbResponse, fbPromptAsync] = Facebook.useAuthRequest({
-    clientId: 'YOUR_FACEBOOK_APP_ID',
+    clientId: "YOUR_FACEBOOK_APP_ID",
   });
 
   // Handle text input changes
   const handleChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
 
     // Validate on change if field has been touched
     if (touched[field]) {
       const { errors: validationErrors } = validateSignupForm({
         ...formData,
-        [field]: value
+        [field]: value,
       });
-      setErrors(prev => ({ ...prev, [field]: validationErrors[field] }));
+      setErrors((prev) => ({ ...prev, [field]: validationErrors[field] }));
     }
   };
 
   // Handle input blur (for validation)
   const handleBlur = (field) => {
-    setTouched(prev => ({ ...prev, [field]: true }));
+    setTouched((prev) => ({ ...prev, [field]: true }));
 
     // Validate the field
     const { errors: validationErrors } = validateSignupForm(formData);
-    setErrors(prev => ({ ...prev, [field]: validationErrors[field] }));
+    setErrors((prev) => ({ ...prev, [field]: validationErrors[field] }));
   };
 
   // Handle form submission
@@ -104,7 +109,7 @@ export default function SignUpScreen() {
       name: true,
       email: true,
       password: true,
-      confirmPassword: true
+      confirmPassword: true,
     });
 
     // If form is valid, submit
@@ -114,27 +119,28 @@ export default function SignUpScreen() {
       try {
         const result = await signUp(
           formData.email,
+          formData.username,
           formData.password,
           formData.name
         );
 
         if (result.success) {
           Alert.alert(
-            'Account Created',
-            'Your account has been created successfully. Please sign in.',
+            "Account Created",
+            "Your account has been created successfully. Please sign in.",
             [
               {
-                text: 'Sign In',
-                onPress: () => router.replace('/auth/signin')
-              }
+                text: "Sign In",
+                onPress: () => router.replace("/auth/signin"),
+              },
             ]
           );
         } else {
-          Alert.alert('Sign Up Failed', result.error);
+          Alert.alert("Sign Up Failed", result.error);
         }
       } catch (error) {
-        console.error('Sign up error:', error);
-        Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+        console.error("Sign up error:", error);
+        Alert.alert("Error", "An unexpected error occurred. Please try again.");
       } finally {
         setIsSubmitting(false);
       }
@@ -143,7 +149,7 @@ export default function SignUpScreen() {
 
   // Google sign in handler
   React.useEffect(() => {
-    if (googleResponse?.type === 'success') {
+    if (googleResponse?.type === "success") {
       setGoogleLoading(true);
       handleGoogleSuccess(googleResponse.authentication.idToken);
     }
@@ -154,24 +160,27 @@ export default function SignUpScreen() {
       setGoogleLoading(true);
       await googlePromptAsync();
     } catch (error) {
-      console.error('Google sign in error:', error);
-      Alert.alert('Error', 'Google sign in failed. Please try again.');
+      console.error("Google sign in error:", error);
+      Alert.alert("Error", "Google sign in failed. Please try again.");
       setGoogleLoading(false);
     }
   };
 
   const handleGoogleSuccess = async (idToken) => {
     try {
-      const result = await socialLogin('google', idToken);
+      const result = await socialLogin("google", idToken);
 
       if (result.success) {
-        router.replace('/home');
+        router.replace("/home");
       } else {
-        Alert.alert('Google Sign In Failed', result.error);
+        Alert.alert("Google Sign In Failed", result.error);
       }
     } catch (error) {
-      console.error('Google auth error:', error);
-      Alert.alert('Error', 'Failed to authenticate with Google. Please try again.');
+      console.error("Google auth error:", error);
+      Alert.alert(
+        "Error",
+        "Failed to authenticate with Google. Please try again."
+      );
     } finally {
       setGoogleLoading(false);
     }
@@ -179,7 +188,7 @@ export default function SignUpScreen() {
 
   // Facebook sign in handler
   React.useEffect(() => {
-    if (fbResponse?.type === 'success') {
+    if (fbResponse?.type === "success") {
       setFacebookLoading(true);
       const { access_token } = fbResponse.authentication;
       handleFacebookSuccess(access_token);
@@ -191,24 +200,27 @@ export default function SignUpScreen() {
       setFacebookLoading(true);
       await fbPromptAsync();
     } catch (error) {
-      console.error('Facebook sign in error:', error);
-      Alert.alert('Error', 'Facebook sign in failed. Please try again.');
+      console.error("Facebook sign in error:", error);
+      Alert.alert("Error", "Facebook sign in failed. Please try again.");
       setFacebookLoading(false);
     }
   };
 
   const handleFacebookSuccess = async (accessToken) => {
     try {
-      const result = await socialLogin('facebook', accessToken);
+      const result = await socialLogin("facebook", accessToken);
 
       if (result.success) {
-        router.replace('/home');
+        router.replace("/home");
       } else {
-        Alert.alert('Facebook Sign In Failed', result.error);
+        Alert.alert("Facebook Sign In Failed", result.error);
       }
     } catch (error) {
-      console.error('Facebook auth error:', error);
-      Alert.alert('Error', 'Failed to authenticate with Facebook. Please try again.');
+      console.error("Facebook auth error:", error);
+      Alert.alert(
+        "Error",
+        "Failed to authenticate with Facebook. Please try again."
+      );
     } finally {
       setFacebookLoading(false);
     }
@@ -230,22 +242,22 @@ export default function SignUpScreen() {
       const { identityToken } = credential;
 
       if (identityToken) {
-        const result = await socialLogin('apple', identityToken);
+        const result = await socialLogin("apple", identityToken);
 
         if (result.success) {
-          router.replace('/home');
+          router.replace("/home");
         } else {
-          Alert.alert('Apple Sign In Failed', result.error);
+          Alert.alert("Apple Sign In Failed", result.error);
         }
       } else {
-        throw new Error('No identity token received from Apple');
+        throw new Error("No identity token received from Apple");
       }
     } catch (error) {
-      console.error('Apple sign in error:', error);
+      console.error("Apple sign in error:", error);
 
       // Don't show error for user cancellation
-      if (error.code !== 'ERR_CANCELED') {
-        Alert.alert('Error', 'Apple sign in failed. Please try again.');
+      if (error.code !== "ERR_CANCELED") {
+        Alert.alert("Error", "Apple sign in failed. Please try again.");
       }
     } finally {
       setAppleLoading(false);
@@ -255,10 +267,10 @@ export default function SignUpScreen() {
   return (
     <KeyboardAvoidingView
       style={[styles.container, { backgroundColor: theme.background }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
     >
-      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
+      <StatusBar style={isDarkMode ? "light" : "dark"} />
 
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
@@ -269,11 +281,7 @@ export default function SignUpScreen() {
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons
-            name="arrow-back"
-            size={wp('6%')}
-            color={theme.text}
-          />
+          <Ionicons name="arrow-back" size={wp("6%")} color={theme.text} />
         </TouchableOpacity>
 
         {/* Logo */}
@@ -283,9 +291,7 @@ export default function SignUpScreen() {
             style={styles.logo}
             resizeMode="contain"
           /> */}
-          <Text style={[styles.appName, { color: theme.primary }]}>
-            SLOTZI
-          </Text>
+          <Text style={[styles.appName, { color: theme.primary }]}>SLOTZI</Text>
         </View>
 
         {/* Heading */}
@@ -303,49 +309,60 @@ export default function SignUpScreen() {
           <FormInput
             label="Full Name"
             value={formData.name}
-            onChangeText={(value) => handleChange('name', value)}
+            onChangeText={(value) => handleChange("name", value)}
             placeholder="Enter your full name"
             icon="person-outline"
             error={errors.name}
             touched={touched.name}
-            onBlur={() => handleBlur('name')}
+            onBlur={() => handleBlur("name")}
             autoCapitalize="words"
           />
 
           <FormInput
             label="Email"
             value={formData.email}
-            onChangeText={(value) => handleChange('email', value)}
+            onChangeText={(value) => handleChange("email", value)}
             placeholder="Enter your email"
             keyboardType="email-address"
             icon="mail-outline"
             error={errors.email}
             touched={touched.email}
-            onBlur={() => handleBlur('email')}
+            onBlur={() => handleBlur("email")}
+          />
+
+          <FormInput
+            label="Username"
+            value={formData.username}
+            onChangeText={(value) => handleChange("username", value)}
+            placeholder="Create a username"
+            icon="person-outline"
+            error={errors.username}
+            touched={touched.username}
+            onBlur={() => handleBlur("username")}
           />
 
           <FormInput
             label="Password"
             value={formData.password}
-            onChangeText={(value) => handleChange('password', value)}
+            onChangeText={(value) => handleChange("password", value)}
             placeholder="Create a password"
             secureTextEntry
             icon="lock-closed-outline"
             error={errors.password}
             touched={touched.password}
-            onBlur={() => handleBlur('password')}
+            onBlur={() => handleBlur("password")}
           />
 
           <FormInput
             label="Confirm Password"
             value={formData.confirmPassword}
-            onChangeText={(value) => handleChange('confirmPassword', value)}
+            onChangeText={(value) => handleChange("confirmPassword", value)}
             placeholder="Confirm your password"
             secureTextEntry
             icon="checkmark-circle-outline"
             error={errors.confirmPassword}
             touched={touched.confirmPassword}
-            onBlur={() => handleBlur('confirmPassword')}
+            onBlur={() => handleBlur("confirmPassword")}
           />
 
           <AuthButton
@@ -383,7 +400,7 @@ export default function SignUpScreen() {
               style={styles.socialButton}
             />
 
-            {Platform.OS === 'ios' && (
+            {Platform.OS === "ios" && (
               <SocialButton
                 provider="apple"
                 onPress={handleAppleSignIn}
@@ -410,7 +427,9 @@ export default function SignUpScreen() {
       </ScrollView>
 
       <LoadingSpinner
-        visible={isSubmitting || googleLoading || facebookLoading || appleLoading}
+        visible={
+          isSubmitting || googleLoading || facebookLoading || appleLoading
+        }
         message="Creating account..."
       />
     </KeyboardAvoidingView>
@@ -423,80 +442,80 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-    paddingHorizontal: wp('6%'),
-    paddingTop: hp('2%'),
-    paddingBottom: hp('6%'),
+    paddingHorizontal: wp("6%"),
+    paddingTop: hp("2%"),
+    paddingBottom: hp("6%"),
   },
   backButton: {
-    alignSelf: 'flex-start',
-    padding: wp('2%'),
-    marginBottom: hp('1%'),
+    alignSelf: "flex-start",
+    padding: wp("2%"),
+    marginBottom: hp("1%"),
   },
   logoContainer: {
-    alignItems: 'center',
-    marginBottom: hp('2%'),
+    alignItems: "center",
+    marginBottom: hp("2%"),
   },
   logo: {
-    width: wp('16%'),
-    height: wp('16%'),
+    width: wp("16%"),
+    height: wp("16%"),
   },
   appName: {
-    fontSize: wp('6%'),
-    fontWeight: 'bold',
-    marginTop: hp('0.5%'),
+    fontSize: wp("6%"),
+    fontWeight: "bold",
+    marginTop: hp("0.5%"),
   },
   headerContainer: {
-    marginBottom: hp('3%'),
-    alignItems: 'center',
+    marginBottom: hp("3%"),
+    alignItems: "center",
   },
   headerText: {
-    fontSize: wp('7%'),
-    fontWeight: 'bold',
-    marginBottom: hp('0.5%'),
+    fontSize: wp("7%"),
+    fontWeight: "bold",
+    marginBottom: hp("0.5%"),
   },
   subHeaderText: {
-    fontSize: wp('4%'),
+    fontSize: wp("4%"),
   },
   formContainer: {
-    marginBottom: hp('3%'),
+    marginBottom: hp("3%"),
   },
   signUpButton: {
-    marginTop: hp('1%'),
+    marginTop: hp("1%"),
   },
   socialContainer: {
-    marginBottom: hp('2%'),
+    marginBottom: hp("2%"),
   },
   dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: hp('2%'),
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: hp("2%"),
   },
   divider: {
     flex: 1,
     height: 1,
   },
   dividerText: {
-    marginHorizontal: wp('3%'),
-    fontSize: wp('3.8%'),
+    marginHorizontal: wp("3%"),
+    fontSize: wp("3.8%"),
   },
   socialButtonsContainer: {
-    gap: hp('1.5%'),
+    gap: hp("1.5%"),
   },
   socialButton: {
     marginVertical: 0,
   },
   signInContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: hp('2%'),
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: hp("2%"),
   },
   signInText: {
-    fontSize: wp('4%'),
+    fontSize: wp("4%"),
   },
   signInLinkText: {
-    fontSize: wp('4%'),
-    fontWeight: '600',
-    marginLeft: wp('1%'),
+    fontSize: wp("4%"),
+    fontWeight: "600",
+    marginLeft: wp("1%"),
   },
 });

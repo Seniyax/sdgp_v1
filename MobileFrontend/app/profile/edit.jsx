@@ -19,8 +19,8 @@ import * as ImagePicker from 'expo-image-picker';
 import FormInput from '../../components/FormInput';
 import AuthButton from '../../components/AuthButton';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { validateProfileForm } from '../../utils/validation';
 
 export default function EditProfileScreen() {

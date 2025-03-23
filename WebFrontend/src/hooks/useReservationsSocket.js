@@ -23,6 +23,10 @@ const useReservationsSocket = (businessId) => {
       newSocket.emit("getReservations", { business_id: businessId });
     });
 
+    newSocket.onAny((event, ...args) => {
+      console.log(`Socket event received: ${event}`, args);
+    });
+
     newSocket.on("reservationsData", (data) => {
       if (data.success) {
         setReservations(data.reservations);
@@ -30,10 +34,12 @@ const useReservationsSocket = (businessId) => {
     });
 
     newSocket.on("reservationAdded", (reservation) => {
+      console.log("Socket reservationAdded:", reservation);
       addReservation(reservation);
     });
 
     newSocket.on("reservationUpdated", (reservation) => {
+      console.log("Socket reservationUpdated:", reservation);
       updateReservation(reservation);
     });
 

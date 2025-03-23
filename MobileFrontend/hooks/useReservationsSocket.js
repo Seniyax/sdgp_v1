@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import io from "socket.io-client";
 import useReservationStore from "../store/reservationStore";
 import { API_BASE_URL } from "@env";
+import { useAuth } from "../contexts/AuthContext";
 
 const SOCKET_SERVER_URL = API_BASE_URL;
 
@@ -13,13 +14,14 @@ const useReservationsSocket = () => {
     updateReservation,
     deleteReservation,
   } = useReservationStore();
+  const { business } = useAuth();
 
   useEffect(() => {
     const newSocket = io(SOCKET_SERVER_URL);
 
     newSocket.on("connect", () => {
       console.log("Connected to reservations socket");
-      newSocket.emit("getReservations", { business_id: 20 });
+      newSocket.emit("getReservations", { business_id: business.id });
     });
 
     newSocket.on("reservationsData", (data) => {
