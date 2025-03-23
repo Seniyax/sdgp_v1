@@ -1,6 +1,8 @@
 const supabase = require("../config/supabaseClient");
+require("dotenv").config();
 
 const generateTemplate = (status, message) => {
+  const homeUrl = process.env.CLIENT_ORIGIN || "/";
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -80,7 +82,7 @@ const generateTemplate = (status, message) => {
       status === "success" ? "Congratulations!" : "Oops!"
     }</div>
     <div class="message">${message}</div>
-    <a class="btn" href="/">Return to Homepage</a>
+    <a class="btn" href="${homeUrl}">Return to Homepage</a>
     <div class="footer">${
       status === "success"
         ? "Thank you for verifying your email."

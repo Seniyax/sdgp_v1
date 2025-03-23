@@ -40,7 +40,7 @@ const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 
 async function sendVerificationEmail(email, token) {
-  const verificationLink = `http://localhost:3000/api/email/verify-business?token=${token}`;
+  const verificationLink = `${process.env.BASE_SERVER_URL}/api/email/verify-business?token=${token}`;
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {

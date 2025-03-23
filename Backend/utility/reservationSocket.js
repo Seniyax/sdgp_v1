@@ -2,6 +2,9 @@ const axios = require("axios");
 const dayjs = require("dayjs");
 const customParseFormat = require("dayjs/plugin/customParseFormat");
 dayjs.extend(customParseFormat);
+require("dotenv").config();
+
+const BASE_SERVER_URL = process.env.BASE_SERVER_URL || "http://localhost:3000";
 
 module.exports = function (io) {
   io.on("connection", (socket) => {
@@ -10,7 +13,7 @@ module.exports = function (io) {
     socket.on("getReservations", async (data) => {
       try {
         const response = await axios.post(
-          "http://localhost:3000/api/reservation/get",
+          `${BASE_SERVER_URL}/api/reservation/get`,
           { business_id: data.business_id }
         );
         if (response.data.success) {
@@ -29,7 +32,7 @@ module.exports = function (io) {
     socket.on("updateReservation", async (data, callback) => {
       try {
         const response = await axios.put(
-          "http://localhost:3000/api/reservation/update",
+          `${BASE_SERVER_URL}/api/reservation/update`,
           {
             reservation_id: data.reservation_id,
             update_data: data.update_data,
@@ -68,7 +71,7 @@ module.exports = function (io) {
           : data.end_date;
 
         const response = await axios.post(
-          "http://localhost:3000/api/reservation/create",
+          `${BASE_SERVER_URL}/api/reservation/create`,
           {
             business_id: data.business_id,
             table_number: data.table_number,
@@ -102,7 +105,7 @@ module.exports = function (io) {
       try {
         console.log("About to make DELETE request to API");
         const response = await axios.delete(
-          `http://localhost:3000/api/reservation/delete/${data.reservation_id}`
+          `${BASE_SERVER_URL}/api/reservation/delete/${data.reservation_id}`
         );
         console.log("API Response:", response.data);
 
@@ -111,8 +114,6 @@ module.exports = function (io) {
           callback({ success: true, message: response.data.message });
 
           console.log("Broadcasting deletion with ID:", data.reservation_id);
-          console.log("Type of ID:", typeof data.reservation_id);
-
           io.emit("reservationDeleted", data.reservation_id);
           console.log("Broadcast complete");
         } else {
