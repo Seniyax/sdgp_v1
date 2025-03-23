@@ -1,6 +1,35 @@
-const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config();
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+const { createClient } = require("@supabase/supabase-js");
+require("dotenv").config();
 
-module.exports = supabase;
+// Validate environment variables
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+  throw new Error("Missing required Supabase environment variables");
+}
+
+
+const supabaseClient = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY,
+  {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+    },
+  }
+);
+
+// Test connection
+const testConnection = async () => {
+  try {
+    await supabaseClient.auth.getSession();
+    console.log("✅ Supabase connection successful");
+  } catch (error) {
+    console.error("❌ Supabase connection error:", error);
+  }
+};
+
+testConnection();
+
+module.exports = supabaseClient;

@@ -1,0 +1,141 @@
+// Create this file in a public folder or serve it separately
+// public/simulation/payment.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Simulation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 40px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .details {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        .amount {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            color: #0066cc;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .status-options {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .status-options button {
+            width: 48%;
+        }
+        .status-options button.cancel {
+            background-color: #f44336;
+        }
+        .status-options button.cancel:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Payment Simulation</h1>
+        
+        <div class="details">
+            <p><strong>Order ID:</strong> <span id="orderId"></span></p>
+            <p><strong>Reservation:</strong> <span id="reservationId"></span></p>
+        </div>
+        
+        <div class="amount">LKR <span id="amount">250</span>.00</div>
+        
+        <button id="successBtn">Complete Payment Successfully</button>
+        
+        <div class="status-options">
+            <button id="failedBtn" class="cancel">Failed Payment</button>
+            <button id="cancelBtn" class="cancel">Cancel Payment</button>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Extract order ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('orderId');
+            
+            // Set values
+            document.getElementById('orderId').textContent = orderId || 'Unknown';
+            document.getElementById('reservationId').textContent = '#13';
+            
+            // Handle success button
+            document.getElementById('successBtn').addEventListener('click', function() {
+                simulatePayment('success');
+            });
+            
+            // Handle failed button
+            document.getElementById('failedBtn').addEventListener('click', function() {
+                simulatePayment('failed');
+            });
+            
+            // Handle cancel button
+            document.getElementById('cancelBtn').addEventListener('click', function() {
+                simulatePayment('canceled');
+            });
+            
+            // Function to simulate payment
+            function simulatePayment(status) {
+                fetch(`/api/payments/simulate?orderId=${orderId}&status=${status}`, {
+                    method: 'GET'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message and redirect
+                        alert(`Payment ${status}! Redirecting back to app...`);
+                        
+                        // In a real app, you'd redirect to your app with the status
+                        // For simulation, just go back to previous page
+                        window.location.href = `/simulation/result.html?status=${status}&orderId=${orderId}`;
+                    } else {
+                        alert('Error processing payment: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error processing payment. Please try again.');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
