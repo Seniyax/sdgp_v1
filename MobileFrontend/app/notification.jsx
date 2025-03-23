@@ -16,6 +16,7 @@ import axios from 'axios';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { formatDistanceToNow } from 'date-fns';
 import styles from '../styles/notificationstyle';
+import { API_BASE_URL } from "@env";
 
 const NotificationScreen = () => {
   const [notifications, setNotifications] = useState([]);
@@ -31,7 +32,7 @@ const NotificationScreen = () => {
   const translateY = useRef(new Animated.Value(50)).current;
   
   // Constants for API
-  const API_BASE_URL = 'http://10.0.2.2:3000/api';
+  const API = `${API_BASE_URL}/api`;
   
   useEffect(() => {
     fetchNotifications();
@@ -55,7 +56,7 @@ const NotificationScreen = () => {
   const fetchNotifications = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/notifications`);
+      const response = await axios.get(`${API}/notifications`);
       
       if (response.data.success) {
         setNotifications(response.data.data);
@@ -74,7 +75,7 @@ const NotificationScreen = () => {
   
   const fetchUnreadCount = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/notifications/unread-count`);
+      const response = await axios.get(`${API}/notifications/unread-count`);
       
       if (response.data.success) {
         setUnreadCount(response.data.data.count);
@@ -92,7 +93,7 @@ const NotificationScreen = () => {
   
   const markAsRead = async (id) => {
     try {
-      const response = await axios.put(`${API_BASE_URL}/notifications/${id}/read`);
+      const response = await axios.put(`${API}/notifications/${id}/read`);
       
       if (response.data.success) {
         // Update the notification in local state
@@ -115,7 +116,7 @@ const NotificationScreen = () => {
   
   const markAllAsRead = async () => {
     try {
-      const response = await axios.put(`${API_BASE_URL}/notifications/read-all`);
+      const response = await axios.put(`${API}/notifications/read-all`);
       
       if (response.data.success) {
         // Update all notifications to read in local state

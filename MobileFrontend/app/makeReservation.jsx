@@ -103,7 +103,7 @@ export default function MakeReservation() {
       .then((reservationIds) => {
         // Pass all necessary data (including reservation IDs) to payments screen
         router.push({
-          pathname: "payments_uvindu",
+          pathname: "payments",
           params: {
             tables: JSON.stringify(tableInfo),
             date,

@@ -24,14 +24,6 @@ export default function Layout() {
             options={{ title: "Office Rooms", headerShown: true }}
           />
           <Stack.Screen
-            name="tableSelect"
-            options={{ title: "Table Selection", headerShown: true }}
-          />
-          <Stack.Screen
-            name="payments"
-            options={{ title: "Payments", headerShown: true }}
-          />
-          <Stack.Screen
             name="floorPlan"
             options={{
               headerShown: true,
@@ -48,7 +40,7 @@ export default function Layout() {
             }}
           />
           <Stack.Screen
-            name="payments_uvindu"
+            name="payments"
             options={{ title: "Payments", headerShown: true }}
           />
           <Stack.Screen
