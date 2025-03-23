@@ -149,7 +149,6 @@ exports.createUser = async (req, res) => {
       password,
       confirm_password: confirmPassword,
     } = req.body;
-    console.log("hello");
     if (
       !name ||
       !nic ||

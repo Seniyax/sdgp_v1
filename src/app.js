@@ -4,7 +4,6 @@ const passport = require("passport");
 require("./config/passport");
 
 // Import routes
-const categoryRoutes = require("./routes/categoryRoutes");
 const reservationRoutes = require("./routes/reservationRoutes");
 const businessRoutes = require("./routes/businessRoutes");
 const emailRoutes = require("./routes/emailRoutes");

@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const { getReservationHistory } = require("../controllers/reservationHistoryController");
-const authController = require('../controllers/authControllers'); 
+const {
+  getReservationHistory,
+} = require("../controllers/reservationHistoryController");
 
-router.post("/", authController.requireAuth, getReservationHistory);
+router.post("/", getReservationHistory);
 
 module.exports = router;

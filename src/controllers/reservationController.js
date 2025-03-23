@@ -106,7 +106,7 @@ exports.createReservation = async (req, res) => {
 };
 
 exports.updateReservation = async (req, res) => {
-  const { reservation_id, update_data, customer_username } = req.body;
+  const { reservation_id, update_data } = req.body;
   if (!reservation_id) {
     return res.status(400).json({
       success: false,
