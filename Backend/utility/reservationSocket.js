@@ -33,7 +33,6 @@ module.exports = function (io) {
           {
             reservation_id: data.reservation_id,
             update_data: data.update_data,
-            customer_username: data.customer_username,
           }
         );
         if (response.data.success) {
