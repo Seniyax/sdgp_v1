@@ -299,7 +299,7 @@ const BusinessRegistration = () => {
       if (response.data.success) {
         sessionStorage.setItem(
           "business",
-          JSON.stringify(response.data.business)
+          JSON.stringify(response.data.data.business)
         );
         navigate("/floorplan-designer");
       } else {
