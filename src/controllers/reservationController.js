@@ -5,6 +5,7 @@ const {
   updateReservationModel,
   deleteReservationModel,
 } = require("../models/reservation");
+require("dotenv").config();
 
 exports.getReservations = async (req, res) => {
   const { business_id } = req.body;
@@ -59,7 +60,7 @@ exports.createReservation = async (req, res) => {
 
   try {
     const mlResponse = await axios.post(
-      "http://localhost:3000/api/ml/predict",
+      `${process.env.BASE_SERVER_URL}/api/ml/predict`,
       {
         group_size: group_size.toString(),
         slot_type: slot_type,

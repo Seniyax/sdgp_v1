@@ -1,6 +1,7 @@
 const ENV = {
     NODE_ENV: process.env.NODE_ENV || 'development',
     PORT: process.env.PORT || 3000,
+    BASE_SERVER_URL: process.env.BASE_SERVER_URL || `http://localhost:${process.env.PORT || 3000}`,
     CORS_ORIGIN: process.env.CORS_ORIGIN || '*'
   };
   

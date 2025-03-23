@@ -5,14 +5,11 @@ const { getUserByUsername } = require("../models/user");
 const {
   createBusinessRelation,
   getBusinessRelationsByUser,
-  getUserRelationsByBusiness,
-  processBHUUpdate,
-  buildUsersForBusiness,
 } = require("../models/businessHasUser");
 const { getOneBusiness } = require("../models/business");
 
 async function sendVerificationEmail(email, token, name, businessName, type) {
-  const verificationLink = `http://localhost:3000/api/email/verify-user-by-supervisor?token=${token}`;
+  const verificationLink = `${process.env.BASE_SERVER_URL}/api/email/verify-user-by-supervisor?token=${token}`;
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {

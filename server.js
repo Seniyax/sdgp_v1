@@ -1,14 +1,17 @@
+require('dotenv').config(); // Load env variables first
+
 const app = require("./src/app");
 const http = require("http");
 const server = http.createServer(app);
-require('dotenv').config();
+const socketIo = require("socket.io");
 
 const PORT = process.env.PORT || 3000;
-const socketIo = require("socket.io");
+const BASE_SERVER_URL = process.env.BASE_SERVER_URL || `http://localhost:${PORT}`;
+const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "*";
 
 const io = socketIo(server, {
   cors: {
-    origin: ["http://localhost:5173", "http://localhost:8081"],
+    origin: [CLIENT_ORIGIN],
     methods: ["GET", "POST", "PUT", "DELETE"],
   },
 });
@@ -19,5 +22,5 @@ reservationSocket(io);
 app.locals.io = io;
 
 server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on ${BASE_SERVER_URL}`);
 });
