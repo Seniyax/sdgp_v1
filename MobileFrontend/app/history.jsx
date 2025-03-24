@@ -18,7 +18,6 @@ import axios from 'axios';
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import { API_BASE_URL } from "@env";
 
 const History = () => {
   const router = useRouter();
@@ -33,7 +32,7 @@ const History = () => {
 
   // Configure axios with base URL and timeout
   const api = axios.create({
-    baseURL: `${API_BASE_URL}/api`,
+    baseURL: `${process.env.API_BASE_URL}/api`,
     timeout: 10000,
   });
 

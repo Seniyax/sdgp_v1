@@ -18,7 +18,6 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import styles from '../styles/homestyle';
-import { API_BASE_URL } from "@env";
 
 export default function HomeScreen() {
   const animationRef = useRef(null);
@@ -136,7 +135,7 @@ export default function HomeScreen() {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/categories`);
+      const response = await axios.get(`${process.env.API_BASE_URL}/api/categories`);
       if (response.data.success) {
         // Map API data to the format our UI expects
         const mappedCategories = response.data.data.map(category => {

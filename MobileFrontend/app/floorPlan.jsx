@@ -16,7 +16,6 @@ import {
 import DateTimePicker from "@react-native-community/datetimepicker";
 import axios from "axios";
 import Svg, { Line } from "react-native-svg";
-import { API_BASE_URL } from "@env";
 import { Dimensions } from "react-native";
 import { useRouter } from "expo-router";
 import useReservationsSocket from "../hooks/useReservationsSocket";
@@ -188,7 +187,7 @@ const FloorPlan = () => {
   const fetchFloorPlan = async () => {
     setLoading(true);
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/floor-plan/get`, {
+      const response = await axios.post(`${process.env.API_BASE_URL}/api/floor-plan/get`, {
         business_id: business.id,
       });
       if (response.data.success) {

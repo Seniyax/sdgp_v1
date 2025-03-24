@@ -22,7 +22,6 @@ import {
 import axios from "axios";
 import styles from "../styles/Restaurantsstyle"; // Import styles from the restaurantstyle.js file
 import { useAuth } from "../contexts/AuthContext";
-import { API_BASE_URL } from "@env";
 
 const RestaurantsScreen = () => {
   const router = useRouter();
@@ -158,7 +157,7 @@ const RestaurantsScreen = () => {
       }
 
       const response = await axios.get(
-        `${API_BASE_URL}/api/categories/${categoryId}/businesses?page=${pageNum}&limit=10`
+        `${process.env.API_BASE_URL}/api/categories/${categoryId}/businesses?page=${pageNum}&limit=10`
       );
 
       if (response.data.success) {

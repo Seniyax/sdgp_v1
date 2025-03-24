@@ -16,7 +16,6 @@ import axios from 'axios';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { formatDistanceToNow } from 'date-fns';
 import styles from '../styles/notificationstyle';
-import { API_BASE_URL } from "@env";
 
 const NotificationScreen = () => {
   const [notifications, setNotifications] = useState([]);
@@ -32,7 +31,7 @@ const NotificationScreen = () => {
   const translateY = useRef(new Animated.Value(50)).current;
   
   // Constants for API
-  const API = `${API_BASE_URL}/api`;
+  const API = `${process.env.API_BASE_URL}/api`;
   
   useEffect(() => {
     fetchNotifications();

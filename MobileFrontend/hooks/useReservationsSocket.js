@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
 import useReservationStore from "../store/reservationStore";
-import { API_BASE_URL } from "@env";
 import { useAuth } from "../contexts/AuthContext";
 
-const SOCKET_SERVER_URL = API_BASE_URL;
+const SOCKET_SERVER_URL = process.env.API_BASE_URL;
 
 const useReservationsSocket = () => {
   const [socket, setSocket] = useState(null);
