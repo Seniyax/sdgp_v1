@@ -90,6 +90,8 @@ const AddReservation = ({
           status: "Active",
         };
 
+        console.log(payload);
+
         await new Promise((resolve, reject) => {
           socket.emit("createReservation", payload, (response) => {
             if (response && response.success) {

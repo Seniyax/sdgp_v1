@@ -32,7 +32,7 @@ async function getReservationsByBusiness(businessId) {
 async function createReservationModel(data) {
   const { data: tableRecord, error: tableError } = await supabase
     .from("table")
-    .select("*")
+    .select("*, floor_plan(*)")
     .eq("business_id", data.businessId)
     .eq("table_number", data.tableNumber)
     .single();
@@ -61,8 +61,17 @@ async function createReservationModel(data) {
 
   const { data: insertedData, error } = await supabase
     .from("reservation")
-    .insert([insertData])
-    .select();
+    .insert([insertData]).select(`
+      *,
+      customer: customer_id (
+        id, email, full_name, username
+      ),
+      table: table_id (
+        seats, table_number, floor_plan: floor_plan_id (
+          floor_name
+        )
+      )
+    `);
 
   if (error) throw error;
   const reservation = insertedData[0];
@@ -77,11 +86,18 @@ async function updateReservationModel(reservationId, data) {
     .eq("id", reservationId)
     .select(
       `
-    *,
-    table:table(table_number)
-  `
+      *,
+      customer: customer_id (
+        id, email, full_name, username
+      ),
+      table: table_id (
+        seats, table_number, floor_plan: floor_plan_id (
+          floor_name
+        )
+      )
+    `
     )
-    .single(); // Use .single() since we are updating a single record
+    .single();
 
   if (error) throw error;
   return updatedData;
