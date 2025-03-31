@@ -48,7 +48,7 @@ export default function SplashScreen() {
       Animated.sequence([
         Animated.timing(pulseAnim, {
           toValue: 1,
-          duration: 2000,
+          duration: 3000,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
