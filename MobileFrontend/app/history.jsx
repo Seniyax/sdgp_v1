@@ -57,4 +57,34 @@ const History = () => {
   
       getUserId();
     }, []);
+
+  // Handle back button press using Expo Router
+  const handleBackPress = () => {
+    router.back();
+    // Alternative: navigate directly to home
+    // router.push('/home');
+  };
+
+  // Helper function to format date consistently
+  const parseDate = (dateString) => {
+    if (!dateString) return { formattedDate: '', formattedTime: '' };
+    
+    try {
+      const date = new Date(dateString);
+      if (!isNaN(date.getTime())) {
+        return {
+          formattedDate: date.toISOString().split('T')[0],
+          formattedTime: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+      }
+    } catch (err) {
+      console.warn(`Error parsing date: ${dateString}`, err);
+    }
+    
+    return { 
+      formattedDate: '', 
+      formattedTime: '' 
+    };
+  };
+
   
