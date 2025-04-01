@@ -204,5 +204,57 @@ const History = () => {
         throw new Error(response.data?.message || 'Failed to fetch reservation history');
       }
       */
+    } catch (err) {
+      console.error('Error fetching reservation history:', err);
+      
+      if (err.response) {
+        // Server responded with error status
+        const status = err.response.status;
+        console.log('Server error status:', status);
+        console.log('Server error data:', err.response.data);
+        setError(`Server error (${status}): ${err.response.data?.message || err.message}`);
+      } else if (err.request) {
+        // Request made but no response received
+        console.log('No response received from server');
+        setError('Network error. Please check your internet connection.');
+      } else {
+        // Other errors
+        setError(`Error: ${err.message}`);
+      }
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  // Fetch when component mounts and when userId changes
+  useEffect(() => {
+    if (userId) {
+      fetchReservationHistory();
+    }
+  }, [userId]);
+
+  // Format date to a more readable format
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    
+    try {
+      // Try to parse as ISO date
+      const date = new Date(dateString);
+      
+      // Check if date is valid
+      if (!isNaN(date.getTime())) {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return date.toLocaleDateString(undefined, options);
+      }
+      
+      // If not a valid date object but has a string value, return the string
+      return dateString;
+    } catch (err) {
+      console.warn('Error formatting date:', dateString);
+      return dateString || 'N/A'; // Return original string or N/A if null/undefined
+    }
+  };
+
 
 
