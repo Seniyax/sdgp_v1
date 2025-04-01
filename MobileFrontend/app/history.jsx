@@ -278,6 +278,40 @@ const History = () => {
       </View>
     );
   };
+  // Render each reservation item
+  const renderReservationItem = ({ item }) => {
+    // Determine the status icon based on reservation status
+    let statusIcon;
+    let statusColor;
+
+    switch (item.status) {
+      case 'completed':
+        statusIcon = 'checkmark-circle';
+        statusColor = '#4CAF50';
+        break;
+      case 'confirmed':
+        statusIcon = 'time';
+        statusColor = '#2196F3';
+        break;
+      case 'pending':
+        statusIcon = 'hourglass';
+        statusColor = '#FF9800';
+        break;
+      case 'in_progress':
+        statusIcon = 'refresh-circle';
+        statusColor = '#03A9F4';
+        break;
+      case 'cancelled':
+      case 'rejected':
+      case 'failed':
+        statusIcon = 'close-circle';
+        statusColor = '#F44336';
+        break;
+      default:
+        statusIcon = 'help-circle';
+        statusColor = '#9E9E9E';
+    }
+
 
   const renderReservationItem = ({ item }) => {
     let statusIcon, statusColor;
