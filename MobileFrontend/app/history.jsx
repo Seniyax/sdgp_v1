@@ -255,6 +255,40 @@ const History = () => {
       return dateString || 'N/A'; // Return original string or N/A if null/undefined
     }
   };
+  // Handle reservation item press to show modal
+  const handleReservationPress = (item) => {
+    setSelectedReservation(item);
+    setModalVisible(true);
+  };
 
+  // Pull to refresh handler
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchReservationHistory();
+  };
+
+  // Filter reservations based on tab
+  const filteredReservations = () => {
+    // First filter by userId if we have it
+    const userReservations = userId 
+      ? reservations.filter(item => !item.userId || item.userId === userId)
+      : reservations;
+    
+    // Then filter by status
+    switch (activeTab) {
+      case 'active':
+        return userReservations.filter(item => 
+          item.status === 'pending' || item.status === 'confirmed' || item.status === 'in_progress'
+        );
+      case 'completed':
+        return userReservations.filter(item => item.status === 'completed');
+      case 'failed':
+        return userReservations.filter(item => 
+          item.status === 'cancelled' || item.status === 'rejected' || item.status === 'failed'
+        );
+      default:
+        return userReservations;
+    }
+  };
 
 
