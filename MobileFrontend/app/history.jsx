@@ -416,7 +416,124 @@ const History = () => {
       </TouchableOpacity>
     );
   };
-
+  // Render detailed modal for the selected reservation
+  const renderDetailModal = () => {
+    if (!selectedReservation) return null;
+    
+    return (
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <TouchableOpacity 
+              style={styles.closeButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <Ionicons name="close" size={wp('6%')} color="#420F54" />
+            </TouchableOpacity>
+            
+            <Text style={styles.modalTitle}>{selectedReservation.venueName}</Text>
+            
+            {selectedReservation.imageUrl ? (
+              <Image 
+                source={{ uri: selectedReservation.imageUrl }} 
+                style={styles.venueImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={styles.placeholderImage}>
+                <Ionicons name="image-outline" size={wp('10%')} color="#CCCCCC" />
+              </View>
+            )}
+            
+            <View style={styles.modalDetailsContainer}>
+              <View style={styles.modalDetailRow}>
+                <View style={styles.modalDetailItem}>
+                  <Ionicons name="calendar" size={wp('5%')} color="#420F54" />
+                  <View>
+                    <Text style={styles.modalDetailLabel}>Date</Text>
+                    <Text style={styles.modalDetailValue}>{formatDate(selectedReservation.date)}</Text>
+                  </View>
+                </View>
+                
+                <View style={styles.modalDetailItem}>
+                  <Ionicons name="time" size={wp('5%')} color="#420F54" />
+                  <View>
+                    <Text style={styles.modalDetailLabel}>Time</Text>
+                    <Text style={styles.modalDetailValue}>{selectedReservation.time || 'N/A'}</Text>
+                  </View>
+                </View>
+              </View>
+              
+              <View style={styles.modalDetailRow}>
+                {selectedReservation.venueType === 'Restaurant' ? (
+                  <>
+                    <View style={styles.modalDetailItem}>
+                      <Ionicons name="people" size={wp('5%')} color="#420F54" />
+                      <View>
+                        <Text style={styles.modalDetailLabel}>Guests</Text>
+                        <Text style={styles.modalDetailValue}>{selectedReservation.guests}</Text>
+                      </View>
+                    </View>
+                    
+                    <View style={styles.modalDetailItem}>
+                      <Ionicons name="restaurant" size={wp('5%')} color="#420F54" />
+                      <View>
+                        <Text style={styles.modalDetailLabel}>Table</Text>
+                        <Text style={styles.modalDetailValue}>{selectedReservation.tableNumber}</Text>
+                      </View>
+                    </View>
+                  </>
+                ) : (
+                  <>
+                    <View style={styles.modalDetailItem}>
+                      <Ionicons name="business" size={wp('5%')} color="#420F54" />
+                      <View>
+                        <Text style={styles.modalDetailLabel}>Room</Text>
+                        <Text style={styles.modalDetailValue}>{selectedReservation.roomNumber}</Text>
+                      </View>
+                    </View>
+                    
+                    <View style={styles.modalDetailItem}>
+                      <Ionicons name="people" size={wp('5%')} color="#420F54" />
+                      <View>
+                        <Text style={styles.modalDetailLabel}>Attendees</Text>
+                        <Text style={styles.modalDetailValue}>{selectedReservation.attendees}</Text>
+                      </View>
+                    </View>
+                  </>
+                )}
+              </View>
+              
+              <View style={styles.modalDetailRow}>
+                <View style={styles.modalDetailItem}>
+                  <Ionicons name="pricetag" size={wp('5%')} color="#420F54" />
+                  <View>
+                    <Text style={styles.modalDetailLabel}>Total</Text>
+                    <Text style={styles.modalDetailValue}>{selectedReservation.totalAmount}</Text>
+                  </View>
+                </View>
+                
+                <View style={styles.modalDetailItem}>
+                  <Ionicons name="information-circle" size={wp('5%')} color="#420F54" />
+                  <View>
+                    <Text style={styles.modalDetailLabel}>Status</Text>
+                    <Text style={styles.modalDetailValue}>
+                      {selectedReservation.originalStatus || selectedReservation.status}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
 
 
 
