@@ -534,6 +534,83 @@ const History = () => {
       </Modal>
     );
   };
+  // Main render
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar style="dark" />
+      
+      {/* Header with back button and title */}
+      <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={handleBackPress}
+        >
+          <Ionicons name="arrow-back" size={wp('6%')} color="#420F54" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Reservation History</Text>
+        {userId && (
+          <Text style={styles.userIdText}>User: {userId.substring(0, 8)}...</Text>
+        )}
+      </View>
+      
+      {/* Tab Bar */}
+      {renderTabBar()}
+      
+      {/* Error View */}
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={handleRefresh}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      
+      {/* Loading View */}
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#420F54" />
+          <Text style={styles.loadingText}>Loading your reservation history...</Text>
+        </View>
+      ) : (
+        <>
+          {/* Empty state */}
+          {filteredReservations().length === 0 && !error ? (
+            <View style={styles.emptyContainer}>
+              <Ionicons name="calendar-outline" size={wp('20%')} color="#420F54" />
+              <Text style={styles.emptyText}>No {activeTab} reservations found</Text>
+              {userId && (
+                <Text style={styles.emptySubText}>User ID: {userId}</Text>
+              )}
+              <TouchableOpacity style={styles.retryButton} onPress={handleRefresh}>
+                <Text style={styles.retryButtonText}>Refresh</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <FlatList
+              data={filteredReservations()}
+              renderItem={renderReservationItem}
+              keyExtractor={(item) => item.id.toString()}
+              contentContainerStyle={styles.listContainer}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={handleRefresh}
+                  colors={['#420F54']}
+                />
+              }
+            />
+          )}
+        </>
+      )}
+      
+      {/* Render the detail modal */}
+      {renderDetailModal()}
+    </SafeAreaView>
+  );
+};
+
+export default History;
 
 
 
