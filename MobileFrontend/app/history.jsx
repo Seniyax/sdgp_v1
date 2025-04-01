@@ -213,6 +213,51 @@ const History = () => {
         return userReservations;
     }
   };
+  // Render tab bar with counts
+  const renderTabBar = () => {
+    // Get counts for each category
+    const activeCount = reservations.filter(item => 
+      ['pending', 'confirmed', 'in_progress'].includes(item.status)
+    ).length;
+    
+    const completedCount = reservations.filter(item => 
+      item.status === 'completed'
+    ).length;
+    
+    const failedCount = reservations.filter(item => 
+      ['cancelled', 'rejected', 'failed'].includes(item.status)
+    ).length;
+    
+    return (
+      <View style={styles.tabBarContainer}>
+        <TouchableOpacity 
+          style={[styles.tabItem, activeTab === 'active' && styles.activeTabItem]}
+          onPress={() => setActiveTab('active')}
+        >
+          <Text style={[styles.tabText, activeTab === 'active' && styles.activeTabText]}>
+            Active <Text style={styles.countBadge}>({activeCount})</Text>
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.tabItem, activeTab === 'completed' && styles.activeTabItem]}
+          onPress={() => setActiveTab('completed')}
+        >
+          <Text style={[styles.tabText, activeTab === 'completed' && styles.activeTabText]}>
+            Completed <Text style={styles.countBadge}>({completedCount})</Text>
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.tabItem, activeTab === 'failed' && styles.activeTabItem]}
+          onPress={() => setActiveTab('failed')}
+        >
+          <Text style={[styles.tabText, activeTab === 'failed' && styles.activeTabText]}>
+            Failed <Text style={styles.countBadge}>({failedCount})</Text>
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
 
   const renderTabBar = () => {
     const activeCount = reservations.filter((item) =>
