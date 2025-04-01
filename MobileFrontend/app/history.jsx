@@ -171,5 +171,38 @@ const History = () => {
     
     setLoading(true);
     setError(null);
+    try {
+      console.log('Fetching reservation history for userId:', userId);
+      
+      // For testing purposes, use the mock data
+      // Comment this out and uncomment the API call when ready to use the real API
+      return fetchReservationHistoryMock();
+      
+      // Use the direct URL you provided with the userId
+      /*
+      const response = await axios.post('http://10.0.2.2:3000/api/reservations/history', {
+        userId: userId
+      });
+      
+      console.log('API Response:', response.data);
+      
+      if (response.data && response.data.success) {
+        const processedData = processReservationData(response.data.reservationHistory || []);
+        console.log('Processed reservation data:', processedData);
+        setReservations(processedData);
+        
+        // If we got no data, show a message
+        if (processedData.length === 0) {
+          Alert.alert(
+            'No Reservations Found',
+            `No reservation history found for user ID: ${userId}`,
+            [{ text: 'OK' }]
+          );
+        }
+      } else {
+        console.log('API response format unexpected:', response.data);
+        throw new Error(response.data?.message || 'Failed to fetch reservation history');
+      }
+      */
 
 
