@@ -367,6 +367,55 @@ const History = () => {
         statusIcon = 'help-circle';
         statusColor = '#9E9E9E';
     }
+    // Show the original status text for display purposes
+    const displayStatus = item.originalStatus || item.status;
+
+    return (
+      <TouchableOpacity 
+        style={styles.reservationItem}
+        onPress={() => handleReservationPress(item)}
+      >
+        <View style={styles.reservationHeader}>
+          <Text style={styles.venueName}>{item.venueName}</Text>
+          <View style={styles.statusContainer}>
+            <Ionicons name={statusIcon} size={wp('4%')} color={statusColor} />
+            <Text style={[styles.statusText, { color: statusColor }]}>
+              {displayStatus.charAt(0).toUpperCase() + displayStatus.slice(1).replace('_', ' ')}
+            </Text>
+          </View>
+        </View>
+        
+        <View style={styles.reservationDetails}>
+          <View style={styles.detailItem}>
+            <Ionicons name="calendar-outline" size={wp('4%')} color="#420F54" />
+            <Text style={styles.detailText}>{formatDate(item.date)}</Text>
+          </View>
+          
+          <View style={styles.detailItem}>
+            <Ionicons name="time-outline" size={wp('4%')} color="#420F54" />
+            <Text style={styles.detailText}>{item.time || 'N/A'}</Text>
+          </View>
+          
+          {item.venueType === 'Restaurant' ? (
+            <View style={styles.detailItem}>
+              <Ionicons name="people-outline" size={wp('4%')} color="#420F54" />
+              <Text style={styles.detailText}>{item.guests} guests</Text>
+            </View>
+          ) : (
+            <View style={styles.detailItem}>
+              <Ionicons name="business-outline" size={wp('4%')} color="#420F54" />
+              <Text style={styles.detailText}>{item.venueType}</Text>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.reservationFooter}>
+          <Text style={styles.totalAmount}>{item.totalAmount}</Text>
+          <Text style={styles.viewDetailsText}>View Details</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
 
 
