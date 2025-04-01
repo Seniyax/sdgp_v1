@@ -140,5 +140,36 @@ const History = () => {
   const fetchReservationHistoryMock = async () => {
     setLoading(true);
     setError(null);
+    try {
+      // This is your provided data
+      const mockData = [
+        {"attendees": 0, "date": "", "duration": "N/A", "equipment": [], "guests": 0, "id": 41, "imageUrl": null, "orderItems": [], "roomNumber": "N/A", "status": "Completed", "tableNumber": "N/A", "time": "", "totalAmount": "$0.00", "userId": undefined, "venueName": "Unknown Venue", "venueType": "Restaurant"},
+        {"attendees": 0, "date": "", "duration": "N/A", "equipment": [], "guests": 0, "id": 43, "imageUrl": null, "orderItems": [], "roomNumber": "N/A", "status": "Completed", "tableNumber": "N/A", "time": "", "totalAmount": "$0.00", "userId": undefined, "venueName": "Unknown Venue", "venueType": "Restaurant"},
+        // Add more mockData as needed
+        {"attendees": 0, "date": "", "duration": "N/A", "equipment": [], "guests": 0, "id": 51, "imageUrl": null, "orderItems": [], "roomNumber": "N/A", "status": "Active", "tableNumber": "N/A", "time": "", "totalAmount": "$0.00", "userId": undefined, "venueName": "Unknown Venue", "venueType": "Restaurant"}
+      ];
+      
+      const processedData = processReservationData(mockData);
+      console.log('Processed reservation data:', processedData);
+      setReservations(processedData);
+      
+    } catch (err) {
+      console.error('Error fetching reservation history:', err);
+      setError(`Error: ${err.message}`);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  // Fetch reservation history from API
+  const fetchReservationHistory = async () => {
+    if (!userId) {
+      console.log('No userId available yet, waiting...');
+      return;
+    }
+    
+    setLoading(true);
+    setError(null);
 
 
