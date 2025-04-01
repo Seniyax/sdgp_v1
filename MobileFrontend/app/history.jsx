@@ -86,5 +86,32 @@ const History = () => {
       formattedTime: '' 
     };
   };
-
+  // Process reservation data
+  const processReservationData = (data) => {
+    if (!Array.isArray(data)) {
+      console.warn('Expected array for reservation data, got:', typeof data);
+      return [];
+    }
+    
+    return data.map(item => {
+      // Handle date parsing
+      const { formattedDate, formattedTime } = parseDate(item.date || item.start_time);
+      
+      // Normalize status to lowercase for consistent filtering
+      let normalizedStatus = item.status ? item.status.toLowerCase() : "pending";
+      
+      // Map status values to expected filter values
+      switch (normalizedStatus) {
+        case 'active':
+          normalizedStatus = 'pending';
+          break;
+        case 'completed':
+          normalizedStatus = 'completed';
+          break;
+        case 'failed':
+          normalizedStatus = 'failed';
+          break;
+        default:
+          normalizedStatus = 'pending';
+      }
   
