@@ -73,6 +73,7 @@ async function getBusinessRelationsByUser(userId) {
         id,
         name,
         is_verified,
+        category: category_id ( name ),
         emails: email (
           email_address,
           email_type: email_type ( name )

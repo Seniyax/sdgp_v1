@@ -25,7 +25,6 @@ const ManageBusiness = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Check for user authentication
   useEffect(() => {
     const user = JSON.parse(sessionStorage.getItem("user"));
     if (!user) {
@@ -80,7 +79,6 @@ const ManageBusiness = () => {
     fetchBusinesses();
   }, [user]);
 
-  // Fetch all floorplans once
   useEffect(() => {
     const fetchFloorplans = async () => {
       try {
@@ -89,7 +87,6 @@ const ManageBusiness = () => {
           setFloorplans(response.data.floorplans);
         }
       } catch (err) {
-        // Optionally, you can set an error here if needed.
         console.error("Error fetching floorplans", err);
       }
     };
@@ -114,7 +111,6 @@ const ManageBusiness = () => {
     }
   });
 
-  // Update navigation functions to encode the businessId
   const handleBusinessDashboard = (businessId) => {
     navigate(`/business-dashboard/${encodeBusinessId(businessId)}`);
   };
@@ -207,13 +203,18 @@ const ManageBusiness = () => {
             </thead>
             <tbody>
               {filteredBusinesses.map((relation) => {
-                let actionContent = null;
-                const isOwner = relation.type.toLowerCase() === "owner";
-                const isAdmin = relation.type.toLowerCase() === "admin";
-                // Determine if this business already has a floorplan
+                const isComingSoon =
+                  relation.business.category &&
+                  relation.business.category.name.toLowerCase() !==
+                    "restaurant";
+
                 const isFloorplan = floorplans.some(
                   (fp) => fp.business_id === relation.business_id
                 );
+
+                let actionContent = null;
+                const isOwner = relation.type.toLowerCase() === "owner";
+                const isAdmin = relation.type.toLowerCase() === "admin";
 
                 if (!relation.is_verified) {
                   actionContent = (
@@ -235,7 +236,7 @@ const ManageBusiness = () => {
                 } else {
                   actionContent = (
                     <div className="button-group">
-                      {isFloorplan && (
+                      {!isComingSoon && isFloorplan && (
                         <button
                           onClick={() =>
                             handleReservationDashboard(relation.business_id)
@@ -246,7 +247,8 @@ const ManageBusiness = () => {
                           Dashboard
                         </button>
                       )}
-                      {(isOwner || isAdmin) &&
+                      {!isComingSoon &&
+                        (isOwner || isAdmin) &&
                         (isFloorplan ? (
                           <button
                             onClick={() =>
@@ -281,6 +283,10 @@ const ManageBusiness = () => {
                   );
                 }
 
+                const comingSoonMessage = isComingSoon
+                  ? `${relation.business.category.name}s are coming soon`
+                  : null;
+
                 return (
                   <tr
                     key={relation.id}
@@ -293,7 +299,14 @@ const ManageBusiness = () => {
                   >
                     <td>{relation.business.name}</td>
                     <td>{relation.type}</td>
-                    <td className="actions-cell">{actionContent}</td>
+                    <td className="actions-cell">
+                      {actionContent}
+                      {comingSoonMessage && (
+                        <div className="coming-soon-message">
+                          {comingSoonMessage}
+                        </div>
+                      )}
+                    </td>
                   </tr>
                 );
               })}

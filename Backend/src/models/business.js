@@ -1,6 +1,7 @@
 const supabase = require("../config/supabaseClient");
 const supabaseService = require("../config/supabaseService");
 const { v4: uuidv4 } = require("uuid");
+const path = require("path");
 
 const validateTime = (time) => {
   const regex = /^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$/;
@@ -8,7 +9,11 @@ const validateTime = (time) => {
 };
 
 async function uploadImage(file, folder) {
-  const uniqueFileName = `${uuidv4()}-${file.originalname}`;
+  const extension = path.extname(file.originalname);
+  const baseName = path
+    .basename(file.originalname, extension)
+    .replace(/[^a-zA-Z0-9.\-_]/g, "");
+  const uniqueFileName = `${uuidv4()}-${baseName}${extension}`;
   const filePath = `${folder}/${uniqueFileName}`;
 
   const { data, error } = await supabaseService.storage

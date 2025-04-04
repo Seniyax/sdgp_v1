@@ -1,5 +1,6 @@
 const supabase = require("../config/supabaseClient");
 const supabaseService = require("../config/supabaseService");
+const path = require("path");
 
 async function getUserByUsername(username) {
   const { data, error } = await supabase
@@ -141,8 +142,11 @@ async function verifyUserEmail(token) {
 
 async function uploadProfilePicture(username, file) {
   console.log("File Buffer:", file.buffer);
-  const fileExt = file.originalname.split(".").pop();
-  const fileName = `${username}_${Date.now()}.${fileExt}`;
+  const extension = path.extname(file.originalname);
+  const baseName = path
+    .basename(file.originalname, extension)
+    .replace(/[^a-zA-Z0-9.\-_]/g, "");
+  const fileName = `${username}_${Date.now()}-${baseName}${extension}`;
   const bucketName = "profile-pictures";
   const { data, error: uploadError } = await supabaseService.storage
     .from(bucketName)
