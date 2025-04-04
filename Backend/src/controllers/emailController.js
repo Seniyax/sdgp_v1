@@ -1,13 +1,49 @@
-const supabase = require("../config/supabaseClient");
+require("dotenv").config();
+const nodemailer = require("nodemailer");
+const { getAllEmailTypes } = require("../models/emailType");
+const {
+  verifyUserEmail,
+  setPasswordResetTokenToReady,
+  getUserByPasswordResetToken,
+} = require("../models/user");
+const { verifyBusinessEmail } = require("../models/business");
+const { verifyBusinessRelationByToken } = require("../models/businessHasUser");
 
-const generateTemplate = (status, message) => {
+const emailValidation = (email) => {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(email) ? null : "Invalid email address format";
+};
+
+const generateTemplate = (status, message, templateType = "verification") => {
+  let title, header, footer, btnText, btnHref;
+  if (templateType === "reset-password") {
+    title = "Reset Password";
+    header = status === "success" ? "" : "Something went wrong!";
+    footer =
+      status === "success"
+        ? ""
+        : "Please try resetting your password again or contact support.";
+    btnText = "Return to Sign In";
+    btnHref = "http://localhost:5173/sign-in";
+  } else {
+    title = "Email Verification";
+    header = status === "success" ? "Congratulations!" : "Oops!";
+    footer =
+      status === "success"
+        ? "Thank you for verifying your email."
+        : "Please try verifying your email again or contact support.";
+    btnText = "Return to Homepage";
+    btnHref = "http://localhost:5173/";
+  }
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Email Verification</title>
+  <title>${title}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="icon" type="image/png" href="/WebFrontend/public/favicon.ico">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     body {
@@ -76,35 +112,43 @@ const generateTemplate = (status, message) => {
 <body>
   <div class="container">
     <div class="accent-bar"></div>
-    <div class="header">${
-      status === "success" ? "Congratulations!" : "Oops!"
-    }</div>
+    ${header ? `<div class="header">${header}</div>` : ""}
     <div class="message">${message}</div>
-    <a class="btn" href="/">Return to Homepage</a>
-    <div class="footer">${
-      status === "success"
-        ? "Thank you for verifying your email."
-        : "Please try verifying your email again or contact support."
-    }</div>
+    <a class="btn" href="${btnHref}">${btnText}</a>
+    ${footer ? `<div class="footer">${footer}</div>` : ""}
   </div>
 </body>
 </html>`;
 };
 
+function buildEmailTemplate(title, message) {
+  return `
+    <html>
+      <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+        <div style="max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 5px; text-align: center;">
+          <h2 style="color: #333;">${title}</h2>
+          <p style="color: #555;">${message}</p>
+          <p style="color: #888; font-size: 12px;">Please review the details above and respond as needed.</p>
+          <p style="color: #888; font-size: 12px;">Thanks,<br>The SlotZi Team</p>
+        </div>
+      </body>
+    </html>
+  `;
+}
+
 exports.getAllEmailTypes = async (req, res) => {
   try {
-    const { data, error } = await supabase.from("email_type").select("name");
-
-    if (error) throw error;
-
+    const data = await getAllEmailTypes();
     if (!data || data.length === 0) {
       return res.status(404).json({
         success: false,
         message: "Couldn't find any email types",
       });
     }
-
-    return res.status(200).json({ success: true, data });
+    return res.status(200).json({
+      success: true,
+      data,
+    });
   } catch (error) {
     console.error("Error fetching email types:", error);
     return res.status(500).json({
@@ -118,101 +162,174 @@ exports.getAllEmailTypes = async (req, res) => {
 exports.verifyUserEmail = async (req, res) => {
   const { token } = req.query;
   if (!token) {
-    return res.send(generateTemplate("error", "Invalid or missing token."));
-  }
-  const { data: user, error } = await supabase
-    .from("user")
-    .select("*")
-    .eq("verification_token", token)
-    .single();
-  if (!user || error) {
     return res.send(
-      generateTemplate("error", "The token provided is invalid or has expired.")
+      generateTemplate("error", "Invalid or missing token.", "verification")
     );
   }
-  const { error: updateError } = await supabase
-    .from("user")
-    .update({ is_verified: true, verification_token: null })
-    .eq("id", user.id);
-  if (updateError) {
-    return res.send(
+  try {
+    await verifyUserEmail(token);
+    res.send(
+      generateTemplate(
+        "success",
+        "Your email has been successfully verified!",
+        "verification"
+      )
+    );
+  } catch (error) {
+    console.error("Error verifying user email:", error.message);
+    res.send(
       generateTemplate(
         "error",
-        "We encountered an issue verifying your email. Please try again later."
+        error.message || "The token provided is invalid or has expired.",
+        "verification"
       )
     );
   }
-  res.send(
-    generateTemplate("success", "Your email has been successfully verified!")
-  );
 };
 
 exports.verifyBusinessEmail = async (req, res) => {
   const { token } = req.query;
   if (!token) {
-    return res.send(generateTemplate("error", "Invalid or missing token."));
-  }
-  const { data: business, error } = await supabase
-    .from("business")
-    .select("*")
-    .eq("verification_token", token)
-    .single();
-  if (!business || error) {
     return res.send(
-      generateTemplate("error", "The token provided is invalid or has expired.")
+      generateTemplate("error", "Invalid or missing token.", "verification")
     );
   }
-  const { error: updateError } = await supabase
-    .from("business")
-    .update({ is_verified: true, verification_token: null })
-    .eq("id", business.id);
-  if (updateError) {
-    return res.send(
+  try {
+    await verifyBusinessEmail(token);
+    res.send(
+      generateTemplate(
+        "success",
+        "Your business email has been successfully verified!",
+        "verification"
+      )
+    );
+  } catch (error) {
+    console.error("Error verifying business email:", error.message);
+    res.send(
       generateTemplate(
         "error",
-        "We encountered an issue verifying your business email. Please try again later."
+        error.message || "The token provided is invalid or has expired.",
+        "verification"
       )
     );
   }
-  res.send(
-    generateTemplate(
-      "success",
-      "Your business email has been successfully verified!"
-    )
-  );
 };
 
 exports.verifyUserEmailBySupervisor = async (req, res) => {
   const { token } = req.query;
   if (!token) {
-    return res.send(generateTemplate("error", "Invalid or missing token."));
-  }
-  const { data: bhu, error } = await supabase
-    .from("business_has_user")
-    .select("*")
-    .eq("verification_token", token)
-    .single();
-  if (!bhu || error) {
     return res.send(
-      generateTemplate("error", "The token provided is invalid or has expired.")
+      generateTemplate("error", "Invalid or missing token.", "verification")
     );
   }
-  const { error: updateError } = await supabase
-    .from("business_has_user")
-    .update({ is_verified: true, verification_token: null })
-    .eq("id", bhu.id);
-  if (updateError) {
-    return res.send(
+  try {
+    await verifyBusinessRelationByToken(token);
+    res.send(
+      generateTemplate(
+        "success",
+        "The business relation has been successfully verified!",
+        "verification"
+      )
+    );
+  } catch (error) {
+    console.error("Error verifying business relation:", error.message);
+    res.send(
       generateTemplate(
         "error",
-        "We encountered an issue verifying the relation. Please try again later."
+        error.message || "The token provided is invalid or has expired.",
+        "verification"
       )
     );
   }
-  res.send(
-    generateTemplate(
-      "success",
-      "The business relation has been successfully verified!"
-    )
-  );
+};
+
+exports.forgotPassword = async (req, res) => {
+  const { token } = req.query;
+  if (!token) {
+    return res.send(
+      generateTemplate("error", "Invalid or missing token.", "reset-password")
+    );
+  }
+  try {
+    const user = await getUserByPasswordResetToken(token);
+    if (!user) {
+      return res.send(
+        generateTemplate("error", "Invalid or expired token.", "reset-password")
+      );
+    }
+    await setPasswordResetTokenToReady(token);
+    res.redirect(
+      `http://localhost:5173/forgot-password?ready=true&email=${encodeURIComponent(
+        user.email
+      )}`
+    );
+  } catch (error) {
+    console.error("Error updating password reset token:", error.message);
+    return res.send(
+      generateTemplate(
+        "error",
+        error.message || "The token provided is invalid or has expired.",
+        "reset-password"
+      )
+    );
+  }
+};
+
+exports.sendSupportEmail = async (req, res) => {
+  const { name, email, content } = req.body;
+  if (!name || !email || !content) {
+    return res.status(400).json({
+      success: false,
+      message: "Name, email address, and email content are required",
+    });
+  }
+  const emailValidationError = emailValidation(email);
+  if (emailValidationError) {
+    return res.status(400).json({
+      success: false,
+      message: emailValidationError,
+    });
+  }
+
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const emailTitle = "New Support Email Received";
+    const emailMessage = `
+      You have received a new support email from:
+      <br><br>
+      <strong>Name:</strong> ${name}<br>
+      <strong>Email:</strong> ${email}<br><br>
+      <strong>Message:</strong><br>
+      ${content}
+    `;
+    const htmlContent = buildEmailTemplate(emailTitle, emailMessage);
+
+    const mailOptions = {
+      from: `"SlotZi Support" <${process.env.EMAIL_USER}>`,
+      to: process.env.EMAIL_USER,
+      subject: "New Support Email Received",
+      html: htmlContent,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email sent:", info.messageId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Support email sent successfully",
+    });
+  } catch (error) {
+    console.error("Error occurred while sending the email:", error.message);
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };

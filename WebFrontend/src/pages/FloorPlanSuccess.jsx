@@ -1,14 +1,14 @@
 /* eslint-disable no-unused-vars */
-/* eslint-disable react/prop-types */
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import "../style/FloorPlan.css";
 
-const FloorPlanSuccess = ({ businessId }) => {
+const FloorPlanSuccess = () => {
+  const { businessId } = useParams();
   const navigate = useNavigate();
 
   const handleGoToDashboard = () => {
-    navigate(`/reservation-dashboard/${businessId}`);
+    navigate(`/reservation-dashboard/${encodeURIComponent(businessId)}`);
   };
 
   return (

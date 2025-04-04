@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import "../style/FloorPlan.css";
 import { AnimatePresence, motion } from "framer-motion";
@@ -12,29 +12,57 @@ import FloorPlanWaiting from "./FloorPlanWaiting";
 import FloorPlanSuccess from "./FloorPlanSuccess";
 import FloorPlanFaliure from "./FloorPlanFaliure";
 import Swal from "sweetalert2";
+import CryptoJS from "crypto-js";
+
+const secretKey = import.meta.env.VITE_SECRET_KEY || "fallback-secret-key";
 
 function FloorPlanDesigner() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  const { businessId: rawEncryptedBusinessId } = useParams();
+  const encryptedBusinessId = decodeURIComponent(rawEncryptedBusinessId);
+
+  let decryptedBusinessId = encryptedBusinessId;
+  try {
+    const bytes = CryptoJS.AES.decrypt(encryptedBusinessId, secretKey);
+    decryptedBusinessId = bytes.toString(CryptoJS.enc.Utf8);
+  } catch (error) {
+    console.error("Error decrypting businessId:", error);
+  }
+
   const navigate = useNavigate();
-  const [businessId, setBusinessId] = useState(null);
 
   useEffect(() => {
     const user = JSON.parse(sessionStorage.getItem("user"));
-    const business = JSON.parse(sessionStorage.getItem("business"));
 
-    if (!user || !business) {
+    if (!user || !rawEncryptedBusinessId) {
       navigate("/");
-    } else {
-      setBusinessId(business.id);
     }
-  }, [navigate]);
+  }, [navigate, rawEncryptedBusinessId]);
+
+  const [currentStep, setCurrentStep] = useState(1);
+  const [width, setWidth] = useState(0);
+  const [height, setHeight] = useState(0);
+  const [canvasWidth, setCanvasWidth] = useState(0);
+  const [canvasHeight, setCanvasHeight] = useState(0);
+  const [floorCount, setFloorCount] = useState(0);
+  const [currentFloor, setCurrentFloor] = useState(0);
+  const [floorNames, setFloorNames] = useState([]);
+  const [floorShapes, setFloorShapes] = useState([]);
+  const [floorTables, setFloorTables] = useState([]);
+  const [direction, setDirection] = useState(1);
+  const [backendSuccess, setBackendSuccess] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+  const [transitionType, setTransitionType] = useState("default");
+  const [isDataLoading, setIsDataLoading] = useState(true);
 
   useEffect(() => {
-    if (!businessId) return;
-
     const fetchBusinessById = async () => {
       try {
         const response = await axios.post("/api/business/get-by-id", {
-          business_id: businessId,
+          business_id: decryptedBusinessId,
         });
 
         if (response.data.success) {
@@ -57,24 +85,55 @@ function FloorPlanDesigner() {
       }
     };
 
-    fetchBusinessById();
-  }, [businessId, navigate]);
+    if (decryptedBusinessId) {
+      fetchBusinessById();
+    }
+  }, [decryptedBusinessId, navigate]);
 
-  const [currentStep, setCurrentStep] = useState(1);
-  const [width, setWidth] = useState(0);
-  const [height, setHeight] = useState(0);
-  const [canvasWidth, setCanvasWidth] = useState(0);
-  const [canvasHeight, setCanvasHeight] = useState(0);
-  const [floorCount, setFloorCount] = useState(0);
-  const [currentFloor, setCurrentFloor] = useState(0);
-  const [floorNames, setFloorNames] = useState([]);
-  const [floorShapes, setFloorShapes] = useState([]);
-  const [floorTables, setFloorTables] = useState([]);
-  const [direction, setDirection] = useState(1);
-  const [backendSuccess, setBackendSuccess] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [saveError, setSaveError] = useState(null);
-  const [transitionType, setTransitionType] = useState("default");
+  useEffect(() => {
+    const fetchFloorPlan = async () => {
+      setIsDataLoading(true);
+      const startTime = Date.now();
+      try {
+        const response = await axios.post("/api/floor-plan/get", {
+          business_id: decryptedBusinessId,
+        });
+        if (response.data.success) {
+          const floors = response.data.floors;
+          if (floors && floors.length > 0) {
+            setFloorCount(floors.length);
+            setFloorNames(floors.map((floor) => floor.floor_name));
+            setCanvasWidth(floors[0].canvas_width);
+            setCanvasHeight(floors[0].canvas_height);
+            setWidth(floors[0].width);
+            setHeight(floors[0].height);
+
+            const shapes = floors.map((floor) => {
+              const parsedPlan = JSON.parse(floor.floor_plan);
+              return parsedPlan.shapes || [];
+            });
+            const tables = floors.map((floor) => {
+              const parsedPlan = JSON.parse(floor.floor_plan);
+              return parsedPlan.tables || [];
+            });
+            setFloorShapes(shapes);
+            setFloorTables(tables);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching floor plan", err);
+      } finally {
+        const elapsedTime = Date.now() - startTime;
+        const delayTime = Math.max(4000 - elapsedTime, 0);
+        await new Promise((resolve) => setTimeout(resolve, delayTime));
+        setIsDataLoading(false);
+      }
+    };
+
+    if (decryptedBusinessId) {
+      fetchFloorPlan();
+    }
+  }, [decryptedBusinessId]);
 
   const variants = {
     enter: ({ direction, transitionType }) => {
@@ -214,11 +273,13 @@ function FloorPlanDesigner() {
       }));
 
       const payload = {
-        business_id: businessId,
+        business_id: decryptedBusinessId,
         canvas_width: canvasWidth,
         canvas_height: canvasHeight,
         floors: floorsPayload,
         tables: tablesPayload,
+        width: width,
+        height: height,
       };
 
       setIsLoading(true);
@@ -227,7 +288,7 @@ function FloorPlanDesigner() {
       const startTime = Date.now();
 
       try {
-        const response = await axios.post(`api/floor-plan/create`, payload);
+        const response = await axios.post("/api/floor-plan/create", payload);
         console.log("Floor plan saved successfully", response.data);
 
         const elapsed = Date.now() - startTime;
@@ -311,8 +372,23 @@ function FloorPlanDesigner() {
   };
 
   const renderCurrentStep = () => {
-    if (isLoading) {
-      return <FloorPlanWaiting />;
+    if (isDataLoading || isLoading) {
+      return (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "100vh",
+          }}
+        >
+          <FloorPlanWaiting
+            message={
+              isDataLoading ? "Loading floor plan details..." : undefined
+            }
+          />
+        </div>
+      );
     }
 
     if (saveError) {
@@ -328,7 +404,7 @@ function FloorPlanDesigner() {
     }
 
     if (currentStep === 4) {
-      return <FloorPlanSuccess businessId={businessId} />;
+      return <FloorPlanSuccess businessId={decryptedBusinessId} />;
     }
 
     switch (currentStep) {
@@ -344,36 +420,40 @@ function FloorPlanDesigner() {
         );
       case 2:
         return (
-          <div className="d-flex flex-column vh-100">
-            <FloorPlanStep2
-              onNext={handleStep2Complete}
-              initialShapes={floorShapes[currentFloor]}
-              onShapesUpdate={(shapes) => {
-                const updated = [...floorShapes];
-                updated[currentFloor] = shapes.map((shape) => ({
-                  ...shape,
-                  rotation: shape.rotation || 0,
-                }));
-                setFloorShapes(updated);
-              }}
-              canvasWidth={canvasWidth}
-              canvasHeight={canvasHeight}
-            />
+          <div className="d-flex flex-column" style={{ minHeight: "100vh" }}>
+            <div className="d-flex flex-column justify-content-center flex-grow-1">
+              <FloorPlanStep2
+                onNext={handleStep2Complete}
+                initialShapes={floorShapes[currentFloor]}
+                onShapesUpdate={(shapes) => {
+                  const updated = [...floorShapes];
+                  updated[currentFloor] = shapes.map((shape) => ({
+                    ...shape,
+                    rotation: shape.rotation || 0,
+                  }));
+                  setFloorShapes(updated);
+                }}
+                canvasWidth={canvasWidth}
+                canvasHeight={canvasHeight}
+              />
+            </div>
           </div>
         );
       case 3:
         return (
-          <div className="d-flex flex-column vh-100">
-            <FloorPlanStep3
-              onNext={handleNextStep}
-              floorShapes={floorShapes[currentFloor]}
-              initialTables={floorTables[currentFloor]}
-              onTablesUpdate={handleTableUpdate}
-              onPreviousStep={handlePreviousStep}
-              canvasWidth={canvasWidth}
-              canvasHeight={canvasHeight}
-              currentFloorName={floorNames[currentFloor]}
-            />
+          <div className="d-flex flex-column" style={{ minHeight: "100vh" }}>
+            <div className="d-flex flex-column justify-content-center flex-grow-1">
+              <FloorPlanStep3
+                onNext={handleNextStep}
+                floorShapes={floorShapes[currentFloor]}
+                initialTables={floorTables[currentFloor]}
+                onTablesUpdate={handleTableUpdate}
+                onPreviousStep={handlePreviousStep}
+                canvasWidth={canvasWidth}
+                canvasHeight={canvasHeight}
+                currentFloorName={floorNames[currentFloor]}
+              />
+            </div>
           </div>
         );
       default:
@@ -421,7 +501,8 @@ function FloorPlanDesigner() {
               transition: { duration: 0.3, delay: 0.4 },
             }}
             exit={{ opacity: 0, y: 20, transition: { duration: 0.3 } }}
-            style={{ position: "absolute", right: "20px", bottom: "20px" }}
+            style={{ position: "fixed", right: "300px", bottom: "70px" }}
+            className="fixed-floor-buttons"
           >
             {renderFloorButtons()}
           </motion.div>
@@ -439,7 +520,12 @@ function FloorPlanDesigner() {
               transition: { duration: 0.3, delay: 0.4 },
             }}
             exit={{ opacity: 0, y: 20, transition: { duration: 0.3 } }}
-            style={{ position: "absolute", left: "20px", bottom: "20px" }}
+            style={{
+              position: "fixed",
+              left: "20px",
+              bottom: "20px",
+              zIndex: 1000,
+            }}
           >
             <button
               onClick={() => {

@@ -8,18 +8,31 @@ import ViewFloorPlan from "./ViewFloorPlan";
 import useReservationStore from "../store/reservationStore";
 import useReservationsSocket from "../hooks/useReservationsSocket";
 import AddReservation from "./AddReservation";
-import Swal from "sweetalert2";
+import CryptoJS from "crypto-js";
+
+const secretKey = import.meta.env.VITE_SECRET_KEY || "fallback-secret-key";
 
 const ReservationDashboard = () => {
-  const { businessId } = useParams();
+  const { businessId: rawEncryptedBusinessId } = useParams();
+  const encryptedBusinessId = decodeURIComponent(rawEncryptedBusinessId);
+
+  let decryptedBusinessId = encryptedBusinessId;
+  try {
+    const bytes = CryptoJS.AES.decrypt(encryptedBusinessId, secretKey);
+    decryptedBusinessId = bytes.toString(CryptoJS.enc.Utf8);
+  } catch (error) {
+    console.error("Error decrypting businessId:", error);
+  }
+
   const navigate = useNavigate();
   const [business, setBusiness] = useState(null);
   const [isBusinessLoaded, setIsBusinessLoaded] = useState(false);
+  const [isFloorPlanLoading, setIsFloorPlanLoading] = useState(true);
 
   const fetchBusiness = useCallback(async () => {
     try {
       const response = await axios.post("/api/business/get-by-id", {
-        business_id: businessId,
+        business_id: decryptedBusinessId,
       });
       if (response.data.success && response.data.data) {
         const fetchedBusiness = response.data.data.business;
@@ -33,20 +46,20 @@ const ReservationDashboard = () => {
     } finally {
       setIsBusinessLoaded(true);
     }
-  }, [businessId]);
+  }, [decryptedBusinessId]);
 
   useEffect(() => {
-    if (businessId) {
+    if (decryptedBusinessId) {
       fetchBusiness();
     }
-  }, [businessId, fetchBusiness]);
+  }, [decryptedBusinessId, fetchBusiness]);
 
   useEffect(() => {
     const user = JSON.parse(sessionStorage.getItem("user"));
-    if (isBusinessLoaded && (!user || !business)) {
+    if (isBusinessLoaded && (!user || !rawEncryptedBusinessId)) {
       navigate("/");
     }
-  }, [navigate, business, isBusinessLoaded]);
+  }, [navigate, isBusinessLoaded, rawEncryptedBusinessId]);
 
   const {
     reservations,
@@ -60,41 +73,45 @@ const ReservationDashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [selectedFloorIndex, setSelectedFloorIndex] = useState(0);
 
+  // Fetch floor plan data using the decrypted business ID
   useEffect(() => {
-    const userIsAuthenticated = true;
-    setIsAuthenticated(userIsAuthenticated);
-    if (!userIsAuthenticated) return;
     const fetchFloorPlan = async () => {
       try {
         const response = await axios.post("/api/floor-plan/get", {
-          business_id: businessId,
+          business_id: decryptedBusinessId,
         });
         console.log(response.data.message);
-        if (response.data.success) {
+        if (
+          !response.data.success &&
+          response.data.message === "Floor plan not found"
+        ) {
+          setFloorError("Floor plan not found.");
+          navigate("/manage-business");
+          return;
+        } else if (!response.data.success) {
+          setFloorError("Failed to load floor plan.");
+          navigate("/manage-business");
+          return;
+        } else {
           setFloorPlan({
             floors: response.data.floors,
             tables: response.data.tables,
           });
-        } else {
-          setFloorError("Failed to load floor plan.");
-          navigate("/manage-business");
         }
       } catch (err) {
         if (err.response?.data?.message === "Floor plan not found") {
-          Swal.fire({
-            title: "Missing floorplan",
-            text: "Couln't find floorplan",
-            icon: "warning",
-            confirmButtonText: "Create Floorplan",
-          }).then(() => {
-            navigate("/floorplan-designer");
-          });
+          setFloorError("Floor plan not found.");
+          navigate("/manage-business");
+          return;
         }
         setFloorError(err.response?.data?.message || err.message);
+      } finally {
+        setIsFloorPlanLoading(false);
       }
     };
+
     fetchFloorPlan();
-  }, [businessId, navigate, setIsAuthenticated, setFloorPlan, setFloorError]);
+  }, [decryptedBusinessId, navigate]);
 
   const [addingReservation, setAddingReservation] = useState(false);
   const [selectedTables, setSelectedTables] = useState([]);
@@ -224,7 +241,8 @@ const ReservationDashboard = () => {
     )
   );
 
-  const socket = useReservationsSocket(businessId);
+  // Use the decrypted business ID for the socket connection
+  const socket = useReservationsSocket(decryptedBusinessId);
 
   const handleCancel = (id) => {
     if (!socket) {
@@ -278,6 +296,7 @@ const ReservationDashboard = () => {
       ? floorPlan.floors[selectedFloorIndex].canvas_height || 600
       : 600;
 
+  // Fetch reservations using the business ID from the fetched business object
   useEffect(() => {
     if (!business) return;
     const fetchReservations = async () => {
@@ -347,6 +366,13 @@ const ReservationDashboard = () => {
                 value={selectedDate.toISOString().split("T")[0]}
                 onChange={handleDateChange}
                 disabled={timeMode === "auto"}
+                style={{
+                  background: timeMode === "auto" ? "transparent" : "white",
+                  color: timeMode === "auto" ? "white" : "black",
+                  height: "50px",
+                  border: "2px solid grey",
+                  borderRadius: 0,
+                }}
               />
             </div>
             <div className="col">
@@ -364,6 +390,13 @@ const ReservationDashboard = () => {
                 value={selectedDate.toTimeString().slice(0, 5)}
                 onChange={handleTimeChange}
                 disabled={timeMode === "auto"}
+                style={{
+                  background: timeMode === "auto" ? "transparent" : "white",
+                  color: timeMode === "auto" ? "white" : "black",
+                  height: "50px",
+                  border: "2px solid grey",
+                  borderRadius: 0,
+                }}
               />
             </div>
             <div className="col d-flex align-items-end">
@@ -428,7 +461,7 @@ const ReservationDashboard = () => {
                 {floorError}
               </motion.div>
             )}
-            {!floorPlan ? (
+            {isFloorPlanLoading ? (
               <motion.p
                 variants={sectionVariants}
                 initial="hidden"
@@ -437,7 +470,7 @@ const ReservationDashboard = () => {
               >
                 Loading floor plan...
               </motion.p>
-            ) : (
+            ) : floorPlan ? (
               <div
                 style={{
                   position: "relative",
@@ -487,6 +520,15 @@ const ReservationDashboard = () => {
                   </motion.div>
                 </AnimatePresence>
               </div>
+            ) : (
+              <motion.p
+                variants={sectionVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                No floor plan available.
+              </motion.p>
             )}
           </div>
 

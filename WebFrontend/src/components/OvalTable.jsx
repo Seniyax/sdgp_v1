@@ -1,13 +1,13 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
-import React, { useState, useRef, useEffect } from "react";
-import { Group, Ellipse, Rect, Circle, Text } from "react-konva";
+import React, { useState, useRef } from "react";
+import { Group, Ellipse, Circle, Text } from "react-konva";
 
 // Calculate chair positions around the oval table
 function calculateChairPositions(radiusX, radiusY, seatCount) {
   const positions = [];
   const maxSeats = Math.min(seatCount, 20); // Cap at 20 seats
-  const offset = Math.min(radiusX, radiusY) * 0.4; // Increased offset from 0.2 to 0.25
+  const offset = Math.min(radiusX, radiusY) * 0.4; // Increased offset
 
   for (let i = 0; i < maxSeats; i++) {
     // Distribute chairs evenly around the oval
@@ -20,7 +20,6 @@ function calculateChairPositions(radiusX, radiusY, seatCount) {
   return positions;
 }
 
-// Oval table component that supports variable seat counts with square chairs
 function OvalTable({
   shape,
   isSelected,
@@ -30,57 +29,46 @@ function OvalTable({
   onDelete,
 }) {
   const groupRef = useRef();
-  const tableGroupRef = useRef(); // Reference for the inner group that will rotate
   const [isHovered, setIsHovered] = useState(false);
   const [rotation, setRotation] = useState(shape.rotation || 0);
   const [toggledChairs, setToggledChairs] = useState(shape.toggledChairs || {});
 
-  // Set default values to avoid NaN issues
+  // Default values to avoid NaN issues
   const tableWidth = typeof shape.width === "number" ? shape.width : 200;
   const tableHeight = typeof shape.height === "number" ? shape.height : 150;
   const tableX = typeof shape.x === "number" ? shape.x : 0;
   const tableY = typeof shape.y === "number" ? shape.y : 0;
-
-  // Use a default seat count of 4 if not specified
   const seatCount = shape.seatCount || 4;
 
-  // Calculate oval dimensions
+  // Calculate oval dimensions and center point
   const radiusX = tableWidth / 2;
   const radiusY = tableHeight / 2;
   const centerX = tableWidth / 2;
   const centerY = tableHeight / 2;
 
-  // Updated rotation handler similar to circular table
+  // Calculate positions for chairs
+  const chairPositions = calculateChairPositions(radiusX, radiusY, seatCount);
+
+  // Rotation handler for the table (without affecting control buttons)
   const handleRotateStart = (e) => {
     e.cancelBubble = true;
-
     const stage = groupRef.current.getStage();
-
-    // Get initial pointer position and angle
     const initialPos = stage.getPointerPosition();
     const initialAngle = Math.atan2(
-      initialPos.y - (shape.y + centerY),
-      initialPos.x - (shape.x + centerX)
+      initialPos.y - (tableY + centerY),
+      initialPos.x - (tableX + centerX)
     );
-
     const initialRotation = rotation;
 
     const onMouseMove = () => {
       const pos = stage.getPointerPosition();
-      // Calculate new angle
       const newAngle = Math.atan2(
-        pos.y - (shape.y + centerY),
-        pos.x - (shape.x + centerX)
+        pos.y - (tableY + centerY),
+        pos.x - (tableX + centerX)
       );
-
-      // Calculate rotation delta in degrees with increased sensitivity
       let delta = (newAngle - initialAngle) * (180 / Math.PI) * 1.2;
-
-      // Apply the rotation
       const newRotation = (initialRotation + delta) % 360;
       setRotation(newRotation);
-
-      // If parent component needs to know about rotation
       if (shape.onRotate) {
         shape.onRotate(shape.id, newRotation);
       }
@@ -95,46 +83,6 @@ function OvalTable({
     stage.on("mouseup", onMouseUp);
   };
 
-  // Initialize active and toggled chairs
-  const chairPositions = calculateChairPositions(radiusX, radiusY, seatCount);
-
-  // Check if a specific chair is active
-  const isChairActive = (index) => {
-    return toggledChairs[index] !== true; // Default to active unless toggled off
-  };
-
-  // Update active chair count when toggled
-  const [activeChairCount, setActiveChairCount] = useState(seatCount);
-
-  useEffect(() => {
-    let count = 0;
-    // Define isChairActive inside useEffect to avoid dependency issues
-    const isChairActive = (index) => {
-      return toggledChairs[index] !== true;
-    };
-
-    chairPositions.forEach((_, index) => {
-      if (isChairActive(index)) {
-        count++;
-      }
-    });
-    setActiveChairCount(count);
-  }, [toggledChairs, chairPositions]);
-
-  // Update the shape's rotation when it changes
-  useEffect(() => {
-    if (shape.onRotate && rotation !== shape.rotation) {
-      shape.onRotate(shape.id, rotation);
-    }
-  }, [rotation, shape.id, shape.rotation]);
-
-  // Update the shape's toggled chairs when they change
-  useEffect(() => {
-    if (shape.onChairsUpdate) {
-      shape.onChairsUpdate(shape.id, toggledChairs);
-    }
-  }, [toggledChairs, shape.id]);
-
   // Handle resizing using manual event listeners
   const handleResizeMouseDown = (e) => {
     e.cancelBubble = true;
@@ -143,20 +91,17 @@ function OvalTable({
     const initialWidth = tableWidth;
     const initialHeight = tableHeight;
     const initialCenter = {
-      x: shape.x + initialWidth / 2,
-      y: shape.y + initialHeight / 2,
+      x: tableX + initialWidth / 2,
+      y: tableY + initialHeight / 2,
     };
 
     const onMouseMove = () => {
       const pos = stage.getPointerPosition();
       const diffX = pos.x - initialPointer.x;
       const newWidth = Math.min(Math.max(initialWidth + diffX, 70), 400);
-      const newHeight = (newWidth * 2) / 3; // Maintain 2:3 aspect ratio
-
-      // Calculate new position to keep center point
+      const newHeight = (newWidth * 2) / 3; // Maintain aspect ratio
       const newX = initialCenter.x - newWidth / 2;
       const newY = initialCenter.y - newHeight / 2;
-
       onResize(shape.id, null, newWidth, newHeight, newX, newY);
     };
 
@@ -166,7 +111,6 @@ function OvalTable({
       document.body.style.cursor = "default";
     };
 
-    // Set cursor and register events
     document.body.style.cursor = "nwse-resize";
     stage.on("mousemove", onMouseMove);
     stage.on("mouseup", onMouseUp);
@@ -198,7 +142,7 @@ function OvalTable({
     selectionDash: "#A78BFA",
   };
 
-  // Match chair size with table size but with minimum and maximum constraints
+  // Chair size is relative to table size with constraints
   const chairSize = Math.min(
     Math.max(Math.min(tableWidth, tableHeight) * 0.2, 15),
     30
@@ -218,14 +162,8 @@ function OvalTable({
         onSelect(shape.id);
       }}
     >
-      {/* Rotatable group containing table, chairs and selection outline */}
-      <Group
-        ref={tableGroupRef}
-        rotation={rotation}
-        x={tableWidth / 2}
-        y={tableHeight / 2}
-      >
-        {/* Selection outline - inside the rotatable group */}
+      {/* Rotated group for the oval table and chairs */}
+      <Group rotation={rotation} x={centerX} y={centerY}>
         {isSelected && (
           <Ellipse
             radiusX={radiusX + 5}
@@ -237,7 +175,6 @@ function OvalTable({
           />
         )}
 
-        {/* Table */}
         <Ellipse
           radiusX={radiusX}
           radiusY={radiusY}
@@ -256,23 +193,9 @@ function OvalTable({
           shadowOpacity={0.3}
         />
 
-        <Text
-          text={shape.tableNumber ? shape.tableNumber.toString() : ""}
-          fontSize={24} // adjust as needed
-          fill="white" // choose a contrasting color
-          x={-radiusX} // center horizontally based on radiusX
-          y={-radiusY} // center vertically based on radiusY
-          width={radiusX * 2} // ellipse width
-          height={radiusY * 2} // ellipse height
-          align="center"
-          verticalAlign="middle"
-          fontStyle="bold"
-        />
-
-        {/* Chairs */}
+        {/* Render chairs */}
         {chairPositions.map((pos, index) => {
-          const isActive = isChairActive(index);
-
+          const isActive = toggledChairs[index] !== true;
           return (
             <Group
               key={index}
@@ -285,49 +208,72 @@ function OvalTable({
               }}
             >
               <Circle
-                width={chairSize}
-                height={chairSize}
-                fill={isActive ? colors.chairFill : "#B0BEC5"}
-                stroke="#333"
+                radius={chairSize / 2}
+                fill={isActive ? colors.chairFill : "transparent"}
+                stroke={colors.defaultStroke}
                 strokeWidth={1}
+                dash={isActive ? [] : [2, 2]}
+                opacity={isActive ? 1 : 0.5}
               />
             </Group>
           );
         })}
-
-        {/* Table resize button */}
-        <Circle
-          x={radiusX - 10}
-          y={radiusY - 10}
-          radius={10}
-          fill={colors.resizeButton}
-          stroke="#fff"
-          strokeWidth={2}
-          onMouseDown={handleResizeMouseDown}
-        />
-
-        {/* Table rotate button */}
-        <Circle
-          x={0}
-          y={-radiusY - 10}
-          radius={10}
-          fill={colors.rotateButton}
-          stroke="#fff"
-          strokeWidth={2}
-          onMouseDown={handleRotateStart}
-        />
-
-        {/* Delete button */}
-        <Circle
-          x={radiusX - 10}
-          y={-radiusY - 10}
-          radius={10}
-          fill={colors.deleteButton}
-          stroke="#fff"
-          strokeWidth={2}
-          onClick={handleDelete}
-        />
       </Group>
+
+      {/* Table number rendered outside the rotated group */}
+      <Text
+        text={shape.tableNumber ? shape.tableNumber.toString() : ""}
+        fontSize={24}
+        fill="white"
+        // Center relative to the outer group
+        x={centerX}
+        y={centerY}
+        offset={{ x: centerX, y: centerY }}
+        width={tableWidth}
+        height={tableHeight}
+        align="center"
+        verticalAlign="middle"
+        fontStyle="bold"
+      />
+
+      {/* Control Buttons (rendered outside the rotated group) */}
+      {(isSelected || isHovered) && (
+        <>
+          <Group x={tableWidth - 5} y={5} onClick={handleDelete}>
+            <Circle
+              radius={10}
+              fill={colors.deleteButton}
+              stroke="#fff"
+              strokeWidth={2}
+            />
+            <Text text="×" fontSize={16} fill="white" x={-5} y={-8} />
+          </Group>
+
+          <Group x={5} y={5} onMouseDown={handleRotateStart}>
+            <Circle
+              radius={10}
+              fill={colors.rotateButton}
+              stroke="#fff"
+              strokeWidth={2}
+            />
+            <Text text="↻" fontSize={16} fill="white" x={-5} y={-8} />
+          </Group>
+
+          <Group
+            x={tableWidth - 10}
+            y={tableHeight - 10}
+            onMouseDown={handleResizeMouseDown}
+          >
+            <Circle
+              radius={10}
+              fill={colors.resizeButton}
+              stroke="#fff"
+              strokeWidth={2}
+            />
+            <Text text="↘" fontSize={12} fill="white" x={-5} y={-7} />
+          </Group>
+        </>
+      )}
     </Group>
   );
 }

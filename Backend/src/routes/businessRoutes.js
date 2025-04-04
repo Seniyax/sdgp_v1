@@ -19,10 +19,16 @@ router.post(
   ]),
   createBusiness
 );
-
 router.get("/get-all", getAllBusinesses);
 router.post("/get-by-id", getOneBusiness);
-router.put("/update", updateBusiness);
+router.put(
+  "/update",
+  upload.fields([
+    { name: "logo", maxCount: 1 },
+    { name: "cover", maxCount: 1 },
+  ]),
+  updateBusiness
+);
 router.delete("/delete", deleteBusiness);
 
 module.exports = router;

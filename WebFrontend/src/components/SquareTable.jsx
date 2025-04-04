@@ -185,11 +185,16 @@ function SquareTable({
   // Toggle chair state on click
   const toggleChair = (side, index) => {
     const chairKey = `${side}-${index}`;
-    const newToggledChairs = {
+    const currentActive =
+      toggledChairs[chairKey] !== undefined
+        ? !toggledChairs[chairKey]
+        : initialActiveChairs[chairKey];
+    const newToggledValue = currentActive ? true : false;
+
+    setToggledChairs({
       ...toggledChairs,
-      [chairKey]: !toggledChairs[chairKey],
-    };
-    setToggledChairs(newToggledChairs);
+      [chairKey]: newToggledValue,
+    });
   };
 
   // Check if chair is active (enabled or disabled)
@@ -280,15 +285,15 @@ function SquareTable({
 
         <Text
           text={shape.tableNumber ? shape.tableNumber.toString() : ""}
-          fontSize={24} // adjust as needed
-          fill="white" // choose a contrasting color
-          x={-tableSize / 2} // ensures centering horizontally
-          y={-tableSize / 2} // ensures centering vertically
+          fontSize={24}
+          fill="white"
           width={tableSize}
           height={tableSize}
           align="center"
           verticalAlign="middle"
           fontStyle="bold"
+          offset={{ x: tableSize / 2, y: tableSize / 2 }}
+          rotation={-rotation}
         />
 
         {/* Chair rendering for top, right, bottom, and left */}

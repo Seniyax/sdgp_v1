@@ -22,6 +22,7 @@ import VisibleKitchen from "../components/VisibleKitchen";
 import Restrooms from "../components/Restrooms";
 import OutdoorIndicator from "../components/OutdoorIndicator";
 import IndoorIndicator from "../components/IndoorIndicator";
+import "../style/FloorPlan.css";
 
 // Toolbar item component with number input for tables
 function ToolbarItem({
@@ -34,30 +35,16 @@ function ToolbarItem({
 }) {
   return (
     <div
+      className={`fps3-toolbar-item ${
+        isSelected ? "fps3-toolbar-item-selected" : ""
+      }`}
       onClick={onClick}
-      style={{
-        width: "100%",
-        padding: "12px 16px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        backgroundColor: isSelected ? "#EBF8FF" : "transparent",
-        borderLeft: isSelected ? "4px solid #4299E1" : "4px solid transparent",
-        cursor: "pointer",
-        transition: "all 0.2s ease",
-        fontSize: "14px",
-        fontWeight: isSelected ? "600" : "normal",
-        color: isSelected ? "#2D5282" : "#4A5568",
-      }}
     >
-      <span>{text}</span>
+      <span className="fps3-toolbar-item-text">{text}</span>
       {isTable && (
         <div
+          className="fps3-table-input-wrapper"
           onClick={(e) => e.stopPropagation()}
-          style={{
-            display: "flex",
-            alignItems: "center",
-          }}
         >
           <input
             type="number"
@@ -70,20 +57,9 @@ function ToolbarItem({
                 onSeatCountChange(value);
               }
             }}
-            style={{
-              width: "40px",
-              height: "24px",
-              textAlign: "center",
-              border: "1px solid #CBD5E0",
-              borderRadius: "4px",
-              fontSize: "14px",
-            }}
+            className="fps3-table-input"
           />
-          <span
-            style={{ marginLeft: "6px", fontSize: "12px", color: "#718096" }}
-          >
-            seats
-          </span>
+          <span className="fps3-table-input-label">seats</span>
         </div>
       )}
     </div>
@@ -100,6 +76,10 @@ function FloorPlanStep3({
   canvasHeight,
   currentFloorName,
 }) {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const [shapes, setShapes] = useState(initialTables);
   const [selectedId, setSelectedId] = useState(null);
   const [selectedShapeType, setSelectedShapeType] = useState("squareTable");
@@ -120,7 +100,7 @@ function FloorPlanStep3({
     if (JSON.stringify(shapes) !== JSON.stringify(initialTables)) {
       setShapes(initialTables);
     }
-  }, [initialTables]);
+  }, [initialTables, shapes]);
 
   // Update both local state and parent
   const updateShapes = useCallback(
@@ -392,6 +372,8 @@ function FloorPlanStep3({
               setSelectedId(pastedShape.id);
             }
             break;
+          default:
+            break;
         }
       }
     },
@@ -419,40 +401,28 @@ function FloorPlanStep3({
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        height: "100vh",
-        width: "100%",
-        fontFamily: "'Inter', 'Segoe UI', Roboto, sans-serif",
-        backgroundColor: "transparent",
-      }}
-    >
-      {/* Left Toolbar */}
+    <div className="fps3-container">
+      {/* Top action buttons */}
       <div
         style={{
-          width: "200px",
-          backgroundColor: "white",
-          borderRight: "1px solid #E2E8F0",
-          boxShadow:
-            "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-          zIndex: 10,
-          display: "flex",
-          flexDirection: "column",
-          borderRadius: "10px",
+          position: "fixed",
+          bottom: 20,
+          left: 285,
+          zIndex: 1001,
         }}
       >
-        <div style={{ padding: "16px", borderBottom: "1px solid #E2E8F0" }}>
-          <h3
-            style={{
-              margin: 0,
-              fontSize: "16px",
-              fontWeight: "600",
-              color: "#2D3748",
-            }}
-          >
-            Tables
-          </h3>
+        <div className="fps3-bottom-actions">
+          <button className="fps3-back-button" onClick={handlePreviousStep}>
+            <span className="fps3-back-arrow">←</span>
+            Back
+          </button>
+        </div>
+      </div>
+
+      {/* Left Toolbar */}
+      <div className="fps3-sidebar">
+        <div className="fps3-sidebar-header">
+          <h3 className="fps3-sidebar-title">Tables</h3>
         </div>
 
         <ToolbarItem
@@ -506,40 +476,17 @@ function FloorPlanStep3({
           }
         />
 
-        <div
-          style={{
-            padding: "16px",
-            borderTop: "1px solid #E2E8F0",
-            marginTop: "auto",
-          }}
-        >
-          <p
-            style={{ fontSize: "14px", color: "#718096", margin: "0 0 12px 0" }}
-          >
+        <div className="fps3-sidebar-bottom">
+          <p className="fps3-sidebar-text">
             Click on the canvas to add tables. Drag to move. Resize with the
             blue handles when selected.
           </p>
-          <p
-            style={{ fontSize: "14px", color: "#718096", margin: "0 0 12px 0" }}
-          >
+          <p className="fps3-sidebar-text">
             Press Delete key to remove selected items.
           </p>
           <button
+            className="fps3-clear-button"
             onClick={() => updateShapes([])}
-            style={{
-              width: "100%",
-              backgroundColor: "#F56565",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              padding: "8px",
-              fontSize: "14px",
-              fontWeight: "500",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
           >
             Clear All Tables
           </button>
@@ -547,36 +494,13 @@ function FloorPlanStep3({
       </div>
 
       {/* Canvas Area */}
-      <div
-        style={{
-          flex: 1,
-          background: "transparent",
-          padding: "20px",
-          boxShadow: "inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)",
-          display: "flex",
-          flexDirection: "column",
-          position: "relative",
-        }}
-      >
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            overflow: "auto",
-            borderRadius: "10px",
-          }}
-        >
+      <div className="fps3-canvas-container">
+        <div className="fps3-canvas-inner-container">
           <div
+            className="fps3-canvas"
             style={{
-              width: canvasWidth,
-              height: canvasHeight,
-              backgroundColor: "#F7FAFC",
-              boxShadow:
-                "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-              borderRadius: "8px",
-              position: "relative",
+              "--canvas-width": canvasWidth + "px",
+              "--canvas-height": canvasHeight + "px",
             }}
           >
             <Stage
@@ -614,12 +538,9 @@ function FloorPlanStep3({
                   />
                 ))}
 
-                {/* Render preview floor shapes directly without extra wrapper */}
+                {/* Render preview floor shapes */}
                 {floorShapes.map((shape) => {
-                  const commonProps = {
-                    shape: shape,
-                    isPreview: true,
-                  };
+                  const commonProps = { shape: shape, isPreview: true };
 
                   if (shape.type === "rectangle") {
                     return (
@@ -786,23 +707,9 @@ function FloorPlanStep3({
 
             {/* Empty state instructions */}
             {shapes.length === 0 && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  backgroundColor: "rgba(255, 255, 255, 0.8)",
-                  padding: "20px",
-                  borderRadius: "8px",
-                  textAlign: "center",
-                  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                }}
-              >
-                <h4 style={{ margin: "0 0 10px 0", color: "#2D3748" }}>
-                  Add Tables
-                </h4>
-                <p style={{ margin: "0", color: "#4A5568" }}>
+              <div className="fps3-empty-overlay">
+                <h4 className="fps3-empty-title">Add Tables</h4>
+                <p className="fps3-empty-text">
                   Click on the canvas to place tables in your floor plan.
                 </p>
               </div>
@@ -813,47 +720,18 @@ function FloorPlanStep3({
         {/* Bottom action buttons */}
         <div
           style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginTop: "20px",
-            padding: "0 20px",
+            position: "fixed",
+            bottom: 20,
+            right: 20,
+            zIndex: 1000,
           }}
         >
-          <button
-            onClick={handlePreviousStep}
-            style={{
-              backgroundColor: "white",
-              color: "#4A5568",
-              border: "1px solid #CBD5E0",
-              borderRadius: "4px",
-              padding: "8px 16px",
-              fontSize: "14px",
-              fontWeight: "500",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <span style={{ marginRight: "8px" }}>←</span>
-            Back
-          </button>
-
-          <button
-            onClick={handleNextStep}
-            style={{
-              borderRadius: "4px",
-              padding: "8px 16px",
-              fontSize: "14px",
-              fontWeight: "500",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-            }}
-            className="btn btn-violet-light"
-          >
-            Save
-            <span style={{ marginLeft: "8px" }}>→</span>
-          </button>
+          <div className="fps3-bottom-actions">
+            <button className="fps3-save-button" onClick={handleNextStep}>
+              Save
+              <span className="fps3-save-arrow">→</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

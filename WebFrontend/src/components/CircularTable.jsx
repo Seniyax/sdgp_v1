@@ -189,14 +189,13 @@ function CircularTable({
         />
       )}
 
-      {/* Rotatable group */}
+      {/* Rotated group with table shape and chairs */}
       <Group
         ref={tableGroupRef}
         rotation={rotation}
         x={shape.size / 2}
         y={shape.size / 2}
       >
-        {/* Table */}
         <Circle
           radius={radius}
           fill={colors.table}
@@ -214,20 +213,7 @@ function CircularTable({
           shadowOpacity={0.3}
         />
 
-        <Text
-          text={shape.tableNumber ? shape.tableNumber.toString() : ""}
-          fontSize={24} // adjust as needed
-          fill="white" // choose a contrasting color
-          x={-shape.size / 2} // ensures centering horizontally
-          y={-shape.size / 2} // ensures centering vertically
-          width={shape.size}
-          height={shape.size}
-          align="center"
-          verticalAlign="middle"
-          fontStyle="bold"
-        />
-
-        {/* Chairs */}
+        {/* Render chairs */}
         {chairPositions.map((pos, index) => (
           <Group
             key={index}
@@ -255,12 +241,42 @@ function CircularTable({
         ))}
       </Group>
 
+      {/* Table number rendered outside the rotated group */}
+      <Text
+        text={shape.tableNumber ? shape.tableNumber.toString() : ""}
+        fontSize={24}
+        fill="white"
+        // Position at the center of the table (relative to the outer group)
+        x={shape.size / 2}
+        y={shape.size / 2}
+        offset={{ x: shape.size / 2, y: shape.size / 2 }}
+        width={shape.size}
+        height={shape.size}
+        align="center"
+        verticalAlign="middle"
+        fontStyle="bold"
+      />
+
       {/* Controls */}
       {(isSelected || isHovered) && (
         <>
           <Group x={radius * 2 - 10} y={10} onMouseDown={handleDelete}>
             <Circle radius={10} fill={colors.deleteButton} />
             <Text text="×" fontSize={16} fill="white" x={-5} y={-8} />
+          </Group>
+
+          <Group x={10} y={radius * 2 - 10} onMouseDown={handleRotateStart}>
+            <Circle radius={10} fill={colors.rotateButton} />
+            <Text text="↻" fontSize={16} fill="white" x={-5} y={-8} />
+          </Group>
+
+          <Group
+            x={radius * 2 - 10}
+            y={radius * 2 - 10}
+            onMouseDown={handleResizeMouseDown}
+          >
+            <Circle radius={10} fill={colors.resizeButton} />
+            <Text text="↘" fontSize={12} fill="white" x={-5} y={-7} />
           </Group>
         </>
       )}

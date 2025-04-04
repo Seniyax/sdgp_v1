@@ -29,8 +29,13 @@ import "../style/Home.css";
 import Swal from "sweetalert2";
 
 const Home = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     setUser(JSON.parse(sessionStorage.getItem("user")));
@@ -145,6 +150,50 @@ const Home = () => {
         "Watch as appointments automatically flow into your calendar with zero double-bookings.",
     },
   ];
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    const formData = {
+      name: e.target.name.value,
+      email: e.target.email.value,
+      content: e.target.message.value,
+    };
+
+    try {
+      const response = await fetch("/api/email/contact-dev", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Something went wrong.");
+      }
+      console.log("Success:", data);
+      await Swal.fire({
+        title: "Support Email Sent",
+        text: "Your message has been sent. We'll get back to you soon.",
+        icon: "success",
+        confirmButtonText: "Okay",
+      });
+      e.target.reset();
+    } catch (error) {
+      console.error("Error submitting the form:", error.message);
+      Swal.fire({
+        title: "Error",
+        text:
+          error.message ||
+          "There was an error sending your message. Please try again later.",
+        icon: "error",
+        confirmButtonText: "Okay",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="container">
@@ -599,7 +648,7 @@ const Home = () => {
                   whileInView={{ y: 0, opacity: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.2 }}
-                  className="stepwrap"
+                  className={`stepwrap ${index === 2 ? "last" : ""}`}
                 >
                   <div className="stepcard">
                     <div className="stepicon">
@@ -639,7 +688,7 @@ const Home = () => {
                 className="formcard"
               >
                 <h2 className="formtitle">Get in Touch</h2>
-                <form className="form">
+                <form className="form" onSubmit={handleSubmit}>
                   <div className="field">
                     <label htmlFor="name" className="label">
                       Full Name
@@ -647,6 +696,7 @@ const Home = () => {
                     <input
                       type="text"
                       id="name"
+                      name="name"
                       className="input"
                       placeholder="John Doe"
                     />
@@ -658,6 +708,7 @@ const Home = () => {
                     <input
                       type="email"
                       id="email"
+                      name="email"
                       className="input"
                       placeholder="john@example.com"
                     />
@@ -668,6 +719,7 @@ const Home = () => {
                     </label>
                     <textarea
                       id="message"
+                      name="message"
                       rows="4"
                       className="textarea"
                       placeholder="How can we help you?"
@@ -678,9 +730,15 @@ const Home = () => {
                     whileTap={{ scale: 0.95 }}
                     type="submit"
                     className="submit"
-                    onClick={handleContactClick}
+                    disabled={isLoading}
                   >
-                    Send Message
+                    {isLoading ? (
+                      <span>
+                        Sending<span className="dot-animation"></span>
+                      </span>
+                    ) : (
+                      "Send Message"
+                    )}
                   </motion.button>
                 </form>
               </motion.div>

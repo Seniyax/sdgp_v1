@@ -2,14 +2,12 @@ const express = require("express");
 const router = express.Router();
 const {
   getFloorPlan,
+  getAllFloorPlans,
   createFloorPlan,
-  updateFloorPlan,
-  deleteFloorPlan,
 } = require("../controllers/floorPlanController");
 
 router.post("/get", getFloorPlan);
+router.get("/get-all", getAllFloorPlans);
 router.post("/create", createFloorPlan);
-router.put("/update", updateFloorPlan);
-router.delete("/delete", deleteFloorPlan);
 
 module.exports = router;

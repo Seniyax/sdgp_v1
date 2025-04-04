@@ -1,5 +1,37 @@
 const supabase = require("../config/supabaseClient");
+const supabaseService = require("../config/supabaseService");
 const { v4: uuidv4 } = require("uuid");
+
+const validateTime = (time) => {
+  const regex = /^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$/;
+  return regex.test(time) ? null : "Invalid time format. Expected HH:MM:SS";
+};
+
+async function uploadImage(file, folder) {
+  const uniqueFileName = `${uuidv4()}-${file.originalname}`;
+  const filePath = `${folder}/${uniqueFileName}`;
+
+  const { data, error } = await supabaseService.storage
+    .from("images")
+    .upload(filePath, file.buffer, {
+      contentType: file.mimetype,
+      upsert: true,
+    });
+  if (error) {
+    throw error;
+  }
+
+  const { data: publicUrlData, error: urlError } = supabaseService.storage
+    .from("images")
+    .getPublicUrl(filePath);
+  if (urlError) {
+    throw urlError;
+  }
+  if (!publicUrlData || !publicUrlData.publicUrl) {
+    throw new Error("Failed to retrieve public URL");
+  }
+  return publicUrlData.publicUrl;
+}
 
 async function createBusinessRecord(
   name,
@@ -8,83 +40,44 @@ async function createBusinessRecord(
   verificationToken,
   description,
   website,
-  logo,
-  cover,
+  logoUrl,
+  coverUrl,
   opening_hour,
   closing_hour,
   facebook_link,
   instagram_link,
   twitter_link
 ) {
-  try {
-    // let uniqueLogoName = null;
-    // let uniqueCoverName = null;
+  const opErrorMessage = validateTime(opening_hour);
+  if (opErrorMessage) throw new Error(opErrorMessage);
+  const clErrorMessage = validateTime(closing_hour);
+  if (clErrorMessage) throw new Error(clErrorMessage);
 
-    // if(logo && cover){
-    //    uniqueLogoName = `${uuidv4()}-${logo.originalname}`;
-    //    uniqueCoverName = `${uuidv4()}-${cover.originalname}`;
-    // }
+  const { data, error } = await supabase
+    .from("business")
+    .insert([
+      {
+        name,
+        category_id: categoryId,
+        location_id: locationId,
+        is_verified: false,
+        verification_token: verificationToken,
+        description,
+        website,
+        logo: logoUrl,
+        cover: coverUrl,
+        opening_hour,
+        closing_hour,
+        facebook_link,
+        instagram_link,
+        twitter_link,
+      },
+    ])
+    .select();
 
-    // const [logoUpload, coverUpload] = await Promise.allSettled([
-    //   supabase.storage.from("images").upload(`logos/${uniqueLogoName}`, logo),
-    //   supabase.storage
-    //     .from("images")
-    //     .upload(`covers/${uniqueCoverName}`, cover),
-    // ]);
+  if (error) throw error;
 
-    // if (logoUpload.status === "rejected") {
-    //   console.error("Error uploading logo:", logoUpload.reason);
-    //   throw new Error(`Error uploading logo: ${logoUpload.reason.message}`);
-    // }
-
-    // if (coverUpload.status === "rejected") {
-    //   console.error("Error uploading cover:", coverUpload.reason);
-    //   throw new Error(`Error uploading cover: ${coverUpload.reason.message}`);
-    // }
-
-    // const logoUrl = supabase.storage
-    //   .from("images")
-    //   .getPublicUrl(`logos/${uniqueLogoName}`).publicURL;
-    // const coverUrl = supabase.storage
-    //   .from("images")
-    //   .getPublicUrl(`covers/${uniqueCoverName}`).publicURL;
-
-    // if (!logoUrl || !coverUrl) {
-    //   throw new Error("Failed to retrieve image URLs");
-    // }
-
-    const logoUrl = null;
-    const coverUrl = null;
-
-    const { data, error } = await supabase
-      .from("business")
-      .insert([
-        {
-          name,
-          category_id: categoryId,
-          location_id: locationId,
-          is_verified: false,
-          verification_token: verificationToken,
-          description,
-          website,
-          logo: logoUrl,
-          cover: coverUrl,
-          opening_hour,
-          closing_hour,
-          facebook_link,
-          instagram_link,
-          twitter_link,
-        },
-      ])
-      .select();
-
-    if (error) throw error;
-
-    return data[0];
-  } catch (error) {
-    console.error("Error creating business record:", error.message);
-    throw error;
-  }
+  return data[0];
 }
 
 async function updateBusinessRecord(businessId, updateData) {
@@ -114,7 +107,7 @@ async function getBusinessesMinimal() {
 async function getOneBusiness(businessId) {
   const { data, error } = await supabase
     .from("business")
-    .select("*")
+    .select("*, category:category_id(name)")
     .eq("id", businessId)
     .maybeSingle();
   if (error) throw error;
@@ -131,6 +124,27 @@ async function deleteBusiness(businessId) {
   return data;
 }
 
+async function verifyBusinessEmail(token) {
+  const { data, error } = await supabase
+    .from("business")
+    .select("*")
+    .eq("verification_token", token)
+    .single();
+  if (error || !data) {
+    throw new Error("The token provided is invalid or has expired.");
+  }
+  const { error: updateError } = await supabase
+    .from("business")
+    .update({ is_verified: true, verification_token: null })
+    .eq("id", data.id);
+  if (updateError) {
+    throw new Error(
+      "We encountered an issue verifying your business email. Please try again later."
+    );
+  }
+  return data;
+}
+
 module.exports = {
   createBusinessRecord,
   updateBusinessRecord,
@@ -138,4 +152,6 @@ module.exports = {
   getBusinessesMinimal,
   getOneBusiness,
   deleteBusiness,
+  verifyBusinessEmail,
+  uploadImage,
 };

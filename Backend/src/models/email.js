@@ -6,27 +6,24 @@ function validateEmail(email) {
 }
 
 async function buildEmails(businessId) {
-  const { data: emailsData, error: emailsError } = await supabase
+  const { data, error } = await supabase
     .from("email")
-    .select("*")
+    .select(
+      `
+      id,
+      email_address,
+      email_type:email_type_id ( name )
+    `
+    )
     .eq("business_id", businessId);
-  if (emailsError) throw emailsError;
-  const emails = await Promise.all(
-    emailsData.map(async (email) => {
-      const { data: emailTypeData, error: emailTypeError } = await supabase
-        .from("email_type")
-        .select("name")
-        .eq("id", email.email_type_id)
-        .maybeSingle();
-      if (emailTypeError) throw emailTypeError;
-      return {
-        email_id: email.id,
-        email_address: email.email_address,
-        email_type: emailTypeData ? emailTypeData.name : "",
-      };
-    })
-  );
-  return emails;
+
+  if (error) throw error;
+
+  return data.map((email) => ({
+    email_id: email.id,
+    email_address: email.email_address,
+    email_type: email.email_type ? email.email_type.name : "",
+  }));
 }
 
 async function createPrimaryEmail(businessId, email_address) {
@@ -81,12 +78,29 @@ async function insertNonPrimaryEmails(businessId, emails) {
   return insertedIds;
 }
 
-// New helper: Get all emails for a business
 async function getEmailsByBusiness(businessId) {
   const { data, error } = await supabase
     .from("email")
-    .select("*")
+    .select("*, email_type(name)")
     .eq("business_id", businessId);
+  if (error) throw error;
+  return data;
+}
+
+async function updateEmails(emails) {
+  for (const email of emails) {
+    const { error } = await supabase
+      .from("email")
+      .update({ email_address: email.email_address })
+      .eq("id", email.id);
+    if (error) throw error;
+  }
+}
+
+async function getEmails() {
+  const { data, error } = await supabase
+    .from("email")
+    .select("*, email_type(name)");
   if (error) throw error;
   return data;
 }
@@ -99,4 +113,6 @@ module.exports = {
   deleteEmail,
   insertNonPrimaryEmails,
   getEmailsByBusiness,
+  updateEmails,
+  getEmails,
 };

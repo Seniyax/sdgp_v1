@@ -171,7 +171,7 @@
     margin-top: 30px;
   }
   
-  .back-button,
+  .sign-up-back-button,
   .next-button,
   .signup-button {
     padding: 14px;
@@ -185,14 +185,14 @@
     align-items: center;
   }
   
-  .back-button {
+  .sign-up-back-button {
     flex: 1;
     background-color: white;
     color: var(--text-color);
     border: 1px solid var(--border-color);
   }
   
-  .back-button:hover {
+  .sign-up-back-button:hover {
     background-color: var(--light-gray);
   }
   
@@ -309,7 +309,7 @@
       flex-direction: column;
     }
     
-    .back-button,
+    .sign-up-back-button,
     .next-button,
     .signup-button {
       width: 100%;

@@ -37,6 +37,7 @@ async function createBusinessRelations(
 ) {
   const formattedbusinessRelations = [];
   for (let businessRelation of businessRelations) {
+    console.log(businessRelation.username);
     const user = await getUserByUsername(businessRelation.username);
     formattedbusinessRelations.push({
       user_id: user.id,
@@ -61,19 +62,41 @@ async function getBusinessRelationsByUser(userId) {
     .from("business_has_user")
     .select(
       `
-    id,
-    user_id,
-    business_id,
-    type,
-    is_verified,
-    verification_token,
-    supervisor_id,
-    business (name)
-  `
+      id,
+      user_id,
+      business_id,
+      type,
+      is_verified,
+      verification_token,
+      supervisor_id,
+      business (
+        id,
+        name,
+        is_verified,
+        emails: email (
+          email_address,
+          email_type: email_type ( name )
+        )
+      ),
+      supervisor: "user"!fk_supervisor ( name )
+      `
     )
-    .eq("user_id", userId);
-  if (error) throw error;
-  return data;
+    .eq("user_id", userId)
+    .order("id", { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  const safeData = data || [];
+  safeData.forEach((relation) => {
+    if (relation.business && relation.business.emails) {
+      relation.business.primary_email = relation.business.emails.find(
+        (email) => email.email_type && email.email_type.name === "Primary"
+      );
+    }
+  });
+  return safeData;
 }
 
 async function deleteBusinessRelations(businessId) {
@@ -90,8 +113,9 @@ async function deleteBusinessRelations(businessId) {
 async function getUserRelationsByBusiness(business_id) {
   const { data, error } = await supabase
     .from("business_has_user")
-    .select("*")
-    .eq("business_id", business_id);
+    .select("*, user:user_id(*), supervisor:supervisor_id(*)")
+    .eq("business_id", business_id)
+    .order("id", { ascending: true });
   if (error) throw error;
   return data;
 }
@@ -141,28 +165,37 @@ async function processBHUUpdate(businessId, requestUsers) {
 }
 
 async function buildUsersForBusiness(businessId) {
-  const { data: bhuData, error: bhuError } = await supabase
+  const { data, error } = await supabase
+    .from("business_has_user")
+    .select("type, user:user (name, email, username)")
+    .eq("business_id", businessId);
+
+  if (error) throw error;
+
+  return data.map((record) => ({
+    name: record.user?.name || "",
+    email: record.user?.email || "",
+    username: record.user?.username || "",
+    type: record.type,
+  }));
+}
+
+async function verifyBusinessRelationByToken(token) {
+  const { data, error: selectError } = await supabase
     .from("business_has_user")
     .select("*")
-    .eq("business_id", businessId);
-  if (bhuError) throw bhuError;
-  const users = await Promise.all(
-    bhuData.map(async (bhu) => {
-      const { data: userData, error: userError } = await supabase
-        .from("user")
-        .select("name, email, username")
-        .eq("id", bhu.user_id)
-        .maybeSingle();
-      if (userError) throw userError;
-      return {
-        name: userData ? userData.name : "",
-        email: userData ? userData.email : "",
-        username: userData ? userData.username : "",
-        type: bhu.type,
-      };
-    })
-  );
-  return users;
+    .eq("verification_token", token)
+    .single();
+  if (selectError) throw selectError;
+  if (!data) throw new Error("Invalid or expired token");
+
+  const { error: updateError } = await supabase
+    .from("business_has_user")
+    .update({ is_verified: true, verification_token: null })
+    .eq("id", data.id);
+  if (updateError) throw updateError;
+
+  return data;
 }
 
 module.exports = {
@@ -173,4 +206,5 @@ module.exports = {
   processBHUUpdate,
   buildUsersForBusiness,
   deleteBusinessRelations,
+  verifyBusinessRelationByToken,
 };

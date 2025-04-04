@@ -1,7 +1,8 @@
 const {
   getFloorsByBusiness,
+  getAllFloorPlans,
   createFloorPlanWithTables,
-  deleteFloorPlan: deleteFloorPlanModel,
+  updateFloorPlanWithTables,
 } = require("../models/floorPlan");
 const { getTablesByBusiness } = require("../models/table");
 
@@ -36,61 +37,91 @@ exports.getFloorPlan = async (req, res) => {
   }
 };
 
-exports.createFloorPlan = async (req, res) => {
-  const { business_id, canvas_width, canvas_height, floors, tables } = req.body;
-  if (!business_id || !canvas_width || !canvas_height || !floors || !tables) {
-    return res.status(400).json({
-      success: false,
-      message:
-        "business_id, canvas_width, canvas_height, floors and tables arrays are required",
-    });
-  }
+exports.getAllFloorPlans = async (req, res) => {
   try {
-    await createFloorPlanWithTables(
-      business_id,
-      canvas_width,
-      canvas_height,
-      floors,
-      tables
-    );
-    return res.status(201).json({
+    const floorplans = await getAllFloorPlans();
+    if (floorplans.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No floor plans were found",
+      });
+    }
+    return res.status(200).json({
       success: true,
-      message: "Floor plan created successfully",
+      floorplans,
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Error creating floor plan",
+      message: "Error retrieving floor plans",
       error: error.message,
     });
   }
 };
 
-exports.updateFloorPlan = async (req, res) => {
-  return res.status(501).json({
-    success: false,
-    message: "Update floor plan not implemented yet",
-  });
-};
-
-exports.deleteFloorPlan = async (req, res) => {
-  const { floor_plan_id } = req.params;
-  if (!floor_plan_id) {
+exports.createFloorPlan = async (req, res) => {
+  const {
+    business_id,
+    canvas_width,
+    canvas_height,
+    floors,
+    tables,
+    width,
+    height,
+  } = req.body;
+  if (
+    !business_id ||
+    !canvas_width ||
+    !canvas_height ||
+    !floors ||
+    !tables ||
+    !width ||
+    !height
+  ) {
     return res.status(400).json({
       success: false,
-      message: "floor_plan_id is required",
+      message:
+        "business_id, canvas_width, canvas_height, width, height, floors and tables arrays are required",
     });
   }
   try {
-    await deleteFloorPlanModel(floor_plan_id);
-    return res.status(200).json({
+    // Check if floor plans exist for this business.
+    const existingFloorplans = await getFloorsByBusiness(business_id);
+
+    if (existingFloorplans.length > 0) {
+      // Do a differential update: update changed records, insert new ones,
+      // and soft-delete (or archive) records that are no longer present.
+      await updateFloorPlanWithTables(
+        business_id,
+        canvas_width,
+        canvas_height,
+        floors,
+        tables,
+        width,
+        height
+      );
+    } else {
+      // No existing floor plans – create new ones.
+      await createFloorPlanWithTables(
+        business_id,
+        canvas_width,
+        canvas_height,
+        floors,
+        tables,
+        width,
+        height
+      );
+    }
+
+    return res.status(201).json({
       success: true,
-      message: "Floor plan deleted successfully",
+      message: "Floor plan updated successfully",
     });
   } catch (error) {
+    console.log("Error creating/updating floor plan:", error.message);
     return res.status(500).json({
       success: false,
-      message: "Error deleting floor plan",
+      message: "Error creating/updating floor plan",
       error: error.message,
     });
   }

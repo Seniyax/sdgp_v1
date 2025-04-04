@@ -15,6 +15,12 @@ async function getContacts(businessId) {
 }
 
 async function createContacts(businessId, contacts) {
+  const invalidContact = contacts.find((contact) =>
+    validateContact(contact.number)
+  );
+  if (invalidContact) {
+    throw new Error(validateContact(invalidContact.number));
+  }
   const contactsToInsert = contacts.map((contact) => ({
     number: contact.number,
     type: contact.type,

@@ -2,6 +2,7 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import "../style/AddReservation.css";
 
 const sectionVariants = {
   hidden: { opacity: 0 },
@@ -178,12 +179,15 @@ const AddReservation = ({
             <div className="row">
               <div className="col-md-6">
                 <div className="mb-3 position-relative">
-                  <label htmlFor="start_time" className="form-label">
+                  <label
+                    htmlFor="start_time"
+                    className="form-label add-res-label"
+                  >
                     Start Time
                   </label>
                   <input
                     type="time"
-                    className="form-control"
+                    className="form-control add-res-input"
                     id="start_time"
                     name="start_time"
                     value={formData.start_time}
@@ -192,12 +196,15 @@ const AddReservation = ({
                   />
                 </div>
                 <div className="mb-3">
-                  <label htmlFor="end_date" className="form-label">
+                  <label
+                    htmlFor="end_date"
+                    className="form-label add-res-label"
+                  >
                     Reservation Date
                   </label>
                   <input
                     type="date"
-                    className="form-control"
+                    className="form-control add-res-input"
                     id="end_date"
                     name="end_date"
                     value={formData.end_date}
@@ -206,7 +213,7 @@ const AddReservation = ({
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Group Size</label>
+                  <label className="form-label add-res-label">Group Size</label>
                   <input
                     type="number"
                     className="form-control"
@@ -218,11 +225,14 @@ const AddReservation = ({
               </div>
               <div className="col-md-6">
                 <div className="mb-3">
-                  <label htmlFor="slot_type" className="form-label">
+                  <label
+                    htmlFor="slot_type"
+                    className="form-label add-res-label"
+                  >
                     Type
                   </label>
                   <select
-                    className="form-select"
+                    className="form-select add-res-select"
                     id="slot_type"
                     name="slot_type"
                     value={formData.slot_type}
@@ -234,12 +244,15 @@ const AddReservation = ({
                   </select>
                 </div>
                 <div className="mb-3">
-                  <label htmlFor="customer_name" className="form-label">
+                  <label
+                    htmlFor="customer_name"
+                    className="form-label add-res-label"
+                  >
                     Customer Name
                   </label>
                   <input
                     type="text"
-                    className="form-control"
+                    className="form-control add-res-input"
                     id="customer_name"
                     name="customer_name"
                     value={formData.customer_name}
@@ -248,12 +261,15 @@ const AddReservation = ({
                   />
                 </div>
                 <div className="mb-3">
-                  <label htmlFor="customer_number" className="form-label">
+                  <label
+                    htmlFor="customer_number"
+                    className="form-label add-res-label"
+                  >
                     Customer Contact
                   </label>
                   <input
                     type="text"
-                    className="form-control"
+                    className="form-control add-res-input"
                     id="customer_number"
                     name="customer_number"
                     value={formData.customer_number}

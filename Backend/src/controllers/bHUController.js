@@ -5,9 +5,6 @@ const { getUserByUsername } = require("../models/user");
 const {
   createBusinessRelation,
   getBusinessRelationsByUser,
-  getUserRelationsByBusiness,
-  processBHUUpdate,
-  buildUsersForBusiness,
 } = require("../models/businessHasUser");
 const { getOneBusiness } = require("../models/business");
 
@@ -88,6 +85,23 @@ exports.createBusinessRelation = async (req, res) => {
         message: "Supervisor not found",
       });
     }
+    console.log(await getBusinessRelationsByUser(supervisor.id));
+    console.log(business_id);
+    const validSupervisorRelation = (
+      await getBusinessRelationsByUser(supervisor.id)
+    ).find(
+      (relation) =>
+        Number(relation.business.id) === Number(business_id) &&
+        ["Admin", "Owner"].includes(relation.type) &&
+        relation.is_verified
+    );
+    console.log(validSupervisorRelation);
+    if (!validSupervisorRelation) {
+      return res.status(400).json({
+        success: false,
+        message: `${supervisor.username} is not a supervisor in ${business.name}`,
+      });
+    }
     const verificationToken = crypto.randomBytes(32).toString("hex");
     const bhuRecord = await createBusinessRelation({
       user_id: user.id,
@@ -98,7 +112,13 @@ exports.createBusinessRelation = async (req, res) => {
       is_verified: false,
     });
 
-    await sendVerificationEmail(supervisor.email, verificationToken, user.name, business.name, type);
+    await sendVerificationEmail(
+      supervisor.email,
+      verificationToken,
+      user.name,
+      business.name,
+      type
+    );
     return res.status(201).json({
       success: true,
       message:

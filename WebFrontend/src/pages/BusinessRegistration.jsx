@@ -26,7 +26,7 @@ const BusinessRegistration = () => {
     } else if (!user.is_verified) {
       Swal.fire({
         title: "Not Signed In",
-        text: "Please confirm your user email and sign in again.",
+        text: "Please sign in before registering a business",
         icon: "warning",
         confirmButtonText: "Okay",
       }).then(() => {
@@ -50,8 +50,8 @@ const BusinessRegistration = () => {
     phoneNumbers: [{ number: "", label: "Primary" }],
     emails: [{ email: "", label: "Primary" }],
     website: "",
-    starting_hour: "09:00",
-    closing_hour: "22:00",
+    starting_hour: "09:00:00",
+    closing_hour: "22:00:00",
     logo: null,
     coverImage: null,
     images: [],
@@ -144,9 +144,10 @@ const BusinessRegistration = () => {
   };
 
   const handleHoursChange = (field, value) => {
+    const timeWithSeconds = value.length === 5 ? `${value}:00` : value;
     setFormData({
       ...formData,
-      [field]: value,
+      [field]: timeWithSeconds,
     });
   };
 
@@ -301,11 +302,18 @@ const BusinessRegistration = () => {
           "business",
           JSON.stringify(response.data.data.business)
         );
-        navigate("/floorplan-designer");
+        await Swal.fire({
+          title: "Successfully created the business",
+          text: "Check the primary business email for the verification email. If you don't see the email, please check the spam or junk folder. ",
+          icon: "success",
+          confirmButtonText: "Okay",
+        }).then(() => {
+          navigate("/manage-business");
+        });
       } else {
         Swal.fire({
-          title: "Not Signed In",
-          text: response.data.message || "Registration failed.",
+          title: "Registration failed",
+          text: response.data.message || "Filed to register the business",
           icon: "warning",
           confirmButtonText: "Okay",
         });
@@ -313,8 +321,10 @@ const BusinessRegistration = () => {
     } catch (error) {
       console.error("Registration error:", error);
       Swal.fire({
-        title: "Not Signed In",
-        text: "An error occurred during registration. Please try again.",
+        title: "Something went wrong",
+        text:
+          error.response?.data?.message ||
+          "An error occurred during registration. Please try again.",
         icon: "warning",
         confirmButtonText: "Okay",
       });
@@ -359,7 +369,7 @@ const BusinessRegistration = () => {
     switch (currentStep) {
       case 1:
         return (
-          <div className="step-content">
+          <div className="step-content home-step-content">
             <h2>Tell us about your business</h2>
             <p>
               Let&apos;s start with some basic information about your business.
@@ -378,7 +388,7 @@ const BusinessRegistration = () => {
                   value={formData.businessName}
                   onChange={handleChange}
                   placeholder="Enter your business name"
-                  className={errors.businessName ? "error" : ""}
+                  className={errors.businessName ? "home-error" : ""}
                 />
               </div>
               {errors.businessName && (
@@ -395,9 +405,11 @@ const BusinessRegistration = () => {
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
-                className={errors.category ? "error" : ""}
+                className={errors.category ? "home-error" : ""}
               >
-                <option value="">Select a category</option>
+                <option value="" disabled>
+                  Select a category
+                </option>
                 {categories.map((cat, index) => (
                   <option key={index} value={cat}>
                     {cat}
@@ -420,7 +432,7 @@ const BusinessRegistration = () => {
                 onChange={handleChange}
                 placeholder="Tell customers about your business"
                 rows="4"
-                className={errors.description ? "error" : ""}
+                className={errors.description ? "home-error" : ""}
               ></textarea>
               {errors.description && (
                 <div className="error-message">{errors.description}</div>
@@ -445,7 +457,7 @@ const BusinessRegistration = () => {
 
       case 2:
         return (
-          <div className="step-content">
+          <div className="step-content home-step-content">
             <h2>Location & Contact Details</h2>
             <p>Where can customers find and contact you?</p>
 
@@ -462,7 +474,7 @@ const BusinessRegistration = () => {
                   value={formData.address}
                   onChange={handleChange}
                   placeholder="Enter your street address"
-                  className={errors.address ? "error" : ""}
+                  className={errors.address ? "home-error" : ""}
                 />
               </div>
               {errors.address && (
@@ -482,7 +494,7 @@ const BusinessRegistration = () => {
                   value={formData.city}
                   onChange={handleChange}
                   placeholder="City"
-                  className={errors.city ? "error" : ""}
+                  className={errors.city ? "home-error" : ""}
                 />
                 {errors.city && (
                   <div className="error-message">{errors.city}</div>
@@ -500,7 +512,7 @@ const BusinessRegistration = () => {
                   value={formData.state}
                   onChange={handleChange}
                   placeholder="State"
-                  className={errors.state ? "error" : ""}
+                  className={errors.state ? "home-error" : ""}
                 />
                 {errors.state && (
                   <div className="error-message">{errors.state}</div>
@@ -518,7 +530,7 @@ const BusinessRegistration = () => {
                   value={formData.zipCode}
                   onChange={handleChange}
                   placeholder="ZIP Code"
-                  className={errors.zipCode ? "error" : ""}
+                  className={errors.zipCode ? "home-error" : ""}
                 />
                 {errors.zipCode && (
                   <div className="error-message">{errors.zipCode}</div>
@@ -544,21 +556,24 @@ const BusinessRegistration = () => {
                   Phone Number ({phone.label}){" "}
                   <span className="required">*</span>
                 </label>
-                <div className="input-container">
-                  <Phone size={10} className="input-icon" />
-                  <input
-                    type="tel"
-                    id={`phone-${index}`}
-                    name={`phone-${index}`}
-                    value={phone.number}
-                    onChange={(e) => handlePhoneChange(index, e)}
-                    placeholder="Enter your phone number"
-                    className={errors[`phone-${index}`] ? "error" : ""}
-                  />
+                <div className="input-container" style={{ display: "flex" }}>
+                  <div style={{ flex: "3", position: "relative" }}>
+                    <Phone size={18} className="input-icon" />
+                    <input
+                      type="tel"
+                      id={`phone-${index}`}
+                      name={`phone-${index}`}
+                      value={phone.number}
+                      onChange={(e) => handlePhoneChange(index, e)}
+                      placeholder="Enter your phone number"
+                      className={errors[`phone-${index}`] ? "home-error" : ""}
+                    />
+                  </div>
                   <select
                     value={phone.label}
                     onChange={(e) => handlePhoneLabelChange(index, e)}
                     className="phone-label-select"
+                    style={{ flex: "1", marginLeft: "10px" }}
                   >
                     <option value="Primary">Primary</option>
                     <option value="Secondary">Secondary</option>
@@ -586,21 +601,25 @@ const BusinessRegistration = () => {
                   Business Email ({email.label}){" "}
                   <span className="required">*</span>
                 </label>
-                <div className="input-container">
-                  <Mail size={18} className="input-icon" />
-                  <input
-                    type="email"
-                    id={`email-${index}`}
-                    name={`email-${index}`}
-                    value={email.email}
-                    onChange={(e) => handleEmailChange(index, e)}
-                    placeholder="Enter your business email"
-                    className={errors[`email-${index}`] ? "error" : ""}
-                  />
+                <div className="input-container" style={{ display: "flex" }}>
+                  <div style={{ flex: "3", position: "relative" }}>
+                    <Mail size={18} className="input-icon" />
+                    <input
+                      type="email"
+                      id={`email-${index}`}
+                      name={`email-${index}`}
+                      value={email.email}
+                      onChange={(e) => handleEmailChange(index, e)}
+                      placeholder="Enter your business email"
+                      className={errors[`email-${index}`] ? "home-error" : ""}
+                    />
+                  </div>
+
                   <select
                     value="Primary"
                     disabled
                     className="email-label-select"
+                    style={{ flex: "1", marginLeft: "10px" }}
                   >
                     <option value="Primary">Primary</option>
                   </select>
@@ -649,7 +668,7 @@ const BusinessRegistration = () => {
 
       case 3:
         return (
-          <div className="step-content">
+          <div className="step-content home-step-content">
             <h2>Business Media & Hours</h2>
             <p>Upload images and set your business hours.</p>
 
@@ -770,7 +789,7 @@ const BusinessRegistration = () => {
 
       case 4:
         return (
-          <div className="step-content">
+          <div className="step-content home-step-content">
             <div className="social-section">
               <h3>Social Media (Optional)</h3>
               <div className="form-group">

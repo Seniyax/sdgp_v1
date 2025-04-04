@@ -5,6 +5,7 @@ const {
   updateBusinessRecord,
   getOneBusiness,
   deleteBusiness,
+  uploadImage,
 } = require("../models/business");
 const { getCategoryId, getCategoryName } = require("../models/category");
 const {
@@ -21,6 +22,8 @@ const {
   insertNonPrimaryEmails,
   getEmailsByBusiness,
   validateEmail,
+  updateEmails,
+  getEmails,
 } = require("../models/email");
 const {
   getContacts,
@@ -178,6 +181,15 @@ exports.createBusiness = async (req, res) => {
         message: businessEmailError,
       });
     }
+    const existingEmails = await getEmails();
+    for (let email of existingEmails) {
+      if (email_address === email.email_address) {
+        return res.status(400).json({
+          success: false,
+          message: "Primary email already linked to another business.",
+        });
+      }
+    }
     for (let contact of contacts) {
       const contactError = validateContact(contact.number);
       if (contactError) {
@@ -194,11 +206,21 @@ exports.createBusiness = async (req, res) => {
         message: "Category not found",
       });
     }
-    const logoImageFile = req.files.logo ? req.files.logo[0] : null;
-    const coverImageFile = req.files.cover ? req.files.cover[0] : null;
-
+    let logoUrl = null;
+    let coverUrl = null;
+    if (req.files) {
+      if (req.files.logo && req.files.logo[0]) {
+        logoUrl = await uploadImage(req.files.logo[0], "logos");
+      }
+      if (req.files.cover && req.files.cover[0]) {
+        coverUrl = await uploadImage(req.files.cover[0], "covers");
+      }
+    }
+    console.log(logoUrl);
+    console.log(coverUrl);
     const loc = await createLocation(location);
     const verificationToken = crypto.randomBytes(32).toString("hex");
+    // Pass the file URLs directly without re-uploading in the model.
     const businessRecord = await createBusinessRecord(
       name,
       categoryId,
@@ -206,8 +228,8 @@ exports.createBusiness = async (req, res) => {
       verificationToken,
       description,
       website,
-      logoImageFile,
-      coverImageFile,
+      logoUrl, // already processed URL
+      coverUrl, // already processed URL
       opening_hour,
       closing_hour,
       facebook_link,
@@ -250,7 +272,7 @@ exports.createBusiness = async (req, res) => {
     }
     res.status(500).json({
       success: false,
-      message: "Failed to create business",
+      message: error.message,
       error: error.message,
     });
   }
@@ -267,16 +289,20 @@ exports.updateBusiness = async (req, res) => {
   let changeLogs = [];
   let updateBusinessData = {};
   let currentBusiness = null;
+  let business_id;
+  let supervisor;
 
   try {
-    const { business_id, username, updates } = req.body;
-    if (!business_id) {
+    const { business_id: id, username, updates } = req.body;
+    if (!id) {
       return res.status(400).json({
         success: false,
         message: "Business ID is required",
       });
     }
-    const supervisor = await getUserByUsername(username);
+    business_id = id;
+
+    supervisor = await getUserByUsername(username);
     if (!supervisor) {
       return res.status(401).json({
         success: false,
@@ -292,9 +318,28 @@ exports.updateBusiness = async (req, res) => {
       });
     }
 
+    if (updates.emails && typeof updates.emails === "string") {
+      updates.emails = JSON.parse(updates.emails);
+    }
+    if (updates.contacts && typeof updates.contacts === "string") {
+      updates.contacts = JSON.parse(updates.contacts);
+    }
+    if (updates.user_relations && typeof updates.user_relations === "string") {
+      updates.user_relations = JSON.parse(updates.user_relations);
+    }
+
     rollbackData.businessBackup = {
       name: currentBusiness.name,
       category_id: currentBusiness.category_id,
+      website: currentBusiness.website,
+      description: currentBusiness.description,
+      opening_hour: currentBusiness.opening_hour,
+      closing_hour: currentBusiness.closing_hour,
+      facebook_link: currentBusiness.facebook_link,
+      instagram_link: currentBusiness.instagram_link,
+      twitter_link: currentBusiness.twitter_link,
+      logo: currentBusiness.logo,
+      cover: currentBusiness.cover,
     };
     rollbackData.emailsBackup = await getEmailsByBusiness(business_id);
     rollbackData.locationBackup = await getLocationDetails(
@@ -331,8 +376,21 @@ exports.updateBusiness = async (req, res) => {
       }
     }
 
-    if (Object.keys(updateBusinessData).length > 0) {
-      await updateBusinessRecord(business_id, updateBusinessData);
+    if (updates.website && updates.website !== currentBusiness.website) {
+      changeLogs.push(
+        `Website changed from "${currentBusiness.website}" to "${updates.website}"`
+      );
+      updateBusinessData.website = updates.website;
+    }
+
+    if (
+      updates.description &&
+      updates.description !== currentBusiness.description
+    ) {
+      changeLogs.push(
+        `Description changed from "${currentBusiness.description}" to "${updates.description}"`
+      );
+      updateBusinessData.description = updates.description;
     }
 
     if (updates.emails) {
@@ -408,11 +466,27 @@ exports.updateBusiness = async (req, res) => {
       changeLogs.push("Users updated");
     }
 
+    if (req.files) {
+      if (req.files.logo && req.files.logo[0]) {
+        const logoUrl = await uploadImage(req.files.logo[0], "logos");
+        updateBusinessData.logo = logoUrl;
+        changeLogs.push("Logo updated");
+      }
+      if (req.files.cover && req.files.cover[0]) {
+        const coverUrl = await uploadImage(req.files.cover[0], "covers");
+        updateBusinessData.cover = coverUrl;
+        changeLogs.push("Cover image updated");
+      }
+    }
+
+    if (Object.keys(updateBusinessData).length > 0) {
+      await updateBusinessRecord(business_id, updateBusinessData);
+    }
+
     if (changeLogs.length === 0) {
       changeLogs.push("No changes were made.");
     }
     const logDescription = "Business updated:\n" + changeLogs.join("\n");
-
     await insertBusinessUpdateLog(
       currentBusiness.owner_id || currentBusiness.id,
       supervisor.id,
@@ -426,7 +500,6 @@ exports.updateBusiness = async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating business:", error.message);
-
     try {
       if (rollbackData.businessBackup) {
         await updateBusinessRecord(business_id, rollbackData.businessBackup);
@@ -441,7 +514,30 @@ exports.updateBusiness = async (req, res) => {
           rollbackData.locationBackup
         );
       }
-      console.error("Manual rollback may be required for emails and contacts.");
+      if (rollbackData.emailsBackup && rollbackData.emailsBackup.length > 0) {
+        await updateEmails(rollbackData.emailsBackup);
+      }
+      if (
+        rollbackData.contactsBackup &&
+        rollbackData.contactsBackup.length > 0
+      ) {
+        await deleteContacts(business_id);
+        await createContacts(business_id, rollbackData.contactsBackup);
+      }
+      if (
+        rollbackData.userRelationsBackup &&
+        rollbackData.userRelationsBackup.length > 0
+      ) {
+        await deleteBusinessRelations(business_id);
+        await createBusinessRelations(
+          updates.rollbackData.userRelationsBackup,
+          business_id,
+          supervisor.id
+        );
+      }
+      console.error(
+        "Manual rollback completed for business, emails, contacts, and user relations."
+      );
     } catch (rollbackError) {
       console.error("Error during rollback:", rollbackError.message);
     }

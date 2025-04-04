@@ -1,0 +1,28 @@
+.add-res-input,
+.add-res-select {
+  background: white !important;
+  color: black !important;
+  height: 45px !important;
+  border: 2px solid grey !important;
+}
+
+.add-res-select {
+  -webkit-appearance: auto !important;
+  -moz-appearance: auto !important;
+  appearance: auto !important;
+}
+
+.add-res-select option:hover {
+  background-color: var(--primary-dark) !important;
+  color: white !important;
+}
+
+.add-res-input:focus,
+.add-res-select:focus {
+  box-shadow: none !important;
+  outline: 2px solid grey !important;
+}
+
+.add-res-label {
+  color: rgb(163, 163, 163) !important;
+}

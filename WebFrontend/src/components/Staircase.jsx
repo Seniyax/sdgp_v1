@@ -225,9 +225,16 @@ const Staircase = ({
             onMouseDown={isPreview ? undefined : handleRotateStart}
           >
             <Circle radius={10} fill="#4CAF50" />
-            <Line points={[-5, -5, 5, 5]} stroke="white" strokeWidth={2} />
-            <Line points={[5, -5, -5, 5]} stroke="white" strokeWidth={2} />
+            <Text
+              text="↻"
+              fontSize={14}
+              fill="white"
+              offsetX={5}
+              offsetY={7}
+              align="center"
+            />
           </Group>
+
           {/* Delete button */}
           <Group y={-20} x={shape.width / 2}>
             <Circle

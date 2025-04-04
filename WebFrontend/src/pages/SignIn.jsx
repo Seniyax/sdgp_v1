@@ -39,22 +39,28 @@ const SignIn = () => {
       password: formData.password,
     };
 
+    const delayPromise = new Promise((resolve) => setTimeout(resolve, 3000));
+    let response;
+
     try {
-      const response = await axios.post("api/user/sign-in", payload);
-      if (response.data.success) {
-        console.log("Login successful", response.data);
-        sessionStorage.setItem("user", JSON.stringify(response.data.user));
-        navigate("/");
-      }
+      response = await axios.post("api/user/sign-in", payload);
     } catch (err) {
-      console.error("Sign In error", err);
+      await delayPromise;
       const message =
         err.response?.data?.message ||
         "An error occurred during sign in. Please try again.";
       setError(message);
-    } finally {
       setIsLoading(false);
+      return;
     }
+    await delayPromise;
+
+    if (response.data.success) {
+      console.log("Login successful", response.data);
+      sessionStorage.setItem("user", JSON.stringify(response.data.user));
+      navigate("/");
+    }
+    setIsLoading(false);
   };
 
   return (
@@ -72,7 +78,6 @@ const SignIn = () => {
             <div className="form-group">
               <label htmlFor="username">Username</label>
               <div className="input-container">
-                <i className="icon username-icon"></i>
                 <input
                   type="text"
                   id="username"
@@ -88,7 +93,6 @@ const SignIn = () => {
             <div className="form-group">
               <label htmlFor="password">Password</label>
               <div className="input-container">
-                <i className="icon password-icon"></i>
                 <input
                   type="password"
                   id="password"
@@ -107,10 +111,16 @@ const SignIn = () => {
 
             <button
               type="submit"
-              className={`signin-button ${isLoading ? "loading" : ""}`}
+              className="signin-button"
               disabled={isLoading}
             >
-              {isLoading ? "Signing In..." : "Sign In"}
+              {isLoading ? (
+                <span>
+                  Signing In<span className="dot-animation"></span>
+                </span>
+              ) : (
+                "Sign In"
+              )}
             </button>
           </form>
 

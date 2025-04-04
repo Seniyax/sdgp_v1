@@ -6,19 +6,17 @@ const AnimatedBalls = () => {
   const [balls, setBalls] = useState([]);
 
   useEffect(() => {
-    // Create a new ball every 5 seconds
     const intervalId = setInterval(() => {
       const newBall = {
         id: Date.now(),
-        top: Math.random() * 100, // percentage of viewport height
-        left: Math.random() * 100, // percentage of viewport width
-        size: 20 + Math.random() * 30, // size between 20px and 50px
-        animationDelay: Math.random() * 2, // random delay for animation
+        top: Math.random() * 100,
+        left: Math.random() * 100,
+        size: 20 + Math.random() * 30,
+        animationDelay: Math.random() * 2,
       };
 
       setBalls((prev) => [...prev, newBall]);
 
-      // Remove the ball after 7 seconds for a smooth fade out
       setTimeout(() => {
         setBalls((prev) => prev.filter((ball) => ball.id !== newBall.id));
       }, 7000);
@@ -29,7 +27,6 @@ const AnimatedBalls = () => {
 
   return (
     <>
-      {/* Keyframe animation for smooth fade in/out */}
       <style>{`
         @keyframes fadeInOut {
           0% { opacity: 0; transform: scale(0.5); }
@@ -45,7 +42,7 @@ const AnimatedBalls = () => {
           width: "100%",
           height: "100%",
           pointerEvents: "none",
-          zIndex: -100, // very low so it remains in the background
+          zIndex: -100,
         }}
       >
         {balls.map((ball) => (
@@ -59,7 +56,9 @@ const AnimatedBalls = () => {
               height: ball.size,
               background: "#ffffff",
               borderRadius: "50%",
-              boxShadow: "0px 6px 12px rgba(0,0,0,0.5)", // smoother shadow effect
+              boxShadow: "0px 6px 12px rgba(0,0,0,0.5)",
+              opacity: 0, // start invisible
+              transform: "scale(0.5)", // start scaled down
               animation: `fadeInOut 5s ease-in-out forwards`,
               animationDelay: `${ball.animationDelay}s`,
             }}
@@ -72,26 +71,33 @@ const AnimatedBalls = () => {
 
 const FloorPlanLayout = ({ children }) => {
   useEffect(() => {
-    // Save the original background style
-    const originalBg = document.body.style.background;
-    // Set a gradient background:
-    // Main color: #2E0428 (0-65%)
-    // Lighter maroon: #4C2246 (65-90%)
-    // White: (90-100% in the top right)
+    const originalStyles = {
+      background: document.body.style.background,
+      backgroundRepeat: document.body.style.backgroundRepeat,
+      backgroundAttachment: document.body.style.backgroundAttachment,
+      backgroundSize: document.body.style.backgroundSize,
+    };
+
     document.body.style.background = `
       linear-gradient(45deg,
-        #2E0428 0%,
-        #2E0428 65%,
-        #4C2246 65%,
-        #4C2246 90%,
+        #320632 0%,
+        #320632 65%,
+        #4A214A 65%,
+        #4A214A 90%,
         #ffffff 90%,
         #ffffff 100%
       )
     `;
+    document.body.style.backgroundRepeat = "no-repeat";
+    document.body.style.backgroundAttachment = "fixed";
+    document.body.style.backgroundSize = "cover";
 
-    // Cleanup: reset background style when component unmounts
     return () => {
-      document.body.style.background = originalBg;
+      document.body.style.background = originalStyles.background;
+      document.body.style.backgroundRepeat = originalStyles.backgroundRepeat;
+      document.body.style.backgroundAttachment =
+        originalStyles.backgroundAttachment;
+      document.body.style.backgroundSize = originalStyles.backgroundSize;
     };
   }, []);
 

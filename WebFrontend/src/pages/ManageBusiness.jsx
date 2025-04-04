@@ -4,16 +4,28 @@ import { useNavigate } from "react-router-dom";
 import "../style/ManageBusiness.css";
 import axios from "axios";
 import Swal from "sweetalert2";
+import CryptoJS from "crypto-js";
+
+const secretKey = import.meta.env.VITE_SECRET_KEY || "fallback-secret-key";
+
+const encodeBusinessId = (businessId) => {
+  const encrypted = CryptoJS.AES.encrypt(
+    businessId.toString(),
+    secretKey
+  ).toString();
+  return encodeURIComponent(encrypted);
+};
 
 const ManageBusiness = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [businesses, setBusinesses] = useState([]);
+  const [floorplans, setFloorplans] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Check for user and redirect if not valid
+  // Check for user authentication
   useEffect(() => {
     const user = JSON.parse(sessionStorage.getItem("user"));
     if (!user) {
@@ -32,33 +44,35 @@ const ManageBusiness = () => {
     }
   }, [navigate]);
 
-  // Fetch businesses from the API once the user is set
+  // Fetch businesses for the user
   useEffect(() => {
-    if (!user) return; // Wait until user is available
+    if (!user) return;
 
     const fetchBusinesses = async () => {
+      setIsLoading(true);
+      const delayPromise = new Promise((resolve) => setTimeout(resolve, 1500));
       try {
-        setIsLoading(true);
-        // Send username in the POST request payload
         const response = await axios.post(
           "api/business-user-relation/get-businesses",
           { username: user.username }
         );
 
         if (response.data.success) {
-          // Filter only verified businesses before setting the state
-          const verifiedBusinesses = response.data.data.filter(
-            (business) => business.is_verified
-          );
-          setBusinesses(verifiedBusinesses);
+          setBusinesses(response.data.data);
         } else {
           throw new Error(
             response.data.message || "Failed to fetch businesses"
           );
         }
-        setIsLoading(false);
       } catch (err) {
-        setError(err.message);
+        if (
+          err.response?.data?.message !==
+          "No business relations found for the user"
+        ) {
+          setError(err.response?.data?.message || "An error occurred");
+        }
+      } finally {
+        await delayPromise;
         setIsLoading(false);
       }
     };
@@ -66,21 +80,47 @@ const ManageBusiness = () => {
     fetchBusinesses();
   }, [user]);
 
-  // Filter businesses based on search term
-  const filteredBusinesses = businesses.filter((businessRelation) => {
-    const businessName = businessRelation.business.name;
-    return (
+  // Fetch all floorplans once
+  useEffect(() => {
+    const fetchFloorplans = async () => {
+      try {
+        const response = await axios.get("/api/floor-plan/get-all");
+        if (response.data.success) {
+          setFloorplans(response.data.floorplans);
+        }
+      } catch (err) {
+        // Optionally, you can set an error here if needed.
+        console.error("Error fetching floorplans", err);
+      }
+    };
+
+    fetchFloorplans();
+  }, []);
+
+  const filteredBusinesses = businesses.filter((relation) => {
+    const businessName = relation.business.name;
+    const matchesSearch =
       businessName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      businessRelation.type.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+      relation.type.toLowerCase().includes(searchTerm.toLowerCase());
+
+    if (!matchesSearch) return false;
+
+    if (!relation.is_verified) return true;
+
+    if (relation.type.toLowerCase() === "owner") {
+      return true;
+    } else {
+      return relation.business.is_verified;
+    }
   });
 
-  const handleNavigateToBusinessDashboard = (businessId) => {
-    navigate(`/business-dashboard/${businessId}`);
+  // Update navigation functions to encode the businessId
+  const handleBusinessDashboard = (businessId) => {
+    navigate(`/business-dashboard/${encodeBusinessId(businessId)}`);
   };
 
-  const handleNavigateToReservationDashboard = (businessId) => {
-    navigate(`/reservation-dashboard/${businessId}`);
+  const handleReservationDashboard = (businessId) => {
+    navigate(`/reservation-dashboard/${encodeBusinessId(businessId)}`);
   };
 
   const handleRegisterBusiness = () => {
@@ -91,13 +131,17 @@ const ManageBusiness = () => {
     navigate("/business-join");
   };
 
-  const handleViewAccount = () => {
-    navigate("/user-profile");
+  const handleFloorplan = (businessId) => {
+    navigate(`/floorplan-designer/${encodeBusinessId(businessId)}`);
+  };
+
+  const handleBack = () => {
+    navigate("/");
   };
 
   if (isLoading) {
     return (
-      <div className="manage-business-container loading">
+      <div className="loading-container">
         <div className="loading-spinner"></div>
         <p>Loading businesses...</p>
       </div>
@@ -109,7 +153,17 @@ const ManageBusiness = () => {
       <div className="manage-business-container error">
         <h2>Oops! Something went wrong</h2>
         <p>{error}</p>
-        <button onClick={() => window.location.reload()}>Try Again</button>
+        <div className={"action-buttons"}>
+          <button
+            className={"action-button try-again"}
+            onClick={() => window.location.reload()}
+          >
+            Try Again
+          </button>
+          <button className={"action-button home"} onClick={handleBack}>
+            Go back to Home
+          </button>
+        </div>
       </div>
     );
   }
@@ -134,13 +188,10 @@ const ManageBusiness = () => {
           onClick={handleRegisterBusiness}
           className="action-button register"
         >
-          <i className="fas fa-file-signature"></i> Register
+          Register
         </button>
         <button onClick={handleJoinBusiness} className="action-button join">
-          <i className="fas fa-user-plus"></i> Join Business
-        </button>
-        <button onClick={handleViewAccount} className="action-button account">
-          <i className="fas fa-user-circle"></i> Your Account
+          Join Business
         </button>
       </div>
 
@@ -151,48 +202,105 @@ const ManageBusiness = () => {
               <tr>
                 <th>Business Name</th>
                 <th>Relation</th>
-                <th>Actions</th>
+                <th>Status / Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredBusinesses.map((relation) => (
-                <tr key={relation.id}>
-                  <td>{relation.business.name}</td>
-                  <td>{relation.type}</td>
-                  <td className="actions-cell">
-                    <button
-                      onClick={() =>
-                        handleNavigateToReservationDashboard(
-                          relation.business_id
-                        )
-                      }
-                      className="dashboard-button"
-                      title="Go to Dashboard"
-                    >
-                      <i className="fas fa-tachometer-alt"></i> Dashboard
-                    </button>
-                    {(relation.type.toLowerCase() === "owner" ||
-                      relation.type.toLowerCase() === "admin") && (
-                      <button
-                        onClick={() =>
-                          handleNavigateToBusinessDashboard(
-                            relation.business_id
-                          )
-                        }
-                        className="details-button"
-                        title="View Business Details"
-                      >
-                        View Business Details
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {filteredBusinesses.map((relation) => {
+                let actionContent = null;
+                const isOwner = relation.type.toLowerCase() === "owner";
+                const isAdmin = relation.type.toLowerCase() === "admin";
+                // Determine if this business already has a floorplan
+                const isFloorplan = floorplans.some(
+                  (fp) => fp.business_id === relation.business_id
+                );
+
+                if (!relation.is_verified) {
+                  actionContent = (
+                    <span className="pending-message">
+                      Waiting {relation.supervisor?.name || "Supervisor"} to
+                      verify your join request.
+                    </span>
+                  );
+                } else if (isOwner && !relation.business.is_verified) {
+                  const primaryEmail =
+                    relation.business.primary_email?.email_address ||
+                    "your primary email";
+                  actionContent = (
+                    <span className="pending-message">
+                      Please verify the verification email sent to{" "}
+                      {primaryEmail}
+                    </span>
+                  );
+                } else {
+                  actionContent = (
+                    <div className="button-group">
+                      {isFloorplan && (
+                        <button
+                          onClick={() =>
+                            handleReservationDashboard(relation.business_id)
+                          }
+                          className="dashboard-button"
+                          title="Go to Dashboard"
+                        >
+                          Dashboard
+                        </button>
+                      )}
+                      {(isOwner || isAdmin) &&
+                        (isFloorplan ? (
+                          <button
+                            onClick={() =>
+                              handleFloorplan(relation.business_id)
+                            }
+                            className="floorplan-button"
+                          >
+                            Update Floorplan
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() =>
+                              handleFloorplan(relation.business_id)
+                            }
+                            className="floorplan-button"
+                          >
+                            Create Floorplan
+                          </button>
+                        ))}
+                      {isOwner && (
+                        <button
+                          onClick={() =>
+                            handleBusinessDashboard(relation.business_id)
+                          }
+                          className="details-button"
+                          title="View Business Details"
+                        >
+                          View Business Details
+                        </button>
+                      )}
+                    </div>
+                  );
+                }
+
+                return (
+                  <tr
+                    key={relation.id}
+                    className={
+                      !relation.is_verified ||
+                      (isOwner && !relation.business.is_verified)
+                        ? "non-interactable"
+                        : ""
+                    }
+                  >
+                    <td>{relation.business.name}</td>
+                    <td>{relation.type}</td>
+                    <td className="actions-cell">{actionContent}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         ) : (
           <div className="no-results">
-            <i className="fas fa-search"></i>
             <h3>No businesses found</h3>
             <p>Try adjusting your search or create a new business</p>
             <button
@@ -208,15 +316,9 @@ const ManageBusiness = () => {
       <div className="quick-help">
         <h3>Need Help?</h3>
         <div className="help-links">
-          <a href="/help/create-business">
-            <i className="fas fa-plus-circle"></i> How to create a business
-          </a>
-          <a href="/help/join-business">
-            <i className="fas fa-users"></i> How to join an existing business
-          </a>
-          <a href="/help/business-settings">
-            <i className="fas fa-sliders-h"></i> Managing business settings
-          </a>
+          <a href="/help/create-business">How to create a business</a>
+          <a href="/help/join-business">How to join an existing business</a>
+          <a href="/help/business-settings">Managing business settings</a>
         </div>
       </div>
     </div>

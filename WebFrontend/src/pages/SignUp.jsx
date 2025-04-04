@@ -86,8 +86,12 @@ const SignUp = () => {
         navigate("/sign-in");
       }
     } catch (err) {
+      if (err.response && err.response.data && err.response.data.message) {
+        setError(err.response.data.message);
+      } else {
+        setError("An error occurred during signup. Please try again.");
+      }
       console.error("Signup error", err);
-      setError("An error occurred during signup. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -98,7 +102,7 @@ const SignUp = () => {
       <div className="form-group">
         <label htmlFor="fullName">Full Name</label>
         <div className="input-container">
-          <i className="icon user-icon"></i>
+          {/* <i className="icon user-icon"></i> */}
           <input
             type="text"
             id="fullName"
@@ -107,6 +111,7 @@ const SignUp = () => {
             onChange={handleChange}
             placeholder="Enter your full name"
             required
+            style={{ color: "black" }}
           />
         </div>
       </div>
@@ -114,7 +119,7 @@ const SignUp = () => {
       <div className="form-group">
         <label htmlFor="nic">NIC</label>
         <div className="input-container">
-          <i className="icon id-icon"></i>
+          {/* <i className="icon id-icon"></i> */}
           <input
             type="text"
             id="nic"
@@ -123,6 +128,7 @@ const SignUp = () => {
             onChange={handleChange}
             placeholder="Enter your National ID number"
             required
+            style={{ color: "black" }}
           />
         </div>
       </div>
@@ -130,7 +136,7 @@ const SignUp = () => {
       <div className="form-group">
         <label htmlFor="email">Email</label>
         <div className="input-container">
-          <i className="icon email-icon"></i>
+          {/* <i className="icon email-icon"></i> */}
           <input
             type="email"
             id="email"
@@ -146,7 +152,7 @@ const SignUp = () => {
       <div className="form-group">
         <label htmlFor="address">Address</label>
         <div className="input-container">
-          <i className="icon address-icon"></i>
+          {/* <i className="icon address-icon"></i> */}
           <textarea
             id="address"
             name="address"
@@ -154,6 +160,7 @@ const SignUp = () => {
             onChange={handleChange}
             placeholder="Enter your address"
             required
+            style={{ color: "black" }}
           />
         </div>
       </div>
@@ -165,7 +172,7 @@ const SignUp = () => {
       <div className="form-group">
         <label htmlFor="contactNumber">Contact Number</label>
         <div className="input-container">
-          <i className="icon phone-icon"></i>
+          {/* <i className="icon phone-icon"></i> */}
           <input
             type="tel"
             id="contactNumber"
@@ -174,6 +181,7 @@ const SignUp = () => {
             onChange={handleChange}
             placeholder="Enter your contact number"
             required
+            style={{ color: "black" }}
           />
         </div>
       </div>
@@ -181,7 +189,7 @@ const SignUp = () => {
       <div className="form-group">
         <label htmlFor="username">Username</label>
         <div className="input-container">
-          <i className="icon username-icon"></i>
+          {/* <i className="icon username-icon"></i> */}
           <input
             type="text"
             id="username"
@@ -190,6 +198,7 @@ const SignUp = () => {
             onChange={handleChange}
             placeholder="Choose a username"
             required
+            style={{ color: "black" }}
           />
         </div>
       </div>
@@ -197,7 +206,7 @@ const SignUp = () => {
       <div className="form-group">
         <label htmlFor="password">Password</label>
         <div className="input-container">
-          <i className="icon password-icon"></i>
+          {/* <i className="icon password-icon"></i> */}
           <input
             type="password"
             id="password"
@@ -213,7 +222,7 @@ const SignUp = () => {
       <div className="form-group">
         <label htmlFor="confirmPassword">Confirm Password</label>
         <div className="input-container">
-          <i className="icon password-icon"></i>
+          {/* <i className="icon password-icon"></i> */}
           <input
             type="password"
             id="confirmPassword"
@@ -249,17 +258,17 @@ const SignUp = () => {
             {currentStep === 1 ? renderStep1() : renderStep2()}
 
             <div className="form-buttons">
-              {currentStep > 1 && (
+              {currentStep === 2 && (
                 <button
                   type="button"
-                  className="back-button"
+                  className="sign-up-back-button"
                   onClick={prevStep}
                 >
                   Back
                 </button>
               )}
 
-              {currentStep < 2 ? (
+              {currentStep === 1 ? (
                 <button
                   type="button"
                   className="next-button"

@@ -8,12 +8,20 @@ import Swal from "sweetalert2";
 const BusinessJoin = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState();
+  const [businesses, setBusinesses] = useState([]);
+  const [selectedBusiness, setSelectedBusiness] = useState("");
+  const [supervisorUsername, setSupervisorUsername] = useState("");
+  const [role, setRole] = useState("Staff");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    const user = JSON.parse(sessionStorage.getItem("user"));
-    if (!user) {
+    const storedUser = JSON.parse(sessionStorage.getItem("user"));
+    if (!storedUser) {
       navigate("/sign-in");
-    } else if (!user.is_verified) {
+    } else if (!storedUser.is_verified) {
       Swal.fire({
         title: "Not Signed In",
         text: "Please confirm your user email and sign in again.",
@@ -23,18 +31,9 @@ const BusinessJoin = () => {
         navigate("/sign-in");
       });
     } else {
-      setUser(user);
+      setUser(storedUser);
     }
   }, [navigate]);
-
-  const [businesses, setBusinesses] = useState([]);
-  const [selectedBusiness, setSelectedBusiness] = useState("");
-  const [supervisorUsername, setSupervisorUsername] = useState("");
-  const [role, setRole] = useState("Staff");
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isFormValid, setIsFormValid] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false); // New state for submission
 
   useEffect(() => {
     const fetchBusinesses = async () => {
@@ -42,9 +41,9 @@ const BusinessJoin = () => {
         setIsLoading(true);
         const response = await axios.get("api/business/get-all");
         setBusinesses(response.data.data);
-        setIsLoading(false);
       } catch (err) {
         setError(err.message);
+      } finally {
         setIsLoading(false);
       }
     };
@@ -52,17 +51,17 @@ const BusinessJoin = () => {
   }, []);
 
   useEffect(() => {
-    // Validate form
     setIsFormValid(selectedBusiness && supervisorUsername.trim().length > 0);
   }, [selectedBusiness, supervisorUsername]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isFormValid || isSubmitting) return;
-    setIsSubmitting(true); // Disable button while sending request
-
+    setIsSubmitting(true);
+    const delayPromise = new Promise((resolve) => setTimeout(resolve, 3000));
+    let response;
     try {
-      const response = await axios.post(
+      response = await axios.post(
         "api/business-user-relation/create-business",
         {
           business_id: selectedBusiness,
@@ -71,50 +70,42 @@ const BusinessJoin = () => {
           supervisor_username: supervisorUsername,
         }
       );
-
-      if (!response) {
-        throw new Error("Failed to join business");
-      } else if (!response.data.success) {
-        console.error("Failed to join business:", response.data.message);
-      } else {
-        Swal.fire({
-          title: "Joining Business",
-          text: "Please wait until the supervisor verifies your request.",
-          icon: "warning",
-          confirmButtonText: "Okay",
-        }).then(() => {
-          setSelectedBusiness("");
-          setSupervisorUsername("");
-          setRole("Staff");
-          navigate("/manage-business");
-        });
-      }
     } catch (err) {
-      console.error("Error joining business:", err);
-      setError(err.message);
-    } finally {
-      setIsSubmitting(false); // Re-enable button after request completes
+      await delayPromise;
+      const message =
+        err.response?.data?.message || "An error occurred. Please try again.";
+      setError(message);
+      setIsSubmitting(false);
+      return;
     }
+    await delayPromise;
+    if (response.data.success) {
+      Swal.fire({
+        title: "Joining Business",
+        text: "Please wait until the supervisor verifies your request.",
+        icon: "warning",
+        confirmButtonText: "Okay",
+      }).then(() => {
+        setSelectedBusiness("");
+        setSupervisorUsername("");
+        setRole("Staff");
+        navigate("/manage-business");
+      });
+    } else {
+      setError(response.data.message || "Failed to join business");
+    }
+    setIsSubmitting(false);
   };
 
   if (isLoading) {
     return (
-      <div className="business-join-container loading">
+      <div className="loading-container">
         <div className="loading-spinner"></div>
         <p>Loading businesses...</p>
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className="business-join-container error">
-        <h2>Oops! Something went wrong</h2>
-        <p>{error}</p>
-        <button onClick={() => window.location.reload()}>Try Again</button>
-      </div>
-    );
-  }
   return (
     <div className="business-join-container">
       <div className="join-card">
@@ -122,7 +113,7 @@ const BusinessJoin = () => {
           <h1>Join a Business</h1>
           <p>Connect with your team and get started</p>
         </div>
-
+        {error && <div className="join-error-message">{error}</div>}
         <form onSubmit={handleSubmit} className="join-form">
           <div className="form-group">
             <label htmlFor="business">Business Name</label>
@@ -146,7 +137,6 @@ const BusinessJoin = () => {
               </select>
             </div>
           </div>
-
           <div className="form-group">
             <label htmlFor="supervisor">Supervisor Username</label>
             <input
@@ -158,7 +148,6 @@ const BusinessJoin = () => {
               required
             />
           </div>
-
           <div className="form-group">
             <label htmlFor="role">Role</label>
             <div className="role-select">
@@ -178,15 +167,20 @@ const BusinessJoin = () => {
               </button>
             </div>
           </div>
-
           <button
             type="submit"
             className={`join-button ${
               isFormValid && !isSubmitting ? "active" : "disabled"
             }`}
-            disabled={!isFormValid || isSubmitting} // Disable if form is invalid or submitting
+            disabled={!isFormValid || isSubmitting}
           >
-            {isSubmitting ? "Sending request..." : "Join Business"}
+            {isSubmitting ? (
+              <span>
+                Sending request<span className="dot-animation"></span>
+              </span>
+            ) : (
+              "Join Business"
+            )}
           </button>
         </form>
       </div>
