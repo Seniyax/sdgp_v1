@@ -850,7 +850,9 @@ const BusinessRegistration = () => {
                 Back
               </button>
               {loading ? (
-                <div className="loading-indicator">Registering...</div>
+                <div className="loading-indicator" style={{ color: "white" }}>
+                  Registering...
+                </div>
               ) : (
                 <button
                   type="submit"

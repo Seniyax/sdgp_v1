@@ -61,7 +61,7 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 2rem;
-  padding: 0.5rem;
+  padding: 1.5rem 0.5rem 1.5rem 0.5rem;
   background-color: white;
   border-radius: var(--border-radius-lg);
   box-shadow: var(--box-shadow);
