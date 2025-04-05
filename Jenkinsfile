@@ -15,12 +15,12 @@ pipeline {
             when {
                 anyOf {
                     branch 'main'
-                    branch 'develop'
+                    branch 'server'
                 }
-                changeset 'frontend/**'
+                changeset 'WebFrontend/**'
             }
             steps {
-                dir('frontend') {
+                dir('WebFrontend') {
                     bat 'npm install'
                     bat 'npm run build'
                     bat 'npm test'
@@ -32,7 +32,7 @@ pipeline {
                 branch 'develop'
             }
             steps {
-                dir('frontend') {
+                dir('WebFrontend') {
                     bat 'npm install -g vercel'
                     bat 'vercel --token %VERCEL_TOKEN% --yes --scope your-team-name deploy'
                 }
@@ -43,7 +43,7 @@ pipeline {
                 branch 'main'
             }
             steps {
-                dir('frontend') {
+                dir('WebFrontend') {
                     bat 'npm install -g vercel'
                     bat 'vercel --token %VERCEL_TOKEN% --prod --yes --scope your-team-name deploy'
                 }
@@ -55,12 +55,12 @@ pipeline {
             when {
                 anyOf {
                     branch 'main'
-                    branch 'develop'
+                    branch 'server'
                 }
-                changeset 'backend/**'
+                changeset 'Backend/**'
             }
             steps {
-                dir('backend') {
+                dir('Backend') {
                     bat 'npm install'
                     bat 'npm run build' // Remove if no build step
                     bat 'npm test'
@@ -69,10 +69,10 @@ pipeline {
         }
         stage('Backend: Deploy Staging to Railway') {
             when {
-                branch 'develop'
+                branch 'server'
             }
             steps {
-                dir('backend') {
+                dir('Backend') {
                     bat 'npm install -g railway'
                     bat 'railway login --token %RAILWAY_TOKEN%'
                     bat 'railway up --service your-staging-service --environment staging'
@@ -84,7 +84,7 @@ pipeline {
                 branch 'main'
             }
             steps {
-                dir('backend') {
+                dir('Backend') {
                     bat 'npm install -g railway'
                     bat 'railway login --token %RAILWAY_TOKEN%'
                     bat 'railway up --service your-prod-service --environment production'
@@ -99,10 +99,10 @@ pipeline {
                     branch 'main'
                     branch 'develop'
                 }
-                changeset 'mobile/**'
+                changeset 'MobileFrontend/**'
             }
             steps {
-                dir('mobile') {
+                dir('MobileFrontend') {
                     bat 'npm install'
                     bat 'npm run build' // Remove if no build step
                     bat 'npm test'
@@ -114,7 +114,7 @@ pipeline {
                 branch 'main'
             }
             steps {
-                dir('mobile') {
+                dir('MobileFrontend') {
                     bat 'npm install -g expo-cli'
                     bat 'expo login --username %EXPO_USERNAME% --password %EXPO_PASSWORD%'
                     bat 'expo publish --release-channel staging'
@@ -126,7 +126,7 @@ pipeline {
                 branch 'main'
             }
             steps {
-                dir('mobile') {
+                dir('MobileFrontend') {
                     bat 'npm install -g expo-cli'
                     bat 'expo login --username %EXPO_USERNAME% --password %EXPO_PASSWORD%'
                     bat 'expo publish --release-channel production'
