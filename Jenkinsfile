@@ -17,7 +17,7 @@ pipeline {
                     branch 'main'
                     branch 'server'
                 }
-                changeset 'WebFrontend/**'
+                //changeset 'WebFrontend/**'
             }
             steps {
                 dir('WebFrontend') {
@@ -57,7 +57,7 @@ pipeline {
                     branch 'main'
                     branch 'server'
                 }
-                changeset 'Backend/**'
+                //changeset 'Backend/**'
             }
             steps {
                 dir('Backend') {
@@ -99,7 +99,7 @@ pipeline {
                     branch 'main'
                     branch 'server'
                 }
-                changeset 'MobileFrontend/**'
+                //changeset 'MobileFrontend/**'
             }
             steps {
                 dir('MobileFrontend') {
