@@ -29,7 +29,7 @@ pipeline {
         }
         stage('Frontend: Deploy Staging to Vercel') {
             when {
-                branch 'develop'
+                branch 'server'
             }
             steps {
                 dir('WebFrontend') {
@@ -97,7 +97,7 @@ pipeline {
             when {
                 anyOf {
                     branch 'main'
-                    branch 'develop'
+                    branch 'server'
                 }
                 changeset 'MobileFrontend/**'
             }
@@ -138,8 +138,8 @@ pipeline {
         always {
             echo 'Pipeline completed!'
         }
-        failure {
-            mail to: 'vibuthi.20222168@iit.ac.lk', subject: "Build Failed: ${env.JOB_NAME}", body: "Check ${env.BUILD_URL}"
-        }
+        //failure {
+            //mail to: 'vibuthi.20222168@iit.ac.lk', subject: "Build Failed: ${env.JOB_NAME}", body: "Check ${env.BUILD_URL}"
+        //}
     }
 }
