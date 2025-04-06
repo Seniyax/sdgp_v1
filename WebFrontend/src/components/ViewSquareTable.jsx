@@ -104,6 +104,7 @@ const SquareTable = ({ shape, isSelected, onPress, isReserved }) => {
 
   return (
     <Group x={x} y={y} onClick={onPress}>
+      {/* Rotated group for table and chairs */}
       <Group x={tableSize / 2} y={tableSize / 2} rotation={rotation}>
         {isSelected && !isReserved && (
           <Rect
@@ -132,23 +133,26 @@ const SquareTable = ({ shape, isSelected, onPress, isReserved }) => {
           strokeWidth={2}
           cornerRadius={4}
         />
+        {renderChairs("top", topSlots)}
+        {renderChairs("right", rightSlots)}
+        {renderChairs("bottom", bottomSlots)}
+        {renderChairs("left", leftSlots)}
+      </Group>
+      {/* Table number rendered outside the rotated group */}
+      {!isReserved && tableNumber && (
         <Text
-          x={-tableSize / 2}
-          y={-tableSize / 2}
+          x={0}
+          y={0}
           width={tableSize}
           height={tableSize}
-          text={!isReserved && tableNumber ? tableNumber.toString() : ""}
+          text={tableNumber.toString()}
           fontSize={24}
           fill="white"
           fontStyle="bold"
           align="center"
           verticalAlign="middle"
         />
-        {renderChairs("top", topSlots)}
-        {renderChairs("right", rightSlots)}
-        {renderChairs("bottom", bottomSlots)}
-        {renderChairs("left", leftSlots)}
-      </Group>
+      )}
       {isSelected && (
         <Group x={5} y={5}>
           <Circle

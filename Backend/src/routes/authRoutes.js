@@ -1,11 +1,12 @@
-const express = require('express');
-const authcontroller = require('../controllers/authControllers');
+const express = require("express");
+const authController = require("../controllers/authControllers");
 
 const router = express.Router();
 
-router.post('/signup', authcontroller.signup);
-router.post('/signin', authcontroller.signin);
-router.post('/social/:provider', authcontroller.socialLogin);
-router.post('/logout', authcontroller.logout);
+router.post("/signup", authController.signup);
+router.post("/signin", authController.signin);
+router.post("/social/:provider", authController.socialLogin);
+router.post("/logout", authController.logout);
+router.post("/refresh-token", authController.refreshToken);
 
 module.exports = router;

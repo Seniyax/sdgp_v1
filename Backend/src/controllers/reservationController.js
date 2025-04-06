@@ -4,7 +4,9 @@ const {
   createReservationModel,
   updateReservationModel,
   deleteReservationModel,
+  getReservationById,
 } = require("../models/reservation");
+const inAppNotification = require("../utils/InAppNotification");
 
 exports.getReservations = async (req, res) => {
   const { business_id } = req.body;
@@ -84,10 +86,12 @@ exports.createReservation = async (req, res) => {
       customerName: customer_name ? customer_name : null,
       customerNumber: customer_number ? customer_number : null,
       endDate: end_date,
-      status: status,
+      status: status || "Pending",
     };
 
     const reservation = await createReservationModel(reservationData);
+
+    await inAppNotification.sendReservationCreationNotification(reservation);
 
     if (req.app.locals.io) {
       req.app.locals.io.emit("reservationAdded", reservation);
@@ -118,6 +122,11 @@ exports.updateReservation = async (req, res) => {
       reservation_id,
       update_data
     );
+
+    await inAppNotification.sendReservationStatusUpdateNotification(
+      reservation
+    );
+
     if (req.app.locals.io) {
       req.app.locals.io.emit("reservationUpdated", reservation);
     }
@@ -143,6 +152,13 @@ exports.deleteReservation = async (req, res) => {
     });
   }
   try {
+    const reservation = await getReservationById(reservation_id);
+    if (reservation) {
+      await inAppNotification.sendReservationCancellationNotification(
+        reservation
+      );
+    }
+
     await deleteReservationModel(reservation_id);
     if (req.app.locals.io) {
       req.app.locals.io.emit("reservationDeleted", reservation_id);

@@ -297,9 +297,13 @@ const CustomerSupport = () => {
 
       <footer className="support-footer">
         <div className="support-footer-links">
-          <a href="#">Terms of Service</a>
-          <a href="#">Privacy Policy</a>
-          <a href="#">Contact Us</a>
+          <a href="https://slotzi-marketing.vercel.app/terms">
+            Terms of Service
+          </a>
+          <a href="https://slotzi-marketing.vercel.app/privacy-policy">
+            Privacy Policy
+          </a>
+          <a href="/customer-support">Contact Us</a>
         </div>
         <p>© 2025 Your Company. All rights reserved.</p>
       </footer>

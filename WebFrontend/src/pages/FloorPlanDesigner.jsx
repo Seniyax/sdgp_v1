@@ -362,7 +362,7 @@ function FloorPlanDesigner() {
             className={`btn ${
               currentFloor === index ? "btn-violet" : "btn-light"
             }`}
-            style={{ width: "100px", transition: "all 0.2s ease" }}
+            style={{ width: "150px", transition: "all 0.2s ease" }}
           >
             {floorNames[index] ? floorNames[index] : `Floor ${index + 1}`}
           </button>
@@ -501,7 +501,7 @@ function FloorPlanDesigner() {
               transition: { duration: 0.3, delay: 0.4 },
             }}
             exit={{ opacity: 0, y: 20, transition: { duration: 0.3 } }}
-            style={{ position: "fixed", right: "300px", bottom: "70px" }}
+            style={{ position: "fixed", right: "250px", bottom: "70px" }}
             className="fixed-floor-buttons"
           >
             {renderFloorButtons()}

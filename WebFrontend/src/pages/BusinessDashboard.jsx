@@ -36,11 +36,9 @@ const BusinessDashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updateLoading, setUpdateLoading] = useState(true);
-  // Removed error state as we now use Swal alerts for errors.
   const [editMode, setEditMode] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // For update form – prepopulate with business details
   const [formData, setFormData] = useState({
     name: "",
     description: "",

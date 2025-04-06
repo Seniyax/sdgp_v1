@@ -10,7 +10,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: wp('5%'),
-    paddingTop: hp('2%'),
+    paddingTop: hp('5%'),
     paddingBottom: hp('2%'),
   },
   backButton: {
@@ -63,6 +63,7 @@ const styles = StyleSheet.create({
   horizontalRestaurantImage: {
     width: wp('30%'),
     height: '100%',
+    backgroundColor: "white",
   },
   horizontalRestaurantInfo: {
     flex: 1,

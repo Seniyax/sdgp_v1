@@ -85,8 +85,6 @@ exports.createBusinessRelation = async (req, res) => {
         message: "Supervisor not found",
       });
     }
-    console.log(await getBusinessRelationsByUser(supervisor.id));
-    console.log(business_id);
     const validSupervisorRelation = (
       await getBusinessRelationsByUser(supervisor.id)
     ).find(
@@ -95,7 +93,6 @@ exports.createBusinessRelation = async (req, res) => {
         ["Admin", "Owner"].includes(relation.type) &&
         relation.is_verified
     );
-    console.log(validSupervisorRelation);
     if (!validSupervisorRelation) {
       return res.status(400).json({
         success: false,

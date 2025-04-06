@@ -1,7 +1,6 @@
 import React from "react";
 import { G, Rect, Text, Circle } from "react-native-svg";
 
-// Helper: Calculate chair slot counts on each side
 const calculateChairSlots = (seatCount) => {
   let longSideChairs, shortSideChairs;
   if (seatCount <= 6) {
@@ -20,7 +19,6 @@ const calculateChairSlots = (seatCount) => {
   return [shortSideChairs, longSideChairs, shortSideChairs, longSideChairs];
 };
 
-// Helper: Render chairs along a given side of the table
 const renderChairs = (
   side,
   slotCount,
@@ -156,17 +154,6 @@ const RectangleTable = ({ shape, isSelected, onPress, isReserved }) => {
           rx={4}
           ry={4}
         />
-        <Text
-          x={0}
-          y={0}
-          textAnchor="middle"
-          alignmentBaseline="middle"
-          fontSize={24}
-          fill="white"
-          fontWeight="bold"
-        >
-          {!isReserved && tableNumber ? tableNumber.toString() : ""}
-        </Text>
         {renderChairs(
           "top",
           topSlots,
@@ -204,6 +191,19 @@ const RectangleTable = ({ shape, isSelected, onPress, isReserved }) => {
           minChairWidth
         )}
       </G>
+      {!isReserved && tableNumber && (
+        <Text
+          x={tableWidth / 2}
+          y={tableHeight / 2}
+          textAnchor="middle"
+          alignmentBaseline="middle"
+          fontSize={24}
+          fill="white"
+          fontWeight="bold"
+        >
+          {tableNumber.toString()}
+        </Text>
+      )}
       {isSelected && (
         <G transform="translate(5,5)">
           <Circle
@@ -227,7 +227,6 @@ const RectangleTable = ({ shape, isSelected, onPress, isReserved }) => {
           </Text>
         </G>
       )}
-      {/* Reserved indicator */}
       {isReserved && (
         <G
           transform={`translate(${tableWidth / 2 - 32}, ${

@@ -41,7 +41,6 @@ app.get("/health", (req, res) => {
 });
 
 // API Routes
-app.use("/api/categories", categoryRoutes);
 app.use("/api/reservation", reservationRoutes);
 app.use("/api/business", businessRoutes);
 app.use("/api/email", emailRoutes);

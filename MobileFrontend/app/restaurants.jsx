@@ -20,14 +20,17 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import axios from "axios";
-import styles from "../styles/Restaurantsstyle"; // Import styles from the restaurantstyle.js file
+import styles from "../styles/Restaurantsstyle";
 import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
+import defaultRestaurantImage from "../assets/default-resturant.jpg";
 
 const RestaurantsScreen = () => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [restaurants, setRestaurants] = useState([]);
   const [filteredRestaurants, setFilteredRestaurants] = useState([]);
+  const [floorPlans, setFloorPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -35,93 +38,96 @@ const RestaurantsScreen = () => {
   const [hasMoreData, setHasMoreData] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const { setBusiness } = useAuth();
-
-  // Added for animations
-  const [restaurantAnimations, setRestaurantAnimations] = useState({});
+  const animationsRef = useRef({});
   const backButtonAnim = useRef(new Animated.Value(1)).current;
+  const prevRestaurantsRef = useRef([]);
 
-  const categoryId = 1; // Assuming 1 is for restaurants category
+  const categoryId = 1;
+  const { theme, isDarkMode } = useTheme();
 
-  // Create animation references for each restaurant when they're loaded
-  useEffect(() => {
-    const animations = {};
-    filteredRestaurants.forEach((restaurant) => {
-      animations[restaurant.id] = {
+  const initializeAnimation = (restaurantId) => {
+    if (!animationsRef.current[restaurantId]) {
+      animationsRef.current[restaurantId] = {
         scale: new Animated.Value(1),
-        opacity: new Animated.Value(1),
-        translateY: new Animated.Value(0),
+        opacity: new Animated.Value(0),
+        translateY: new Animated.Value(50),
       };
+    }
+  };
+
+  useEffect(() => {
+    const fetchFloorPlans = async () => {
+      try {
+        const response = await axios.get(
+          `http://10.0.2.2:3000/api/floor-plan/get-all`
+        );
+        if (response.data.success) {
+          setFloorPlans(response.data.floorplans);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchFloorPlans();
+  }, []);
+
+  useEffect(() => {
+    const newRestaurants = filteredRestaurants.filter(
+      (restaurant) =>
+        !prevRestaurantsRef.current.some(
+          (prevRestaurant) => prevRestaurant.id === restaurant.id
+        )
+    );
+    newRestaurants.forEach((restaurant) => {
+      initializeAnimation(restaurant.id);
+      const anim = animationsRef.current[restaurant.id];
+      anim.translateY.setValue(50);
+      anim.opacity.setValue(0);
     });
-    setRestaurantAnimations(animations);
+    const animations = newRestaurants.map((restaurant, index) => {
+      const anim = animationsRef.current[restaurant.id];
+      const delay = index * 100;
+      return Animated.parallel([
+        Animated.timing(anim.translateY, {
+          toValue: 0,
+          duration: 300,
+          delay,
+          useNativeDriver: true,
+          easing: Easing.out(Easing.back(1.5)),
+        }),
+        Animated.timing(anim.opacity, {
+          toValue: 1,
+          duration: 300,
+          delay,
+          useNativeDriver: true,
+        }),
+      ]);
+    });
+    if (animations.length > 0) {
+      Animated.stagger(100, animations).start();
+    }
+    prevRestaurantsRef.current = filteredRestaurants;
   }, [filteredRestaurants]);
 
-  // Entrance animation for all restaurants
-  useEffect(() => {
-    if (!loading && filteredRestaurants.length > 0) {
-      const animations = [];
-
-      filteredRestaurants.forEach((restaurant, index) => {
-        if (restaurantAnimations[restaurant.id]) {
-          // Reset animations
-          restaurantAnimations[restaurant.id].translateY.setValue(50);
-          restaurantAnimations[restaurant.id].opacity.setValue(0);
-
-          // Create entrance animations with staggered delay
-          const delay = index * 100;
-
-          const translateAnim = Animated.timing(
-            restaurantAnimations[restaurant.id].translateY,
-            {
-              toValue: 0,
-              duration: 300,
-              delay,
-              useNativeDriver: true,
-              easing: Easing.out(Easing.back(1.5)),
-            }
-          );
-
-          const opacityAnim = Animated.timing(
-            restaurantAnimations[restaurant.id].opacity,
-            {
-              toValue: 1,
-              duration: 300,
-              delay,
-              useNativeDriver: true,
-            }
-          );
-
-          animations.push(translateAnim);
-          animations.push(opacityAnim);
-        }
-      });
-
-      Animated.parallel(animations).start();
-    }
-  }, [loading, filteredRestaurants, restaurantAnimations]);
-
-  // Animation for button press
   const animateButtonPress = (restaurantId) => {
-    const scaleDown = Animated.timing(
-      restaurantAnimations[restaurantId].scale,
-      {
+    const anim = animationsRef.current[restaurantId];
+    if (!anim) return;
+    Animated.sequence([
+      Animated.timing(anim.scale, {
         toValue: 0.95,
         duration: 100,
         useNativeDriver: true,
         easing: Easing.inOut(Easing.ease),
-      }
-    );
-
-    const scaleUp = Animated.timing(restaurantAnimations[restaurantId].scale, {
-      toValue: 1,
-      duration: 100,
-      useNativeDriver: true,
-      easing: Easing.inOut(Easing.ease),
-    });
-
-    Animated.sequence([scaleDown, scaleUp]).start();
+      }),
+      Animated.timing(anim.scale, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+        easing: Easing.inOut(Easing.ease),
+      }),
+    ]).start();
   };
 
-  // Back button animation
   const animateBackButton = () => {
     Animated.sequence([
       Animated.timing(backButtonAnim, {
@@ -137,7 +143,6 @@ const RestaurantsScreen = () => {
     ]).start();
   };
 
-  // Handle back button press with animation
   const handleBackPress = () => {
     animateBackButton();
     setTimeout(() => {
@@ -145,7 +150,6 @@ const RestaurantsScreen = () => {
     }, 200);
   };
 
-  // Function to fetch restaurants from API
   const fetchRestaurants = async (pageNum = 1, refresh = false) => {
     try {
       if (refresh) {
@@ -155,14 +159,11 @@ const RestaurantsScreen = () => {
       } else if (pageNum > 1) {
         setLoadingMore(true);
       }
-
       const response = await axios.get(
         `http://10.0.2.2:3000/api/categories/${categoryId}/businesses?page=${pageNum}&limit=10`
       );
-
       if (response.data.success) {
         const newRestaurants = response.data.data;
-
         if (refresh || pageNum === 1) {
           setRestaurants(newRestaurants);
           setFilteredRestaurants(newRestaurants);
@@ -170,8 +171,6 @@ const RestaurantsScreen = () => {
           setRestaurants((prev) => [...prev, ...newRestaurants]);
           setFilteredRestaurants((prev) => [...prev, ...newRestaurants]);
         }
-
-        // Check if we have more pages
         setHasMoreData(pageNum < response.data.pagination.pages);
       } else {
         setError("Failed to load restaurants");
@@ -185,30 +184,29 @@ const RestaurantsScreen = () => {
     }
   };
 
-  // Initial fetch
   useEffect(() => {
     fetchRestaurants();
   }, []);
 
-  // Handle search
   useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setFilteredRestaurants(restaurants);
-    } else {
-      const filtered = restaurants.filter((restaurant) =>
+    let filtered = restaurants;
+    if (searchQuery.trim() !== "") {
+      filtered = filtered.filter((restaurant) =>
         restaurant.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
-      setFilteredRestaurants(filtered);
     }
-  }, [searchQuery, restaurants]);
+    const floorPlanIds = new Set(floorPlans.map((fp) => fp.business_id));
+    filtered = filtered.filter(
+      (restaurant) => restaurant.is_verified && floorPlanIds.has(restaurant.id)
+    );
+    setFilteredRestaurants(filtered);
+  }, [searchQuery, restaurants, floorPlans]);
 
-  // Handle refresh
   const onRefresh = () => {
     setRefreshing(true);
     fetchRestaurants(1, true);
   };
 
-  // Load more data when reaching end of list
   const loadMoreData = () => {
     if (hasMoreData && !loadingMore && !loading) {
       const nextPage = page + 1;
@@ -217,12 +215,10 @@ const RestaurantsScreen = () => {
     }
   };
 
-  // Navigate to restaurant detail with animation
   const handleRestaurantPress = (restaurant) => {
-    if (restaurantAnimations[restaurant.id]) {
+    if (animationsRef.current[restaurant.id]) {
       animateButtonPress(restaurant.id);
       setBusiness(restaurant);
-      // Add small delay before navigation to allow animation to complete
       setTimeout(() => {
         router.push({
           pathname: "/floorPlan",
@@ -244,83 +240,57 @@ const RestaurantsScreen = () => {
     }
   };
 
-  // Render restaurant item with alternating layouts
   const renderRestaurantItem = ({ item, index }) => {
-    // Determine layout based on index (even/odd)
     const isEven = index % 2 === 0;
-
-    // Common components for both layouts
+    const imageSource = item.logo
+      ? { uri: item.logo }
+      : item.cover
+      ? { uri: item.cover }
+      : defaultRestaurantImage;
     const imageComponent = (
       <Image
-        source={{ uri: item.image }}
+        source={imageSource}
         style={styles.horizontalRestaurantImage}
         resizeMode="cover"
       />
     );
-
     const infoComponent = (
       <View style={styles.horizontalRestaurantInfo}>
-        <View style={styles.nameAndRating}>
-          <Text style={styles.restaurantName} numberOfLines={1}>
-            {item.name}
-          </Text>
-          <View style={styles.ratingContainer}>
-            <Ionicons name="star" size={wp("4%")} color="#FFC107" />
-            <Text style={styles.ratingText}>{item.rating}</Text>
-          </View>
-        </View>
-        <Text style={styles.cuisineText}>{item.cuisine}</Text>
-        <View style={styles.waitTimeContainer}>
-          <Ionicons name="time-outline" size={wp("4%")} color="#420F54" />
-          <Text style={styles.waitTimeText}>{item.waitTime} min wait</Text>
-          <View style={styles.statusIndicator}>
-            <View
-              style={[
-                styles.statusDot,
-                {
-                  backgroundColor:
-                    item.status === "active" ? "#4CAF50" : "#FFC107",
-                },
-              ]}
-            />
-            <Text style={styles.statusText}>
-              {item.status === "active" ? "Open" : "Busy"}
-            </Text>
-          </View>
-        </View>
+        <Text style={styles.restaurantName} numberOfLines={1}>
+          {item.name}
+        </Text>
+        <Text style={styles.restaurantDescription} numberOfLines={2}>
+          {item.description || ""}
+        </Text>
+        <Text style={styles.restaurantHours}>
+          {item.opening_hour ? `Opens at ${item.opening_hour}` : ""}
+        </Text>
       </View>
     );
-
-    // Apply animations to restaurant card
-    return restaurantAnimations[item.id] ? (
+    const content = isEven ? (
+      <>
+        {imageComponent}
+        {infoComponent}
+      </>
+    ) : (
+      <>
+        {infoComponent}
+        {imageComponent}
+      </>
+    );
+    const anim = animationsRef.current[item.id];
+    return anim ? (
       <Animated.View
-        style={[
-          {
-            transform: [
-              { scale: restaurantAnimations[item.id].scale },
-              { translateY: restaurantAnimations[item.id].translateY },
-            ],
-            opacity: restaurantAnimations[item.id].opacity,
-          },
-        ]}
+        style={{
+          transform: [{ scale: anim.scale }, { translateY: anim.translateY }],
+          opacity: anim.opacity,
+        }}
       >
         <TouchableOpacity
           style={styles.horizontalRestaurantCard}
           onPress={() => handleRestaurantPress(item)}
         >
-          {isEven ? (
-            // Even index: Image first, then info
-            <>
-              {imageComponent}
-              {infoComponent}
-            </>
-          ) : (
-            // Odd index: Info first, then image
-            <>
-              {infoComponent}
-              {imageComponent}
-            </>
-          )}
+          {content}
         </TouchableOpacity>
       </Animated.View>
     ) : (
@@ -328,78 +298,72 @@ const RestaurantsScreen = () => {
         style={styles.horizontalRestaurantCard}
         onPress={() => handleRestaurantPress(item)}
       >
-        {isEven ? (
-          <>
-            {imageComponent}
-            {infoComponent}
-          </>
-        ) : (
-          <>
-            {infoComponent}
-            {imageComponent}
-          </>
-        )}
+        {content}
       </TouchableOpacity>
     );
   };
 
-  // Render footer for FlatList (loading indicator when loading more)
   const renderFooter = () => {
     if (!loadingMore) return null;
     return (
       <View style={styles.footerLoader}>
         <ActivityIndicator size="small" color="#420F54" />
-        <Text style={styles.footerText}>Loading more restaurants...</Text>
+        <Text style={[styles.footerText, { color: theme.text }]}>
+          Loading more restaurants...
+        </Text>
       </View>
     );
   };
 
   return (
     <>
-      {/* Add Stack.Screen to hide the header completely */}
-      <Stack.Screen
-        options={{
-          headerShown: false,
-        }}
-      />
-
-      <SafeAreaView style={styles.container}>
-        <StatusBar style="auto" />
-
-        {/* Header Title with Animated Back Button */}
-        <View style={styles.headerContainer}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: theme.background }]}
+      >
+        <StatusBar style={isDarkMode ? "light" : "dark"} />
+        <View style={[styles.headerContainer, { backgroundColor: theme.card }]}>
           <Animated.View style={{ transform: [{ scale: backButtonAnim }] }}>
             <TouchableOpacity
               onPress={handleBackPress}
               style={styles.backButton}
             >
-              <Ionicons name="arrow-back" size={wp("6%")} color="#420F54" />
+              <Ionicons
+                name="arrow-back"
+                size={wp("6%")}
+                color={theme.primary}
+              />
             </TouchableOpacity>
           </Animated.View>
-          <Text style={styles.headerTitle}>Restaurants</Text>
+          <Text style={[styles.headerTitle, { color: theme.text }]}>
+            Restaurants
+          </Text>
         </View>
-
-        {/* Search Header */}
         <View style={styles.searchContainer}>
           <Ionicons
             name="search-outline"
             size={wp("6%")}
-            color="#420F54"
+            color={theme.primary}
             style={styles.searchIcon}
           />
           <TextInput
             style={styles.searchInput}
             placeholder="Search restaurants..."
-            placeholderTextColor="#888"
+            placeholderTextColor={theme.placeholder}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
         </View>
-
-        {/* Error message if needed */}
         {error && (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{error}</Text>
+          <View
+            style={[
+              styles.errorContainer,
+              { backgroundColor: theme.background },
+            ]}
+          >
+            <Text style={[styles.errorText, { color: theme.text }]}>
+              {error}
+            </Text>
             <TouchableOpacity
               onPress={() => fetchRestaurants(1, true)}
               style={styles.retryButton}
@@ -408,19 +372,16 @@ const RestaurantsScreen = () => {
             </TouchableOpacity>
           </View>
         )}
-
-        {/* Loading indicator */}
         {loading && !refreshing ? (
           <View style={styles.loaderContainer}>
             <ActivityIndicator size="large" color="#420F54" />
-            <Text style={styles.loaderText}>Loading restaurants...</Text>
+            <Text style={[styles.loaderText, { color: theme.text }]}>
+              Loading restaurants...
+            </Text>
           </View>
         ) : (
-          /* Restaurant List in Vertical List View with horizontal items */
           <FlatList
-            data={filteredRestaurants.filter(
-              (restaurant) => restaurant.is_verified
-            )}
+            data={filteredRestaurants}
             renderItem={renderRestaurantItem}
             keyExtractor={(item) => item.id.toString()}
             showsVerticalScrollIndicator={false}
@@ -429,7 +390,7 @@ const RestaurantsScreen = () => {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                colors={["#420F54"]}
+                colors={[theme.primary]}
               />
             }
             onEndReached={loadMoreData}

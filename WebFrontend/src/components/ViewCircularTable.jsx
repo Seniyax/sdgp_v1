@@ -32,6 +32,7 @@ const CircularTable = ({ shape, isSelected, onPress, isReserved }) => {
 
   return (
     <Group x={shape.x} y={shape.y} onClick={onPress}>
+      {/* Rotated group for table and chairs */}
       <Group x={size / 2} y={size / 2} rotation={rotation}>
         {isSelected && !isReserved && (
           <Circle
@@ -54,20 +55,6 @@ const CircularTable = ({ shape, isSelected, onPress, isReserved }) => {
           }
           strokeWidth={2}
         />
-        <Text
-          x={-size / 2}
-          y={-size / 2}
-          width={size}
-          height={size}
-          text={
-            !isReserved && shape.tableNumber ? shape.tableNumber.toString() : ""
-          }
-          fontSize={24}
-          fill="white"
-          fontStyle="bold"
-          align="center"
-          verticalAlign="middle"
-        />
         {chairPositions.map((pos, index) => (
           <Group
             key={index}
@@ -88,6 +75,22 @@ const CircularTable = ({ shape, isSelected, onPress, isReserved }) => {
           </Group>
         ))}
       </Group>
+      {/* Render table number outside the rotated group */}
+      {shape.tableNumber && !isReserved && (
+        <Text
+          x={size / 2}
+          y={size / 2}
+          width={size}
+          height={size}
+          text={shape.tableNumber.toString()}
+          fontSize={24}
+          fill="white"
+          fontStyle="bold"
+          align="center"
+          verticalAlign="middle"
+          offset={{ x: size / 2, y: size / 2 }}
+        />
+      )}
       {isSelected && (
         <Group x={5} y={5}>
           <Circle

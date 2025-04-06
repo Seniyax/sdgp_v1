@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   StyleSheet,
   View,
@@ -12,6 +12,7 @@ import {
   Animated,
   LayoutAnimation,
   UIManager,
+  TouchableOpacity,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import axios from "axios";
@@ -22,7 +23,12 @@ import { useRouter } from "expo-router";
 import useReservationsSocket from "../hooks/useReservationsSocket";
 import useReservationStore from "../store/reservationStore";
 import { useAuth } from "../contexts/AuthContext";
-
+import { useTheme } from "../contexts/ThemeContext";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 import StraightWall from "../components/straightWall";
 import SquareTable from "../components/squareTable";
 import CircularTable from "../components/circularTable";
@@ -44,7 +50,6 @@ import Restrooms from "../components/restrooms";
 import OutdoorIndicator from "../components/outdoorIndicator";
 import IndoorIndicator from "../components/indoorIndicator";
 
-// New animated button component
 const AnimatedPressable = ({
   outerStyle,
   style,
@@ -52,15 +57,13 @@ const AnimatedPressable = ({
   onPress,
   ...props
 }) => {
-  const scaleValue = React.useRef(new Animated.Value(1)).current;
-
+  const scaleValue = useRef(new Animated.Value(1)).current;
   const handlePressIn = () => {
     Animated.spring(scaleValue, {
       toValue: 0.95,
       useNativeDriver: true,
     }).start();
   };
-
   const handlePressOut = () => {
     Animated.spring(scaleValue, {
       toValue: 1,
@@ -68,7 +71,6 @@ const AnimatedPressable = ({
       useNativeDriver: true,
     }).start();
   };
-
   return (
     <Animated.View style={[{ transform: [{ scale: scaleValue }] }, outerStyle]}>
       <Pressable
@@ -84,17 +86,14 @@ const AnimatedPressable = ({
   );
 };
 
-// Special component just for date/time buttons
 const DateTimeButton = ({ onPress, children }) => {
-  const scaleValue = React.useRef(new Animated.Value(1)).current;
-
+  const scaleValue = useRef(new Animated.Value(1)).current;
   const handlePressIn = () => {
     Animated.spring(scaleValue, {
       toValue: 0.95,
       useNativeDriver: true,
     }).start();
   };
-
   const handlePressOut = () => {
     Animated.spring(scaleValue, {
       toValue: 1,
@@ -102,7 +101,6 @@ const DateTimeButton = ({ onPress, children }) => {
       useNativeDriver: true,
     }).start();
   };
-
   return (
     <Pressable
       style={styles.dateButton}
@@ -130,12 +128,12 @@ const FloorPlan = () => {
   const [selectedTableIds, setSelectedTableIds] = useState([]);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [isTimeValid, setIsTimeValid] = useState(true);
   const router = useRouter();
   const { business } = useAuth();
-
+  const { theme } = useTheme();
   const allowedStartHour = business.opening_hour;
   const allowedEndHour = business.closing_hour;
-
   const computeDefaultDate = () => {
     const now = new Date();
     const defaultDate = new Date(now);
@@ -144,15 +142,12 @@ const FloorPlan = () => {
       defaultDate.getHours() < allowedStartHour ||
       defaultDate.getHours() >= allowedEndHour
     ) {
-      // Move to the next day and set time to 12:00 PM
       defaultDate.setDate(defaultDate.getDate() + 1);
       defaultDate.setHours(12, 0, 0, 0);
     }
     return defaultDate;
   };
-
   const [selectedDate, setSelectedDate] = useState(computeDefaultDate());
-
   const customAnimation = {
     duration: 5000,
     update: {
@@ -160,7 +155,6 @@ const FloorPlan = () => {
       property: LayoutAnimation.Properties.opacity,
     },
   };
-
   useEffect(() => {
     if (
       Platform.OS === "android" &&
@@ -169,22 +163,14 @@ const FloorPlan = () => {
       UIManager.setLayoutAnimationEnabledExperimental(true);
     }
   }, []);
-
   const triggerAnimation = () => {
     LayoutAnimation.configureNext(customAnimation);
   };
-
-  // Animate layout changes when selected tables change
   useEffect(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
   }, [selectedTableIds]);
-
-  // Initialize socket for reservations
   useReservationsSocket();
-  // Get reservations from the store
   const { reservations } = useReservationStore();
-
-  // Fetch the floor plan data
   const fetchFloorPlan = async () => {
     setLoading(true);
     try {
@@ -204,12 +190,7 @@ const FloorPlan = () => {
       Alert.alert(
         "Error",
         errorMsg,
-        [
-          {
-            text: "OK",
-            onPress: () => router.push("/restaurants"),
-          },
-        ],
+        [{ text: "OK", onPress: () => router.push("/restaurants") }],
         { cancelable: true }
       );
       console.log("Network Error:", err);
@@ -218,18 +199,14 @@ const FloorPlan = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchFloorPlan();
   }, []);
-
-  // Update isTableReserved() to accept a table object and use the new 'dbId'
   const isTableReserved = (table) => {
     const tableId = table.dbId || table.id;
     const selectedDateStr = selectedDate.toISOString().split("T")[0];
     const selectedTimeMinutes =
       selectedDate.getHours() * 60 + selectedDate.getMinutes();
-
     return reservations.some((res) => {
       if (res.table_id === tableId && res.end_date === selectedDateStr) {
         const [startH, startM] = res.start_time.split(":").map(Number);
@@ -245,8 +222,6 @@ const FloorPlan = () => {
       return false;
     });
   };
-
-  // Update toggleTableSelection() to use the dbId as well
   const toggleTableSelection = (table) => {
     triggerAnimation();
     const id = table.dbId || table.id;
@@ -254,31 +229,35 @@ const FloorPlan = () => {
       prev.includes(id) ? prev.filter((tid) => tid !== id) : [...prev, id]
     );
   };
-
-  // Handle date change
   const onDateChange = (event, selected) => {
     const currentDate = selected || selectedDate;
     setShowDatePicker(Platform.OS === "ios");
     setSelectedDate(currentDate);
   };
-
-  // Handle time change with allowed range validation
   const onTimeChange = (event, selected) => {
     const currentTime = selected || selectedDate;
     setShowTimePicker(Platform.OS === "ios");
-
-    const hours = currentTime.getHours();
-    if (hours < allowedStartHour || hours >= allowedEndHour) {
+    const [startHour, startMinute] = allowedStartHour.split(":").map(Number);
+    const allowedStartMinutes = startHour * 60 + startMinute;
+    const [endHour, endMinute] = allowedEndHour.split(":").map(Number);
+    const allowedEndMinutes = endHour * 60 + endMinute;
+    const currentTimeMinutes =
+      currentTime.getHours() * 60 + currentTime.getMinutes();
+      console.log(currentTimeMinutes, allowedStartMinutes, allowedEndMinutes);
+    if (
+      currentTimeMinutes < allowedStartMinutes ||
+      currentTimeMinutes >= allowedEndMinutes
+    ) {
       Alert.alert(
         "Invalid Time",
-        `Please choose a time between ${allowedStartHour}:00 and ${allowedEndHour}:00.`
+        `Please choose a time between ${allowedStartHour} and ${allowedEndHour}.`
       );
+      setIsTimeValid(false);
       return;
     }
+    setIsTimeValid(true);
     setSelectedDate(currentTime);
   };
-
-  // Returns all mapped tables from all floors in the API response.
   const getAllMappedTables = () => {
     if (!floorPlanData) return [];
     const tableIdMapping = {};
@@ -287,7 +266,6 @@ const FloorPlan = () => {
         tableIdMapping[dbTable.table_number] = dbTable.id;
       });
     }
-
     let allMappedTables = [];
     floorPlanData.floors.forEach((floor) => {
       try {
@@ -303,25 +281,20 @@ const FloorPlan = () => {
     });
     return allMappedTables;
   };
-
   const getSelectedTablesDetails = () => {
     const allTables = getAllMappedTables();
     return allTables.filter((table) =>
       selectedTableIds.includes(table.dbId || table.id)
     );
   };
-
-  // Renders the floor plan using react-native-svg.
   const renderFloorPlan = () => {
     if (!selectedFloor) return null;
-
     const tableIdMapping = {};
     if (floorPlanData && floorPlanData.tables) {
       floorPlanData.tables.forEach((dbTable) => {
         tableIdMapping[dbTable.table_number] = dbTable.id;
       });
     }
-
     let floorData = { shapes: [], tables: [] };
     try {
       if (selectedFloor && selectedFloor.floor_plan) {
@@ -330,14 +303,11 @@ const FloorPlan = () => {
     } catch (err) {
       console.error("Error parsing floor plan JSON", err);
     }
-
     const mappedTables = (floorData.tables || []).map((table) => ({
       ...table,
       dbId: tableIdMapping[table.tableNumber] || table.id,
     }));
-
     const combinedItems = [...(floorData.shapes || []), ...mappedTables];
-
     const canvasWidth = selectedFloor.canvas_width;
     const canvasHeight = selectedFloor.canvas_height;
     const screenWidth = Dimensions.get("window").width;
@@ -345,7 +315,6 @@ const FloorPlan = () => {
     const svgWidth = screenWidth - margin * 2;
     const aspectRatio = canvasHeight / canvasWidth;
     const svgHeight = svgWidth * aspectRatio;
-
     return (
       <Svg
         width={svgWidth}
@@ -375,7 +344,6 @@ const FloorPlan = () => {
             strokeWidth="1"
           />
         ))}
-
         {combinedItems.map((item, idx) => {
           switch (item.type) {
             case "rectangle":
@@ -493,26 +461,32 @@ const FloorPlan = () => {
       </Svg>
     );
   };
-
   const selectedTables = getSelectedTablesDetails();
-
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: theme.background }]}
+    >
+      <View style={[styles.headerContainer, { backgroundColor: theme.card }]}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="arrow-back" size={wp("6%")} color={theme.primary} />
+        </TouchableOpacity>
+        <Text style={[styles.screenTitle, { color: theme.text }]}>
+          Floorplan
+        </Text>
+      </View>
       <ScrollView contentContainerStyle={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Floor Plan</Text>
-        </View>
-
-        {/* Date & Time Picker Section */}
+        <Text style={[styles.businessName, { color: theme.text }]}>
+          {business.name}
+        </Text>
         <View style={styles.dateTimeContainer}>
-          {/* Date Picker Button */}
           <DateTimeButton onPress={() => setShowDatePicker(true)}>
             <Text style={styles.dateButtonText}>
               {selectedDate.toLocaleDateString()}
             </Text>
           </DateTimeButton>
-
           {showDatePicker && (
             <DateTimePicker
               value={selectedDate}
@@ -522,8 +496,6 @@ const FloorPlan = () => {
               minimumDate={new Date()}
             />
           )}
-
-          {/* Time Picker Button */}
           <DateTimeButton onPress={() => setShowTimePicker(true)}>
             <Text style={styles.dateButtonText}>
               {selectedDate.toLocaleTimeString([], {
@@ -541,16 +513,14 @@ const FloorPlan = () => {
             />
           )}
         </View>
-
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#420F54" />
+            <ActivityIndicator size="large" color={theme.primary} />
           </View>
         ) : error ? (
-          <Text style={styles.errorText}>{error}</Text>
+          <Text style={[styles.errorText, { color: theme.text }]}>{error}</Text>
         ) : (
           <>
-            {/* Floor Selector */}
             <View style={styles.floorSelector}>
               {floorPlanData.floors.map((floor) => (
                 <AnimatedPressable
@@ -574,14 +544,14 @@ const FloorPlan = () => {
                 </AnimatedPressable>
               ))}
             </View>
-
-            {/* Floor Plan Display */}
             <View style={styles.floorPlanContainer}>{renderFloorPlan()}</View>
-
-            {/* Selected Tables Details */}
             {getSelectedTablesDetails().length > 0 && (
               <View style={styles.selectedTablesContainer}>
-                <Text style={styles.selectedTablesTitle}>Selected Tables</Text>
+                <Text
+                  style={[styles.selectedTablesTitle, { color: theme.text }]}
+                >
+                  Selected Tables
+                </Text>
                 <View style={styles.tableDetailsContainer}>
                   {getSelectedTablesDetails().map((table) => (
                     <View
@@ -602,14 +572,10 @@ const FloorPlan = () => {
                 </View>
               </View>
             )}
-
-            {/* Proceed Button */}
             <AnimatedPressable
               style={styles.proceedButton}
               onPress={() => {
                 const now = new Date();
-
-                // Check if any selected table is already reserved
                 const reservedSelectedTables =
                   getSelectedTablesDetails().filter((table) =>
                     isTableReserved(table)
@@ -640,12 +606,16 @@ const FloorPlan = () => {
                   );
                   return;
                 }
+                if (!isTimeValid) {
+                  Alert.alert("Invalid Time", "The selected time is invalid.");
+                  return;
+                }
                 router.push({
                   pathname: "/makeReservation",
                   params: {
                     selectedTables: JSON.stringify(getSelectedTablesDetails()),
-                    date: selectedDate.toISOString().split("T")[0], // "YYYY-MM-DD"
-                    time: selectedDate.toTimeString().slice(0, 8), // "HH:MM:SS"
+                    date: selectedDate.toISOString().split("T")[0],
+                    time: selectedDate.toTimeString().slice(0, 8),
                   },
                 });
               }}
@@ -664,22 +634,35 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "transparent",
   },
+  headerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: wp("5%"),
+    paddingTop: hp("5%"),
+    paddingBottom: hp("2%"),
+  },
+  backButton: {
+    padding: wp("2%"),
+  },
+  screenTitle: {
+    fontSize: wp("6%"),
+    fontWeight: "bold",
+    color: "#420F54",
+    flex: 1,
+    marginLeft: wp("3%"),
+  },
   container: {
     padding: "5%",
     alignItems: "center",
     flexGrow: 1,
   },
-  header: {
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "center",
-    marginBottom: "2%",
-  },
-  title: {
+  businessName: {
     fontSize: 24,
     fontWeight: "bold",
     color: "#420F54",
-    marginBottom: 5,
+    marginBottom: 25,
+    marginTop: 10,
   },
   dateTimeContainer: {
     width: "100%",

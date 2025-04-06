@@ -145,21 +145,28 @@ const AddReservation = ({
           >
             {selectedTables.length > 0 ? (
               <div className="mb-3">
-                <label className="form-label">Selected Tables</label>
+                <label className="form-label add-res-label">
+                  Selected Tables
+                </label>
                 <div className="d-flex flex-wrap gap-2">
                   {selectedTables.map((table, index) => {
                     const tableNum = table.tableNumber || "";
                     const seats = table.seatCount || "";
                     const floorName = table.floor;
                     return (
-                      <div key={index} className="card p-2">
+                      <div
+                        key={index}
+                        className="card p-2"
+                        style={{ margin: 0 }}
+                      >
                         <div className="d-flex justify-content-between align-items-center">
-                          <span>
+                          <span style={{ color: "#A8A8A8" }}>
                             Table {tableNum} ({seats} seats, {floorName})
                           </span>
                           <button
                             type="button"
                             className="btn-close ms-2"
+                            style={{ backgroundColor: "white" }}
                             onClick={() => onTableSelect(table)}
                             aria-label="Remove table"
                           ></button>

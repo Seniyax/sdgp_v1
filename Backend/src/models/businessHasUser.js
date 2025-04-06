@@ -37,7 +37,6 @@ async function createBusinessRelations(
 ) {
   const formattedbusinessRelations = [];
   for (let businessRelation of businessRelations) {
-    console.log(businessRelation.username);
     const user = await getUserByUsername(businessRelation.username);
     formattedbusinessRelations.push({
       user_id: user.id,

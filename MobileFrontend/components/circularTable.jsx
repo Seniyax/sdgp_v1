@@ -1,7 +1,6 @@
 import React from "react";
 import { G, Circle, Rect, Text } from "react-native-svg";
 
-// Helper to calculate chair positions around the table.
 function calculateChairPositions(radius, seatCount) {
   const positions = [];
   const maxSeats = Math.min(seatCount, 20);
@@ -16,7 +15,6 @@ function calculateChairPositions(radius, seatCount) {
 }
 
 const CircularTable = ({ shape, isSelected, onPress, isReserved }) => {
-  // Assume shape.size represents the diameter of the table.
   const size = shape.size || 50;
   const radius = size / 2;
   const rotation = shape.rotation || 0;
@@ -50,17 +48,6 @@ const CircularTable = ({ shape, isSelected, onPress, isReserved }) => {
           stroke={isSelected ? colors.selectedStroke : colors.defaultStroke}
           strokeWidth="2"
         />
-        <Text
-          x={radius}
-          y={radius}
-          textAnchor="middle"
-          alignmentBaseline="middle"
-          fontSize="24"
-          fill="white"
-          fontWeight="bold"
-        >
-          {!isReserved && shape.tableNumber ? shape.tableNumber.toString() : ""}
-        </Text>
         {chairPositions.map((pos, index) => (
           <Rect
             key={index}
@@ -74,6 +61,19 @@ const CircularTable = ({ shape, isSelected, onPress, isReserved }) => {
           />
         ))}
       </G>
+      {!isReserved && shape.tableNumber && (
+        <Text
+          x={radius}
+          y={radius}
+          textAnchor="middle"
+          alignmentBaseline="middle"
+          fontSize="24"
+          fill="white"
+          fontWeight="bold"
+        >
+          {shape.tableNumber.toString()}
+        </Text>
+      )}
       {isSelected && (
         <G transform="translate(5,5)">
           <Circle
@@ -82,7 +82,7 @@ const CircularTable = ({ shape, isSelected, onPress, isReserved }) => {
             r={14}
             fill="white"
             stroke={colors.defaultStroke}
-            strokeWidth={1}
+            strokeWidth="1"
           />
           <Text
             x={0}
@@ -97,15 +97,14 @@ const CircularTable = ({ shape, isSelected, onPress, isReserved }) => {
           </Text>
         </G>
       )}
-      {/* Reserved indicator */}
       {isReserved && (
         <G transform={`translate(${radius - 32}, ${radius + 40}) rotate(-45)`}>
           <Text
-            fontSize={25}
+            fontSize="25"
             fill="red"
             fontWeight="bold"
             stroke="black"
-            strokeWidth={0.8}
+            strokeWidth="0.8"
           >
             Reserved
           </Text>

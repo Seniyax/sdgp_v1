@@ -1,4 +1,3 @@
-// reservation.js
 const supabase = require("../config/supabaseClient");
 
 async function getCustomerByUsername(customerUsername) {
@@ -24,6 +23,29 @@ async function getReservationsByBusiness(businessId) {
     )
     .eq("business_id", businessId)
     .order("id", { ascending: true });
+
+  if (error) throw error;
+  return data;
+}
+
+async function getReservationById(reservationId) {
+  const { data, error } = await supabase
+    .from("reservation")
+    .select(
+      `
+      *,
+      customer: customer_id (
+        id, email, full_name, username
+      ),
+      table: table_id (
+        seats, table_number, floor_plan: floor_plan_id (
+          floor_name
+        )
+      )
+    `
+    )
+    .eq("id", reservationId)
+    .single();
 
   if (error) throw error;
   return data;
@@ -61,7 +83,9 @@ async function createReservationModel(data) {
 
   const { data: insertedData, error } = await supabase
     .from("reservation")
-    .insert([insertData]).select(`
+    .insert([insertData])
+    .select(
+      `
       *,
       customer: customer_id (
         id, email, full_name, username
@@ -71,7 +95,8 @@ async function createReservationModel(data) {
           floor_name
         )
       )
-    `);
+    `
+    );
 
   if (error) throw error;
   const reservation = insertedData[0];
@@ -114,6 +139,7 @@ async function deleteReservationModel(reservationId) {
 
 module.exports = {
   getReservationsByBusiness,
+  getReservationById,
   createReservationModel,
   updateReservationModel,
   deleteReservationModel,

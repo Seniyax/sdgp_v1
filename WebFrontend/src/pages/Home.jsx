@@ -864,7 +864,10 @@ const Home = () => {
                 <h3 className="footertitle">Company</h3>
                 <ul className="footermenu">
                   <li>
-                    <Link to="/about" className="footerlink">
+                    <Link
+                      to="https://slotzi-marketing.vercel.app/#team"
+                      className="footerlink"
+                    >
                       About Us
                     </Link>
                   </li>
@@ -899,12 +902,18 @@ const Home = () => {
                     </Link>
                   </li>
                   <li>
-                    <Link to="/privacy" className="footerlink">
+                    <Link
+                      to="https://slotzi-marketing.vercel.app/privacy-policy"
+                      className="footerlink"
+                    >
                       Privacy Policy
                     </Link>
                   </li>
                   <li>
-                    <Link to="/terms" className="footerlink">
+                    <Link
+                      to="https://slotzi-marketing.vercel.app/terms"
+                      className="footerlink"
+                    >
                       Terms of Service
                     </Link>
                   </li>

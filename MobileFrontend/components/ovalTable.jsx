@@ -1,19 +1,16 @@
 import React from "react";
 import { G, Ellipse, Circle, Text } from "react-native-svg";
 
-// Helper: Calculate chair positions around the oval table
 const calculateChairPositions = (radiusX, radiusY, seatCount) => {
   const positions = [];
   const maxSeats = Math.min(seatCount, 20);
   const offset = Math.min(radiusX, radiusY) * 0.4;
-
   for (let i = 0; i < maxSeats; i++) {
     const angle = (i / maxSeats) * (2 * Math.PI) - Math.PI / 2;
     const x = Math.cos(angle) * (radiusX + offset);
     const y = Math.sin(angle) * (radiusY + offset);
     positions.push({ x, y, angle });
   }
-
   return positions;
 };
 
@@ -32,7 +29,6 @@ const OvalTable = ({ shape, isSelected, onPress, isReserved }) => {
   const radiusY = tableHeight / 2;
   const centerX = tableWidth / 2;
   const centerY = tableHeight / 2;
-
   const chairPositions = calculateChairPositions(radiusX, radiusY, seatCount);
 
   const colors = {
@@ -65,19 +61,6 @@ const OvalTable = ({ shape, isSelected, onPress, isReserved }) => {
           stroke={isSelected ? colors.selectedStroke : colors.defaultStroke}
           strokeWidth="2"
         />
-        {tableNumber && (
-          <Text
-            x={0}
-            y={0}
-            textAnchor="middle"
-            alignmentBaseline="middle"
-            fontSize={24}
-            fill="white"
-            fontWeight="bold"
-          >
-            {!isReserved && tableNumber ? tableNumber.toString() : ""}
-          </Text>
-        )}
         {chairPositions.map((pos, index) => (
           <G
             key={index}
@@ -98,19 +81,22 @@ const OvalTable = ({ shape, isSelected, onPress, isReserved }) => {
               stroke="#333"
               strokeWidth={1}
             />
-            <Text
-              x={0}
-              y={0}
-              textAnchor="middle"
-              alignmentBaseline="middle"
-              fontSize={10}
-              fill="#fff"
-            >
-              {index + 1}
-            </Text>
           </G>
         ))}
       </G>
+      {!isReserved && tableNumber && (
+        <Text
+          x={centerX}
+          y={centerY}
+          textAnchor="middle"
+          alignmentBaseline="middle"
+          fontSize={24}
+          fill="white"
+          fontWeight="bold"
+        >
+          {tableNumber.toString()}
+        </Text>
+      )}
       {isSelected && (
         <G transform="translate(5,5)">
           <Circle
@@ -134,7 +120,6 @@ const OvalTable = ({ shape, isSelected, onPress, isReserved }) => {
           </Text>
         </G>
       )}
-      {/* Reserved indicator */}
       {isReserved && (
         <G
           transform={`translate(${centerX - 32}, ${centerY + 40}) rotate(-45)`}

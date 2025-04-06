@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: wp('5%'),
-    paddingTop: hp('2%'),
+    paddingTop: hp('5%'),
     paddingBottom: hp('2%'),
   },
   backButton: {

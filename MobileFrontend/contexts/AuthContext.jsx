@@ -43,18 +43,20 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     try {
       const response = await api.post("/auth/signin", { email, password });
-
       const { user: userData, session } = response.data;
       const authToken = session?.access_token;
-
+      const refreshToken = session?.refresh_token;
       if (authToken) {
         await SecureStore.setItemAsync("userToken", authToken);
         await SecureStore.setItemAsync("userData", JSON.stringify(userData));
-
+        if (refreshToken) {
+          await SecureStore.setItemAsync("refreshToken", refreshToken);
+        } else {
+          console.error("No refresh token received during signIn");
+        }
         setUser(userData);
         setToken(authToken);
         api.defaults.headers.common["Authorization"] = `Bearer ${authToken}`;
-
         return { success: true };
       } else {
         throw new Error("No token received");
@@ -104,18 +106,21 @@ export const AuthProvider = ({ children }) => {
       const response = await api.post(`/auth/social/${provider}`, {
         id_token: token,
       });
-
       const { user: userData, session } = response.data;
       const authToken = session?.access_token;
-
+      const refreshToken = session?.refresh_token; // <-- Extract refresh token
       if (authToken) {
         await SecureStore.setItemAsync("userToken", authToken);
         await SecureStore.setItemAsync("userData", JSON.stringify(userData));
-
+        if (refreshToken) {
+          // <-- Store refresh token
+          await SecureStore.setItemAsync("refreshToken", refreshToken);
+        } else {
+          console.error("No refresh token received during socialLogin");
+        }
         setUser(userData);
         setToken(authToken);
         api.defaults.headers.common["Authorization"] = `Bearer ${authToken}`;
-
         return { success: true };
       } else {
         throw new Error("No token received");

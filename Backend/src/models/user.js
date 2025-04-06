@@ -141,7 +141,6 @@ async function verifyUserEmail(token) {
 }
 
 async function uploadProfilePicture(username, file) {
-  console.log("File Buffer:", file.buffer);
   const extension = path.extname(file.originalname);
   const baseName = path
     .basename(file.originalname, extension)

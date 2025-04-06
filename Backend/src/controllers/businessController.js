@@ -216,8 +216,6 @@ exports.createBusiness = async (req, res) => {
         coverUrl = await uploadImage(req.files.cover[0], "covers");
       }
     }
-    console.log(logoUrl);
-    console.log(coverUrl);
     const loc = await createLocation(location);
     const verificationToken = crypto.randomBytes(32).toString("hex");
     // Pass the file URLs directly without re-uploading in the model.
@@ -391,6 +389,20 @@ exports.updateBusiness = async (req, res) => {
         `Description changed from "${currentBusiness.description}" to "${updates.description}"`
       );
       updateBusinessData.description = updates.description;
+    }
+
+    if (updates.opening_hour) {
+      changeLogs.push(
+        `Opening hour changed from "${currentBusiness.opening_hour}" to "${updates.opening_hour}"`
+      );
+      updateBusinessData.opening_hour = updates.opening_hour;
+    }
+
+    if (updates.closing_hour) {
+      changeLogs.push(
+        `Closing hour changed from "${currentBusiness.closing_hour}" to "${updates.closing_hour}"`
+      );
+      updateBusinessData.closing_hour = updates.closing_hour;
     }
 
     if (updates.emails) {

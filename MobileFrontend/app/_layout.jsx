@@ -20,21 +20,25 @@ export default function Layout() {
             options={{ title: "Restaurants", headerShown: true }}
           />
           <Stack.Screen
-            name="officeRooms"
-            options={{ title: "Office Rooms", headerShown: true }}
+            name="hotels"
+            options={{ title: "Hotels", headerShown: true }}
           />
           <Stack.Screen
-            name="tableSelect"
-            options={{ title: "Table Selection", headerShown: true }}
+            name="saloons"
+            options={{ title: "Saloons", headerShown: true }}
           />
           <Stack.Screen
-            name="payments"
-            options={{ title: "Payments", headerShown: true }}
+            name="theatres"
+            options={{ title: "Theatres", headerShown: true }}
+          />
+          <Stack.Screen
+            name="spas"
+            options={{ title: "Spas", headerShown: true }}
           />
           <Stack.Screen
             name="floorPlan"
             options={{
-              headerShown: true,
+              headerShown: false,
               title: "Floor Plan",
               gestureEnabled: true,
             }}
@@ -42,14 +46,14 @@ export default function Layout() {
           <Stack.Screen
             name="makeReservation"
             options={{
-              headerShown: true,
+              headerShown: false,
               title: "Create Reservation",
               gestureEnabled: true,
             }}
           />
           <Stack.Screen
-            name="payments_uvindu"
-            options={{ title: "Payments", headerShown: true }}
+            name="payments"
+            options={{ title: "Payments", headerShown: false }}
           />
           <Stack.Screen
             name="auth/signin"
@@ -61,10 +65,6 @@ export default function Layout() {
           />
           <Stack.Screen
             name="auth/reset-password"
-            options={{ title: "Reset Password", headerShown: false }}
-          />
-          <Stack.Screen
-            name="profile"
             options={{ title: "Reset Password", headerShown: false }}
           />
         </Stack>

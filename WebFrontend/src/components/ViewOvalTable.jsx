@@ -33,7 +33,6 @@ const OvalTable = ({ shape, isSelected, onPress, isReserved }) => {
   const centerY = tableHeight / 2;
 
   const chairPositions = calculateChairPositions(radiusX, radiusY, seatCount);
-  // Compute chair size similarly to old version
   const chairSize = Math.min(
     Math.max(Math.min(tableWidth, tableHeight) * 0.2, 15),
     30
@@ -49,6 +48,7 @@ const OvalTable = ({ shape, isSelected, onPress, isReserved }) => {
 
   return (
     <Group x={tableX} y={tableY} onClick={onPress}>
+      {/* Rotated group for table and chairs */}
       <Group x={centerX} y={centerY} rotation={rotation}>
         {isSelected && !isReserved && (
           <Ellipse
@@ -75,22 +75,6 @@ const OvalTable = ({ shape, isSelected, onPress, isReserved }) => {
           shadowOffset={{ x: 0, y: 2 }}
           shadowOpacity={0.3}
         />
-        {/* Centered table number as in the old version */}
-        {tableNumber && (
-          <Text
-            x={-radiusX}
-            y={-radiusY}
-            width={radiusX * 2}
-            height={radiusY * 2}
-            text={!isReserved && tableNumber ? tableNumber.toString() : ""}
-            fontSize={24}
-            fill="white"
-            fontStyle="bold"
-            align="center"
-            verticalAlign="middle"
-          />
-        )}
-        {/* Chairs with numbering */}
         {chairPositions.map((pos, index) => (
           <Group
             key={index}
@@ -99,7 +83,6 @@ const OvalTable = ({ shape, isSelected, onPress, isReserved }) => {
             rotation={(pos.angle * 180) / Math.PI}
             onClick={(e) => {
               e.cancelBubble = true;
-              // (If you need chair-specific interactions, add here)
             }}
           >
             <Circle
@@ -113,6 +96,21 @@ const OvalTable = ({ shape, isSelected, onPress, isReserved }) => {
           </Group>
         ))}
       </Group>
+      {/* Render table number outside the rotated group so it stays upright */}
+      {tableNumber && !isReserved && (
+        <Text
+          x={0}
+          y={0}
+          width={tableWidth}
+          height={tableHeight}
+          text={tableNumber.toString()}
+          fontSize={24}
+          fill="white"
+          fontStyle="bold"
+          align="center"
+          verticalAlign="middle"
+        />
+      )}
       {isReserved && (
         <Group x={centerX - 32} y={centerY + 40} rotation={-45}>
           <Text

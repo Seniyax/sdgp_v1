@@ -603,10 +603,14 @@ const ReservationDashboard = () => {
                               key={res.id}
                               className="list-group-item d-flex justify-content-between align-items-center mt-1"
                             >
-                              <div>
-                                Table {tableNumber} | {floor} – {customerName}
+                              <div className="row">
+                                <div className="col-12">
+                                  Table {tableNumber} | {floor}
+                                </div>
+                                <div className="col-12">{customerName}</div>
                               </div>
-                              <div>
+
+                              <div className="d-flex align-items-center">
                                 <button
                                   className="btn btn-violet-light btn-sm me-1"
                                   onClick={() => handleCancel(res.id)}

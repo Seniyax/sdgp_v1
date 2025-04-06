@@ -1,194 +1,184 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  View, 
-  Text, 
-  FlatList, 
-  TouchableOpacity, 
-  ActivityIndicator, 
-  RefreshControl, 
+import React, { useState, useEffect, useRef } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+  RefreshControl,
   Animated,
   Alert,
-  SafeAreaView
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import axios from 'axios';
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { formatDistanceToNow } from 'date-fns';
-import styles from '../styles/notificationstyle';
+  SafeAreaView,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { widthPercentageToDP as wp } from "react-native-responsive-screen";
+import { formatDistanceToNow } from "date-fns";
+import styles from "../styles/notificationstyle";
+import { api } from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
 
 const NotificationScreen = () => {
+  const { user } = useAuth();
+  const router = useRouter();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
-  
-  const router = useRouter();
-  
-  // Animation refs
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(50)).current;
-  
-  // Constants for API
-  const API_BASE_URL = 'http://10.0.2.2:3000/api';
-  
+  const { theme } = useTheme();
+
   useEffect(() => {
-    fetchNotifications();
-    fetchUnreadCount();
-    
-    // Animate the content when component mounts
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-      Animated.timing(translateY, {
-        toValue: 0,
-        duration: 600,
-        useNativeDriver: true,
-      })
-    ]).start();
-  }, []);
-  
+    if (!user) router.replace("/auth/signin");
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchNotifications();
+      fetchUnreadCount();
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(translateY, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [user]);
+
   const fetchNotifications = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/notifications`);
-      
+      const response = await api.get("/api/notifications");
       if (response.data.success) {
         setNotifications(response.data.data);
         setError(null);
       } else {
-        setError(response.data.message || 'Failed to fetch notifications');
+        setError(response.data.message || "Failed to fetch notifications");
       }
     } catch (err) {
-      console.error('Error fetching notifications:', err);
-      setError('Network error: ' + err.message);
+      setError("Network error: " + err.message);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
-  
+
   const fetchUnreadCount = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/notifications/unread-count`);
-      
+      const response = await api.get("/api/notifications/unread-count");
       if (response.data.success) {
         setUnreadCount(response.data.data.count);
       }
     } catch (err) {
-      console.error('Error fetching unread count:', err);
+      console.error(err);
     }
   };
-  
+
   const handleRefresh = () => {
     setRefreshing(true);
     fetchNotifications();
     fetchUnreadCount();
   };
-  
+
   const markAsRead = async (id) => {
     try {
-      const response = await axios.put(`${API_BASE_URL}/notifications/${id}/read`);
-      
+      const response = await api.put(`/api/notifications/${id}/read`);
       if (response.data.success) {
-        // Update the notification in local state
-        setNotifications(prevNotifications => 
-          prevNotifications.map(notification => 
-            notification.id === id 
-              ? { ...notification, is_read: true, read_at: new Date().toISOString() } 
-              : notification
+        setNotifications((prev) =>
+          prev.map((n) =>
+            n.id === id
+              ? { ...n, is_read: true, read_at: new Date().toISOString() }
+              : n
           )
         );
-        
-        // Update unread count
         fetchUnreadCount();
       }
     } catch (err) {
-      console.error('Error marking notification as read:', err);
-      Alert.alert('Error', 'Failed to mark notification as read');
+      Alert.alert("Error", "Failed to mark notification as read");
     }
   };
-  
+
   const markAllAsRead = async () => {
     try {
-      const response = await axios.put(`${API_BASE_URL}/notifications/read-all`);
-      
+      const response = await api.put("/api/notifications/read-all");
       if (response.data.success) {
-        // Update all notifications to read in local state
-        setNotifications(prevNotifications => 
-          prevNotifications.map(notification => ({ 
-            ...notification, 
-            is_read: true, 
-            read_at: notification.read_at || new Date().toISOString() 
+        setNotifications((prev) =>
+          prev.map((n) => ({
+            ...n,
+            is_read: true,
+            read_at: n.read_at || new Date().toISOString(),
           }))
         );
-        
-        // Update unread count
         setUnreadCount(0);
-        Alert.alert('Success', 'All notifications marked as read');
+        Alert.alert("Success", "All notifications marked as read");
       }
     } catch (err) {
-      console.error('Error marking all notifications as read:', err);
-      Alert.alert('Error', 'Failed to mark all notifications as read');
+      Alert.alert("Error", "Failed to mark all notifications as read");
     }
   };
-  
+
   const handleNotificationPress = (notification) => {
-    // If notification is not read, mark it as read
-    if (!notification.is_read) {
-      markAsRead(notification.id);
-    }
-    
-    // Handle different notification types
-    if (notification.type === 'New Reservation' && notification.reservation) {
-      // Navigate to reservation details
-      router.push(`/reservations/${notification.reservation.id}`);
-    } else if (notification.type === 'Cancelled' && notification.reservation) {
-      // Navigate to reservation history or details
-      router.push(`/reservations/${notification.reservation.id}`);
-    } else if (notification.type === 'Promotional') {
-      // Navigate to promotions page
-      router.push('/promotions');
+    if (!notification.is_read) markAsRead(notification.id);
+    if (notification.reservation && notification.reservation.id) {
+      if (notification.type === "Reservation - Active") {
+        router.push(
+          `/history?reservationId=${notification.reservation.id}&tab=active`
+        );
+      } else if (notification.type === "Reservation - Completed") {
+        router.push(
+          `/history?reservationId=${notification.reservation.id}&tab=completed`
+        );
+      } else {
+        Alert.alert("Notification", notification.message);
+      }
     } else {
-      // Default action for other notification types
-      Alert.alert('Notification', notification.message);
+      Alert.alert("Notification", notification.message);
     }
   };
-  
+
   const getNotificationIcon = (type) => {
     switch (type) {
-      case 'New Reservation':
-        return 'calendar-outline';
-      case 'Cancelled':
-        return 'close-circle-outline';
-      case 'Reminder':
-        return 'alarm-outline';
-      case 'Promotional':
-        return 'megaphone-outline';
+      case "Reservation - Pending":
+        return "time-outline";
+      case "Reservation - Active":
+        return "checkmark-circle-outline";
+      case "Reservation - Dashboard":
+        return "business-outline";
+      case "Reservation - Completed":
+        return "checkmark-done-outline";
+      case "Reservation - Cancelled":
+        return "close-circle-outline";
       default:
-        return 'notifications-outline';
+        return "notifications-outline";
     }
   };
-  
+
   const getIconColor = (type) => {
     switch (type) {
-      case 'New Reservation':
-        return '#4CAF50'; // Green
-      case 'Cancelled':
-        return '#F44336'; // Red
-      case 'Reminder':
-        return '#2196F3'; // Blue
-      case 'Promotional':
-        return '#FF9800'; // Orange
+      case "Reservation - Pending":
+        return "#FFA500";
+      case "Reservation - Active":
+        return "#4CAF50";
+      case "Reservation - Dashboard":
+        return "#2196F3";
+      case "Reservation - Completed":
+        return "#9C27B0";
+      case "Reservation - Cancelled":
+        return "#F44336";
       default:
-        return '#9C27B0'; // Purple
+        return "#9C27B0";
     }
   };
-  
+
   const formatTime = (dateString) => {
     try {
       return formatDistanceToNow(new Date(dateString), { addSuffix: true });
@@ -196,135 +186,136 @@ const NotificationScreen = () => {
       return dateString;
     }
   };
-  
+
   const renderNotificationItem = ({ item }) => (
     <Animated.View style={styles.animatedContainer}>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={[
-          styles.notificationItem, 
-          !item.is_read && styles.unreadNotification
+          styles.notificationItem,
+          !item.is_read && styles.unreadNotification,
         ]}
         onPress={() => handleNotificationPress(item)}
       >
-        <View style={[styles.iconContainer, {backgroundColor: getIconColor(item.type)}]}>
-          <Ionicons 
-            name={getNotificationIcon(item.type)} 
-            size={wp('6%')} 
-            color="#fff" 
+        <View
+          style={[
+            styles.iconContainer,
+            { backgroundColor: getIconColor(item.type) },
+          ]}
+        >
+          <Ionicons
+            name={getNotificationIcon(item.type)}
+            size={wp("6%")}
+            color="#fff"
           />
         </View>
-        
         <View style={styles.contentContainer}>
           <View style={styles.notificationHeader}>
             <Text style={styles.notificationTitle}>{item.title}</Text>
             <Text style={styles.timeStamp}>{formatTime(item.created_at)}</Text>
           </View>
-          
           <Text style={styles.notificationMessage}>{item.message}</Text>
-          
-          {!item.is_read && (
-            <View style={styles.unreadIndicator} />
-          )}
+          {!item.is_read && <View style={styles.unreadIndicator} />}
         </View>
       </TouchableOpacity>
     </Animated.View>
   );
-  
+
   const renderEmptyState = () => (
     <View style={styles.emptyStateContainer}>
-      <Ionicons 
-        name="notifications-off-outline" 
-        size={wp('20%')} 
-        color="#ccc" 
+      <Ionicons
+        name="notifications-off-outline"
+        size={wp("20%")}
+        color="#ccc"
       />
-      <Text style={styles.emptyStateText}>No notifications yet</Text>
-      <Text style={styles.emptyStateSubText}>
+      <Text style={[styles.emptyStateText, { color: theme.text }]}>
+        No notifications yet
+      </Text>
+      <Text style={[styles.emptyStateSubText, { color: theme.text }]}>
         We'll notify you when something important happens
       </Text>
     </View>
   );
-  
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity 
+    <SafeAreaView
+      style={styles.safeArea}
+    >
+      <View style={[styles.container, { backgroundColor: theme.background }]}>
+        <View style={[styles.header, { backgroundColor: theme.card }]}>
+          <TouchableOpacity
             style={styles.backButton}
             onPress={() => router.back()}
           >
-            <Ionicons name="arrow-back" size={wp('6%')} color="#420F54" />
+            <Ionicons name="arrow-back" size={wp("6%")} color={theme.primary} />
           </TouchableOpacity>
-          
-          <Text style={styles.screenTitle}>Notifications</Text>
-          
+          <Text style={[styles.screenTitle, { color: theme.text }]}>
+            Notifications
+          </Text>
           {unreadCount > 0 && (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.markAllReadButton}
               onPress={markAllAsRead}
             >
-              <Text style={styles.markAllReadText}>Mark all read</Text>
+              <Text style={[styles.markAllReadText, { color: theme.primary }]}>
+                Mark all read
+              </Text>
             </TouchableOpacity>
           )}
         </View>
-        
-        {/* Notification Count Summary */}
-        <Animated.View 
+        <Animated.View
           style={[
             styles.summaryContainer,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY }]
-            }
+            { opacity: fadeAnim, transform: [{ translateY }] },
           ]}
         >
           <View style={styles.countContainer}>
-            <Text style={styles.totalCount}>
-              {notifications.length} 
+            <Text style={[styles.totalCount, { color: theme.text }]}>
+              {notifications.length}
               <Text style={styles.countLabel}> Total</Text>
             </Text>
           </View>
-          
           {unreadCount > 0 && (
             <View style={styles.unreadCountContainer}>
-              <Text style={styles.unreadCount}>
+              <Text style={[styles.unreadCount, { color: theme.text }]}>
                 {unreadCount}
                 <Text style={styles.countLabel}> Unread</Text>
               </Text>
             </View>
           )}
         </Animated.View>
-        
-        {/* Error state */}
         {error && (
           <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity 
+            <Text style={[styles.errorText, { color: theme.text }]}>
+              {error}
+            </Text>
+            <TouchableOpacity
               style={styles.retryButton}
               onPress={fetchNotifications}
             >
-              <Text style={styles.retryButtonText}>Retry</Text>
+              <Text style={[styles.retryButtonText, { color: theme.primary }]}>
+                Retry
+              </Text>
             </TouchableOpacity>
           </View>
         )}
-        
-        {/* Notification list */}
         {loading && !refreshing ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#420F54" />
-            <Text style={styles.loadingText}>Loading notifications...</Text>
+            <ActivityIndicator size="large" color={theme.primary} />
+            <Text style={[styles.loadingText, { color: theme.text }]}>
+              Loading notifications...
+            </Text>
           </View>
         ) : (
           <FlatList
             data={notifications}
             renderItem={renderNotificationItem}
-            keyExtractor={item => item.id}
+            keyExtractor={(item) => item.id.toString()}
             contentContainerStyle={styles.listContainer}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={handleRefresh}
-                colors={["#420F54"]}
+                colors={[theme.primary]}
               />
             }
             ListEmptyComponent={renderEmptyState}

@@ -126,6 +126,7 @@ const RectangleTable = ({ shape, isSelected, onPress, isReserved }) => {
 
   return (
     <Group x={x} y={y} onClick={onPress}>
+      {/* Rotated group for table and chairs */}
       <Group x={tableWidth / 2} y={tableHeight / 2} rotation={rotation}>
         {isSelected && !isReserved && (
           <Rect
@@ -153,18 +154,6 @@ const RectangleTable = ({ shape, isSelected, onPress, isReserved }) => {
           }
           strokeWidth={2}
           cornerRadius={4}
-        />
-        <Text
-          x={-tableWidth / 2}
-          y={-tableHeight / 2}
-          width={tableWidth}
-          height={tableHeight}
-          text={!isReserved && tableNumber ? tableNumber.toString() : ""}
-          fontSize={24}
-          fill="white"
-          fontStyle="bold"
-          align="center"
-          verticalAlign="middle"
         />
         {renderChairs(
           "top",
@@ -203,6 +192,21 @@ const RectangleTable = ({ shape, isSelected, onPress, isReserved }) => {
           minChairWidth
         )}
       </Group>
+      {/* Table number rendered outside the rotated group */}
+      {!isReserved && tableNumber && (
+        <Text
+          x={0}
+          y={0}
+          width={tableWidth}
+          height={tableHeight}
+          text={tableNumber.toString()}
+          fontSize={24}
+          fill="white"
+          fontStyle="bold"
+          align="center"
+          verticalAlign="middle"
+        />
+      )}
       {isSelected && (
         <Group x={5} y={5}>
           <Circle

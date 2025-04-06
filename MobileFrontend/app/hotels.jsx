@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 
-const MeetingRooms = () => {
+const Hotels = () => {
   return (
     <View>
       <Text> Under construction</Text>
@@ -9,6 +9,6 @@ const MeetingRooms = () => {
   )
 }
 
-export default MeetingRooms
+export default Hotels
 
 const styles = StyleSheet.create({})

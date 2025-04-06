@@ -1,11 +1,10 @@
 const supabase = require("../config/supabaseClient");
+const supabaseService = require("../config/supabaseService");
 
 exports.signup = async (req, res) => {
   try {
-    console.log("Received signup requests;", req.body);
     const { email, password, name, username } = req.body;
 
-    // Check if the user already exists
     const { data: existingUserByEmail } = await supabase
       .from("customer")
       .select("*")
@@ -58,7 +57,7 @@ exports.signup = async (req, res) => {
     });
 
     if (profileError) {
-      console.error("Profile createion error:", profileError);
+      console.error("Profile creation error:", profileError);
       return res.status(500).json({
         error: "Failed to create the profile",
       });
@@ -84,19 +83,19 @@ exports.signin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    console.log("Signing in user:", email);
-
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-
     if (error) {
       console.error("Supabase Auth Error", error.message);
-      return res.status(401).json({
-        error: "Invalid login credentials",
-      });
+      return res.status(401).json({ error: "Invalid login credentials" });
     }
+
+    const token = data.session?.access_token;
+    console.log(
+      `AuthController: Received token from Supabase for user ${data.user.email}: ${token}`
+    );
 
     const { data: profileData } = await supabase
       .from("customer")
@@ -104,14 +103,13 @@ exports.signin = async (req, res) => {
       .eq("id", data.user.id)
       .single();
 
-    console.log(data);
     res.status(200).json({
       message: "Login successful",
       user: {
         id: data.user.id,
         email: data.user.email,
         full_name: profileData?.full_name,
-        username: profileData?.username
+        username: profileData?.username,
       },
       session: data.session,
     });
@@ -145,8 +143,6 @@ exports.socialLogin = async (req, res) => {
         });
     }
 
-    console.log("Supabase Auth Response:", authResponse);
-
     const { data, error } = authResponse;
 
     if (error) {
@@ -179,7 +175,7 @@ exports.socialLogin = async (req, res) => {
         email: data.user.email,
         full_name: data.user.user_metadata?.full_name,
       },
-      session: session,
+      session: data.session,
     });
   } catch (error) {
     res.status(500).json({
@@ -209,5 +205,22 @@ exports.logout = async (req, res) => {
       error: "Logout process failed",
       details: error.message,
     });
+  }
+};
+
+exports.refreshToken = async (req, res) => {
+  try {
+    const { data, error } = await supabaseService.auth.refreshSession();
+    if (error || !data || !data.session) {
+      console.error("Refresh session error:", error);
+      return res.status(401).json({ error: "Invalid refresh token" });
+    }
+    return res.status(200).json({
+      accessToken: data.session.access_token,
+      refreshToken: data.session.refresh_token,
+    });
+  } catch (err) {
+    console.error("Error refreshing token:", err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
