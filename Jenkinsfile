@@ -4,10 +4,10 @@ pipeline {
         nodejs 'Node18' // Assumes Node.js 18 is configured in Jenkins
     }
     environment {
-        SUPABASE_URL = credentials('https://dmeqashshebynxjenhfb.supabase.co')
-        SUPABASE_KEY = credentials('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZXFhc2hzaGVieW54amVuaGZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkzNjE1ODEsImV4cCI6MjA1NDkzNzU4MX0.DZJLgvViYYgvQTFYWaduVkiZRcHb5IBptGss4aINg2Q')
-        VERCEL_TOKEN = credentials('MX8ck7rk6XVsgJ6CzCZzQhAA')
-        RAILWAY_TOKEN = credentials('86be8354-ee83-49e2-87a7-e245fedbeca7')
+        SUPABASE_URL = credentials('supabase-url')
+        SUPABASE_KEY = credentials('supabase-key')
+        VERCEL_TOKEN = credentials('vercel-token')
+        RAILWAY_TOKEN = credentials('railway-token')
     }
     stages {
         // Frontend (React) - Vercel
@@ -34,7 +34,7 @@ pipeline {
             steps {
                 dir('WebFrontend') {
                     bat 'npm install -g vercel'
-                    bat 'vercel --token %VERCEL_TOKEN% --yes --scope your-team-name deploy'
+                    bat 'vercel --token %VERCEL_TOKEN% --yes --scope slotzi deploy'
                 }
             }
         }
@@ -45,7 +45,7 @@ pipeline {
             steps {
                 dir('WebFrontend') {
                     bat 'npm install -g vercel'
-                    bat 'vercel --token %VERCEL_TOKEN% --prod --yes --scope your-team-name deploy'
+                    bat 'vercel --token %VERCEL_TOKEN% --prod --yes --scope slotzi deploy'
                 }
             }
         }
