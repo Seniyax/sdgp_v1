@@ -42,6 +42,8 @@ const ViewFloorPlan = ({
     console.error("Error parsing floor plan JSON", err);
   }
 
+  console.log(reservedTables);
+
   // Combine shapes from the floor plan with tables.
   const combinedItems = [
     ...(floorData.shapes || []),

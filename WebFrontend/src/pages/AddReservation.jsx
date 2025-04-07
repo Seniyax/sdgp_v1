@@ -20,6 +20,7 @@ const AddReservation = ({
   defaultEndDate,
 }) => {
   const [status, setStatus] = useState("idle");
+  const business = JSON.parse(sessionStorage.getItem("business"));
 
   const initialGroupSize = selectedTables.reduce(
     (sum, table) => sum + (table.seatCount || 0),
@@ -27,7 +28,7 @@ const AddReservation = ({
   );
 
   const [formData, setFormData] = useState({
-    business_id: 20,
+    business_id: business.id,
     customer_username: "",
     group_size: initialGroupSize,
     slot_type: "casual",
@@ -58,7 +59,7 @@ const AddReservation = ({
 
   const resetForm = () => {
     setFormData({
-      business_id: 20,
+      business_id: business.id,
       customer_username: "",
       group_size: 0,
       slot_type: "casual",
@@ -84,7 +85,10 @@ const AddReservation = ({
           customer_username: null,
           group_size: formData.group_size,
           slot_type: formData.slot_type,
-          start_time: formData.start_time,
+          start_time:
+            formData.start_time.length === 5
+              ? `${formData.start_time}:00`
+              : formData.start_time,
           end_date: formData.end_date,
           customer_name: formData.customer_name,
           customer_number: formData.customer_number,

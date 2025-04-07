@@ -73,7 +73,6 @@ const ReservationDashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [selectedFloorIndex, setSelectedFloorIndex] = useState(0);
 
-  // Fetch floor plan data using the decrypted business ID
   useEffect(() => {
     const fetchFloorPlan = async () => {
       try {
@@ -159,6 +158,7 @@ const ReservationDashboard = () => {
     const newDate = new Date(selectedDate);
     const [year, month, day] = newDateStr.split("-").map(Number);
     newDate.setFullYear(year, month - 1, day);
+    console.log("Date changed:", newDate);
     setSelectedDate(newDate);
   };
 
@@ -174,6 +174,7 @@ const ReservationDashboard = () => {
     }
     const newDate = new Date(selectedDate);
     newDate.setHours(hour, minute, 0, 0);
+    console.log("Time changed:", newDate);
     setSelectedDate(newDate);
   };
 
@@ -216,6 +217,12 @@ const ReservationDashboard = () => {
     }
   };
 
+  const parseLocalDateTime = (dateStr, timeStr) => {
+    const [year, month, day] = dateStr.split("-").map(Number);
+    const [hours, minutes, seconds] = timeStr.split(":").map(Number);
+    return new Date(year, month - 1, day, hours, minutes, seconds || 0);
+  };
+
   const activeReservations = reservations.filter(
     (res) => res.status === "Active"
   );
@@ -225,8 +232,14 @@ const ReservationDashboard = () => {
 
   const filteredReservations = activeReservations.filter((res) => {
     if (res.end_date !== selectedDate.toISOString().split("T")[0]) return false;
-    const reservationStart = new Date(`${res.end_date}T${res.start_time}`);
-    const reservationEnd = new Date(`${res.end_date}T${res.end_time}`);
+
+    const reservationStart = parseLocalDateTime(res.end_date, res.start_time);
+    let reservationEnd = parseLocalDateTime(res.end_date, res.end_time);
+
+    if (reservationEnd < reservationStart) {
+      reservationEnd.setDate(reservationEnd.getDate() + 1);
+    }
+
     return (
       reservationStart < selectedPeriodEnd &&
       reservationEnd > selectedPeriodStart
@@ -236,12 +249,15 @@ const ReservationDashboard = () => {
   const reservedTableNumbers = Array.from(
     new Set(
       filteredReservations
-        .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
+        .sort((a, b) => {
+          const aStart = parseLocalDateTime(a.end_date, a.start_time);
+          const bStart = parseLocalDateTime(b.end_date, b.start_time);
+          return aStart - bStart;
+        })
         .map((res) => res.table.table_number)
     )
   );
 
-  // Use the decrypted business ID for the socket connection
   const socket = useReservationsSocket(decryptedBusinessId);
 
   const handleCancel = (id) => {
@@ -296,7 +312,6 @@ const ReservationDashboard = () => {
       ? floorPlan.floors[selectedFloorIndex].canvas_height || 600
       : 600;
 
-  // Fetch reservations using the business ID from the fetched business object
   useEffect(() => {
     if (!business) return;
     const fetchReservations = async () => {
@@ -304,6 +319,7 @@ const ReservationDashboard = () => {
         const response = await axios.post("/api/reservation/get", {
           business_id: business.id,
         });
+        console.log("Fetched reservations:", response.data.reservations);
         setReservations(response.data.reservations);
       } catch (error) {
         console.error("Error fetching reservations:", error);
@@ -609,7 +625,6 @@ const ReservationDashboard = () => {
                                 </div>
                                 <div className="col-12">{customerName}</div>
                               </div>
-
                               <div className="d-flex align-items-center">
                                 <button
                                   className="btn btn-violet-light btn-sm me-1"

@@ -394,9 +394,9 @@ exports.updateUser = [
           });
         }
       }
-      
+
       if (dob) {
-        const dobValidationError = dobValidation(contact);
+        const dobValidationError = dobValidation(dob);
         if (dobValidationError) {
           return res.status(400).json({
             success: false,
@@ -581,7 +581,7 @@ exports.resetPassword = async (req, res) => {
         message: "Passwords do not match",
       });
     }
-    const passwordValidationError = passwordValidation(password);
+    const passwordValidationError = passwordValidation(newPassword);
     if (passwordValidationError) {
       return res.status(400).json({
         success: false,

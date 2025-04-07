@@ -54,7 +54,7 @@ const UserProfile = () => {
         twitter: storedUser.twitter || "",
         linkedin: storedUser.linkedin || "",
         facebook: storedUser.facebook || "",
-        gender: storedUser.gender.toLowerCase() || "",
+        gender: storedUser.gender ? storedUser.gender.toLowerCase() : "",
         marital_status: storedUser.marital_status || "",
       });
     }
