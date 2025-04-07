@@ -213,51 +213,6 @@ const History = () => {
         return userReservations;
     }
   };
-  // Render tab bar with counts
-  const renderTabBar = () => {
-    // Get counts for each category
-    const activeCount = reservations.filter(item => 
-      ['pending', 'confirmed', 'in_progress'].includes(item.status)
-    ).length;
-    
-    const completedCount = reservations.filter(item => 
-      item.status === 'completed'
-    ).length;
-    
-    const failedCount = reservations.filter(item => 
-      ['cancelled', 'rejected', 'failed'].includes(item.status)
-    ).length;
-    
-    return (
-      <View style={styles.tabBarContainer}>
-        <TouchableOpacity 
-          style={[styles.tabItem, activeTab === 'active' && styles.activeTabItem]}
-          onPress={() => setActiveTab('active')}
-        >
-          <Text style={[styles.tabText, activeTab === 'active' && styles.activeTabText]}>
-            Active <Text style={styles.countBadge}>({activeCount})</Text>
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.tabItem, activeTab === 'completed' && styles.activeTabItem]}
-          onPress={() => setActiveTab('completed')}
-        >
-          <Text style={[styles.tabText, activeTab === 'completed' && styles.activeTabText]}>
-            Completed <Text style={styles.countBadge}>({completedCount})</Text>
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.tabItem, activeTab === 'failed' && styles.activeTabItem]}
-          onPress={() => setActiveTab('failed')}
-        >
-          <Text style={[styles.tabText, activeTab === 'failed' && styles.activeTabText]}>
-            Failed <Text style={styles.countBadge}>({failedCount})</Text>
-          </Text>
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
 
   const renderTabBar = () => {
     const activeCount = reservations.filter((item) =>
@@ -323,40 +278,6 @@ const History = () => {
       </View>
     );
   };
-  // Render each reservation item
-  const renderReservationItem = ({ item }) => {
-    // Determine the status icon based on reservation status
-    let statusIcon;
-    let statusColor;
-
-    switch (item.status) {
-      case 'completed':
-        statusIcon = 'checkmark-circle';
-        statusColor = '#4CAF50';
-        break;
-      case 'confirmed':
-        statusIcon = 'time';
-        statusColor = '#2196F3';
-        break;
-      case 'pending':
-        statusIcon = 'hourglass';
-        statusColor = '#FF9800';
-        break;
-      case 'in_progress':
-        statusIcon = 'refresh-circle';
-        statusColor = '#03A9F4';
-        break;
-      case 'cancelled':
-      case 'rejected':
-      case 'failed':
-        statusIcon = 'close-circle';
-        statusColor = '#F44336';
-        break;
-      default:
-        statusIcon = 'help-circle';
-        statusColor = '#9E9E9E';
-    }
-
 
   const renderReservationItem = ({ item }) => {
     let statusIcon, statusColor;
